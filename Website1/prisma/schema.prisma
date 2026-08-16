@@ -1,0 +1,77 @@
+// Prisma schema for the sample ecommerce store.
+// Uses SQLite for local/demo simplicity — swap the datasource provider below
+// for Postgres (or another provider) before going to production. See README.
+//
+// Prisma 7 generates the client as TypeScript source into ./generated/prisma
+// (gitignored, regenerated via `npm run postinstall` / `prisma generate`) and
+// no longer reads the connection string from this file. The URL is supplied
+// at runtime via a driver adapter — see lib/prisma.ts — and to the CLI via
+// prisma.config.ts (for `prisma migrate` / `prisma studio`).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  // Price stored in centavos (PHP cents) as an integer to avoid floating point
+  // rounding errors. Divide by 100 to display pesos.
+  priceCentavos Int
+  imageUrl    String
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING     // order created, awaiting payment
+  PAID        // payment confirmed via PayMongo webhook (or mock success)
+  FAILED      // payment failed / was declined
+  CANCELLED   // order cancelled before payment
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customerName    String
+  email           String
+  phone           String
+  address         String
+  subtotalCentavos Int
+  totalCentavos   Int
+  status          OrderStatus @default(PENDING)
+
+  // PayMongo (or mock) payment intent tracking
+  paymentIntentId String?     @unique
+  paymentMethod   String?     // "gcash" | "paymay" | "card" | "mock"
+  isMockPayment   Boolean     @default(false)
+
+  items           OrderItem[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id                String  @id @default(cuid())
+  order             Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId           String
+  product           Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId         String?
+
+  // Snapshot fields so order history stays accurate even if the product
+  // is later edited, repriced, or deleted.
+  productName       String
+  unitPriceCentavos Int
+  quantity          Int
+  subtotalCentavos  Int
+}
