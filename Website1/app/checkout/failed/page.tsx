@@ -29,7 +29,7 @@ export default async function CheckoutFailedPage({
       <div className="mt-8 flex flex-col items-center gap-3">
         <Link
           href={`/checkout/${order.id}/pay`}
-          className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
+          className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-brand-red px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-red-dark"
         >
           Retry payment
         </Link>

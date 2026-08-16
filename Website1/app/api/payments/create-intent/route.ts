@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { attachPaymentIntentToOrder, getOrderById, markOrderFailed, markOrderPaid } from "@/lib/orders";
+import {
+  attachOfflinePaymentMethod,
+  attachPaymentIntentToOrder,
+  getOrderById,
+  markOrderPaymentFailed,
+  markOrderPaid,
+} from "@/lib/orders";
 import { attachPaymentMethod, createPaymentIntent, createPaymentMethod } from "@/lib/paymongo";
 
 const bodySchema = z.object({
   orderId: z.string().min(1),
-  method: z.enum(["gcash", "paymaya", "card"]),
+  method: z.enum(["gcash", "paymaya", "card", "cod", "bank_transfer"]),
   card: z
     .object({
       cardNumber: z.string().min(12).max(19),
@@ -37,12 +43,26 @@ export async function POST(request: NextRequest) {
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
-  if (order.status === "PAID") {
+  if (order.paymentStatus === "PAID") {
     return NextResponse.json({ status: "succeeded", redirectUrl: null, isMock: order.isMockPayment });
   }
 
   const appUrl = request.nextUrl.origin;
   const returnUrl = `${appUrl}/checkout/${orderId}/return`;
+
+  // COD and bank transfer never touch PayMongo — no gateway, no card/GCash
+  // redirect. paymentStatus stays PENDING; staff confirm funds were
+  // actually received from the admin order screen before it's marked PAID.
+  // Routed to a dedicated confirmation page (not the payment-return poller)
+  // since there's no gateway event to wait for.
+  if (method === "cod" || method === "bank_transfer") {
+    await attachOfflinePaymentMethod(orderId, method);
+    return NextResponse.json({
+      status: "confirmed",
+      redirectUrl: `${appUrl}/checkout/${orderId}/order-placed`,
+      isMock: false,
+    });
+  }
 
   try {
     let intentId = order.paymentIntentId;
@@ -101,7 +121,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "processing", redirectUrl: returnUrl, isMock: false });
     }
 
-    await markOrderFailed(orderId);
+    await markOrderPaymentFailed(orderId);
     return NextResponse.json({
       status: "failed",
       redirectUrl: returnUrl,

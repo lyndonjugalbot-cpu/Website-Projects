@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#FFC600"/>
+  <circle cx="300" cy="230" r="90" fill="#821010" opacity="0.15"/>
+  <text x="300" y="300" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="36" font-weight="700" fill="#821010"><tspan x="300" dy="0">Milkis</tspan><tspan x="300" dy="44">Soda</tspan></text>
+  <text x="300" y="560" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#821010" opacity="0.7">Seoul Stop Kmart — demo image</text>
+</svg>

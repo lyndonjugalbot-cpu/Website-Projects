@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import type { ProductView } from "@/lib/types";
+import { effectivePrice, isPurchasable } from "@/lib/types";
 
 export function AddToCartButton({
   product,
@@ -15,7 +16,7 @@ export function AddToCartButton({
 }) {
   const { addItem } = useCart();
   const [justAdded, setJustAdded] = useState(false);
-  const outOfStock = product.stock <= 0;
+  const outOfStock = !isPurchasable(product);
 
   function handleAdd() {
     addItem(
@@ -23,7 +24,7 @@ export function AddToCartButton({
         productId: product.id,
         slug: product.slug,
         name: product.name,
-        priceCentavos: product.priceCentavos,
+        priceCentavos: effectivePrice(product),
         imageUrl: product.imageUrl,
         stock: product.stock,
       },
@@ -40,7 +41,7 @@ export function AddToCartButton({
       disabled={outOfStock}
       className={
         className ??
-        "inline-flex w-full items-center justify-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        "inline-flex w-full items-center justify-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-red-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
       }
     >
       {outOfStock ? "Out of stock" : justAdded ? "Added ✓" : "Add to cart"}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderByPaymentIntentId, markOrderFailed, markOrderPaid } from "@/lib/orders";
+import { getOrderByPaymentIntentId, markOrderPaymentFailed, markOrderPaid } from "@/lib/orders";
 import { verifyWebhookSignature } from "@/lib/paymongo";
 
 /**
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       break;
     case "payment.failed":
     case "payment_intent.payment_failed":
-      await markOrderFailed(order.id);
+      await markOrderPaymentFailed(order.id);
       break;
     default:
       // Other event types (refunds, etc.) aren't handled in this demo.

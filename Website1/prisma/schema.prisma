@@ -1,4 +1,4 @@
-// Prisma schema for the sample ecommerce store.
+// Prisma schema for Seoul Stop Kmart.
 // Uses SQLite for local/demo simplicity — swap the datasource provider below
 // for Postgres (or another provider) before going to production. See README.
 //
@@ -17,56 +17,133 @@ datasource db {
   provider = "sqlite"
 }
 
+enum UserRole {
+  OWNER   // full access, incl. staff/user management
+  MANAGER // product + order management
+  STAFF   // view/process orders only
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum ProductCategory {
+  SNACKS
+  BEVERAGES
+  INSTANT_NOODLES
+  FROZEN_FOOD
+  FRESH_GROCERY
+  SAUCES_CONDIMENTS
+  BEAUTY_PERSONAL_CARE
+  HOUSEHOLD
+  KITCHENWARE
+  OTHER
+}
+
+enum ProductStatus {
+  ACTIVE       // visible and purchasable (subject to stock)
+  INACTIVE     // hidden from the storefront entirely
+  OUT_OF_STOCK // visible, but not purchasable regardless of stock count
+}
+
 model Product {
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
   description String
-  // Price stored in centavos (PHP cents) as an integer to avoid floating point
-  // rounding errors. Divide by 100 to display pesos.
-  priceCentavos Int
-  imageUrl    String
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Prices stored in centavos (PHP cents) as integers to avoid floating
+  // point rounding errors. Divide by 100 to display pesos.
+  priceCentavos     Int
+  salePriceCentavos Int?
+  imageUrl          String
+  stock             Int             @default(0)
+  category          ProductCategory @default(OTHER)
+  status            ProductStatus   @default(ACTIVE)
+  isFeatured        Boolean         @default(false)
+  isBestSeller      Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   orderItems  OrderItem[]
 }
 
+// Fulfillment pipeline — tracked separately from PaymentStatus below, since
+// an order can be CONFIRMED and PREPARING while payment is still PENDING
+// (e.g. cash on delivery).
 enum OrderStatus {
-  PENDING     // order created, awaiting payment
-  PAID        // payment confirmed via PayMongo webhook (or mock success)
-  FAILED      // payment failed / was declined
-  CANCELLED   // order cancelled before payment
+  PENDING             // order created, awaiting staff confirmation
+  CONFIRMED           // staff confirmed the order
+  PREPARING           // being packed/prepared
+  READY_FOR_DELIVERY  // packed, awaiting rider/dispatch
+  OUT_FOR_DELIVERY    // with the rider
+  COMPLETED           // delivered / picked up
+  CANCELLED
+}
+
+// Tracked independently of OrderStatus. Only ever set to PAID by
+// server-side code that has verified payment with a real provider (PayMongo
+// webhook/poll) or, for COD/bank transfer, by a staff member who manually
+// confirms funds were actually received — never implied by order progress.
+enum PaymentStatus {
+  PENDING   // not yet paid / awaiting the customer's payment action
+  PROCESSING // payment attempt in progress (e.g. redirected to gateway)
+  PAID
+  FAILED
+  REFUNDED
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  customerName    String
-  email           String
-  phone           String
-  address         String
-  subtotalCentavos Int
-  totalCentavos   Int
-  status          OrderStatus @default(PENDING)
+  id           String @id @default(cuid())
+  customerName String
+  email        String
+  phone        String
 
-  // PayMongo (or mock) payment intent tracking
-  paymentIntentId String?     @unique
-  paymentMethod   String?     // "gcash" | "paymay" | "card" | "mock"
-  isMockPayment   Boolean     @default(false)
+  // Cebu delivery address, broken out for legibility on the admin side and
+  // for riders/dispatch — see README for why this isn't just one field.
+  addressLine  String
+  barangay     String
+  city         String @default("Cebu City")
+  province     String @default("Cebu")
+  postalCode   String?
+  deliveryNotes String?
 
-  items           OrderItem[]
+  subtotalCentavos    Int
+  deliveryFeeCentavos Int @default(0)
+  discountCentavos    Int @default(0)
+  totalCentavos       Int
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  orderStatus   OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  // PayMongo (or mock) payment intent tracking — null for COD/bank transfer.
+  paymentIntentId String? @unique
+  // "gcash" | "paymaya" | "card" | "cod" | "bank_transfer"
+  paymentMethod   String?
+  isMockPayment   Boolean @default(false)
+
+  // Lightweight internal note + attribution, editable by staff/manager/owner.
+  internalNotes      String?
+  lastUpdatedByName  String?
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id                String  @id @default(cuid())
-  order             Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId           String
-  product           Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productId         String?
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?
 
   // Snapshot fields so order history stays accurate even if the product
   // is later edited, repriced, or deleted.

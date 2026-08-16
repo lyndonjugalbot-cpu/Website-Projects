@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getOrderById, markOrderFailed, markOrderPaid } from "@/lib/orders";
+import { getOrderById, markOrderPaymentFailed, markOrderPaid } from "@/lib/orders";
 
 const bodySchema = z.object({
   orderId: z.string().min(1),
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   if (parsed.data.outcome === "success") {
     await markOrderPaid(order.id);
   } else {
-    await markOrderFailed(order.id);
+    await markOrderPaymentFailed(order.id);
   }
 
   return NextResponse.json({ ok: true });

@@ -27,7 +27,7 @@ export function CartIconLink() {
         />
       </svg>
       {isLoaded && itemCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-900 px-1 text-xs font-medium text-white">
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-red px-1 text-xs font-medium text-white">
           {itemCount}
         </span>
       )}

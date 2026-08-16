@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById } from "@/lib/orders";
 import { formatCentavosAsPHP } from "@/lib/money";
+import { PAYMENT_METHOD_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,8 @@ export default async function CheckoutSuccessPage({
         <div className="mt-2 flex items-center justify-between text-sm">
           <span className="text-neutral-500">Paid with</span>
           <span className="text-neutral-900">
-            {order.paymentMethod?.toUpperCase()} {order.isMockPayment && "(mock)"}
+            {order.paymentMethod ? PAYMENT_METHOD_LABELS[order.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS] : "—"}{" "}
+            {order.isMockPayment && "(demo/sandbox)"}
           </span>
         </div>
         <ul className="mt-4 flex flex-col gap-2 border-t border-neutral-100 pt-4">
@@ -51,12 +53,14 @@ export default async function CheckoutSuccessPage({
           <span className="font-medium text-neutral-900">Total paid</span>
           <span className="font-semibold text-neutral-900">{formatCentavosAsPHP(order.totalCentavos)}</span>
         </div>
-        <p className="mt-4 text-sm text-neutral-500">Delivering to: {order.address}</p>
+        <p className="mt-4 text-sm text-neutral-500">
+          Delivering to: {order.addressLine}, {order.barangay}, {order.city}, {order.province}
+        </p>
       </div>
 
       <Link
         href="/products"
-        className="mt-8 inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-700"
+        className="mt-8 inline-flex items-center justify-center rounded-full bg-brand-red px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-red-dark"
       >
         Continue shopping
       </Link>

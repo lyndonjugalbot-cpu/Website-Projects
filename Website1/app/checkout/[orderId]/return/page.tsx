@@ -25,11 +25,11 @@ export default function CheckoutReturnPage({ params }: { params: { orderId: stri
         const res = await fetch(`/api/orders/${params.orderId}`, { cache: "no-store" });
         if (res.ok) {
           const order = await res.json();
-          if (order.status === "PAID") {
+          if (order.paymentStatus === "PAID") {
             router.replace(`/checkout/success?orderId=${params.orderId}`);
             return;
           }
-          if (order.status === "FAILED") {
+          if (order.paymentStatus === "FAILED") {
             router.replace(`/checkout/failed?orderId=${params.orderId}`);
             return;
           }

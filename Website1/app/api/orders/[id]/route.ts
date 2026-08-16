@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById, markOrderFailed, markOrderPaid } from "@/lib/orders";
+import { getOrderById, markOrderPaymentFailed, markOrderPaid } from "@/lib/orders";
 import { retrievePaymentIntentStatus } from "@/lib/paymongo";
 
 /**
@@ -14,14 +14,14 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  if (order.status === "PENDING" && order.paymentIntentId && !order.isMockPayment) {
+  if (order.paymentStatus === "PROCESSING" && order.paymentIntentId && !order.isMockPayment) {
     try {
       const status = await retrievePaymentIntentStatus(order.paymentIntentId);
       if (status === "succeeded") {
         await markOrderPaid(order.id);
       } else if (status === "awaiting_payment_method" && order.updatedAt < new Date(Date.now() - 5 * 60_000)) {
         // Stale intent that never got a payment method attached successfully.
-        await markOrderFailed(order.id);
+        await markOrderPaymentFailed(order.id);
       }
     } catch (err) {
       console.error("Failed to poll PayMongo payment intent status", err);
@@ -31,12 +31,16 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   const fresh = await getOrderById(params.id);
   return NextResponse.json({
     id: fresh!.id,
-    status: fresh!.status,
+    orderStatus: fresh!.orderStatus,
+    paymentStatus: fresh!.paymentStatus,
     totalCentavos: fresh!.totalCentavos,
     customerName: fresh!.customerName,
     email: fresh!.email,
     phone: fresh!.phone,
-    address: fresh!.address,
+    addressLine: fresh!.addressLine,
+    barangay: fresh!.barangay,
+    city: fresh!.city,
+    province: fresh!.province,
     paymentMethod: fresh!.paymentMethod,
     isMockPayment: fresh!.isMockPayment,
     items: fresh!.items.map((i) => ({

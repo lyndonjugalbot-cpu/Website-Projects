@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function PayPage({ params }: { params: { orderId: string } }) {
   const order = await getOrderById(params.orderId);
   if (!order) notFound();
-  if (order.status === "PAID") redirect(`/checkout/success?orderId=${order.id}`);
+  if (order.paymentStatus === "PAID") redirect(`/checkout/success?orderId=${order.id}`);
 
   const configured = isPaymongoConfigured();
 
@@ -35,6 +35,9 @@ export default async function PayPage({ params }: { params: { orderId: string } 
               quantity: i.quantity,
               priceCentavos: i.unitPriceCentavos,
             }))}
+            subtotalCentavos={order.subtotalCentavos}
+            deliveryFeeCentavos={order.deliveryFeeCentavos}
+            discountCentavos={order.discountCentavos}
             totalCentavos={order.totalCentavos}
           />
         </div>

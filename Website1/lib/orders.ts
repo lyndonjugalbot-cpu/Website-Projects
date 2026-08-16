@@ -1,12 +1,25 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { effectivePrice } from "@/lib/types";
+import { DELIVERY_FEE_CENTAVOS } from "@/lib/store-config";
+
+export { DELIVERY_FEE_CENTAVOS };
 
 export const checkoutInputSchema = z.object({
   customer: z.object({
-    name: z.string().trim().min(1, "Name is required").max(200),
+    name: z.string().trim().min(1, "Full name is required").max(200),
     email: z.string().trim().email("Enter a valid email"),
-    phone: z.string().trim().min(7, "Enter a valid phone number").max(30),
-    address: z.string().trim().min(5, "Enter a delivery address").max(500),
+    phone: z
+      .string()
+      .trim()
+      .min(7, "Enter a valid mobile number")
+      .max(30),
+    addressLine: z.string().trim().min(3, "Enter your house/unit no. and street").max(300),
+    barangay: z.string().trim().min(1, "Barangay is required").max(150),
+    city: z.string().trim().min(1, "City/municipality is required").max(150),
+    province: z.string().trim().min(1, "Province is required").max(150),
+    postalCode: z.string().trim().max(20).optional().or(z.literal("")),
+    deliveryNotes: z.string().trim().max(500).optional().or(z.literal("")),
   }),
   items: z
     .array(
@@ -24,7 +37,8 @@ export class OrderCreationError extends Error {}
 
 /**
  * Creates a PENDING order from cart line items, re-pricing and re-checking
- * stock server-side (never trusting client-supplied prices).
+ * stock server-side (never trusting client-supplied prices or product
+ * availability).
  */
 export async function createOrderFromCart(input: CheckoutInput) {
   const productIds = input.items.map((i) => i.productId);
@@ -34,33 +48,46 @@ export async function createOrderFromCart(input: CheckoutInput) {
   let subtotalCentavos = 0;
   const orderItemsData = input.items.map((item) => {
     const product = productById.get(item.productId);
-    if (!product) throw new OrderCreationError(`Product ${item.productId} no longer exists`);
+    if (!product) throw new OrderCreationError(`One of the items in your cart is no longer available`);
+    if (product.status !== "ACTIVE") {
+      throw new OrderCreationError(`"${product.name}" is currently unavailable`);
+    }
     if (product.stock < item.quantity) {
       throw new OrderCreationError(`Not enough stock for "${product.name}" (${product.stock} left)`);
     }
-    const lineSubtotal = product.priceCentavos * item.quantity;
+    const unitPrice = effectivePrice(product);
+    const lineSubtotal = unitPrice * item.quantity;
     subtotalCentavos += lineSubtotal;
     return {
       productId: product.id,
       productName: product.name,
-      unitPriceCentavos: product.priceCentavos,
+      unitPriceCentavos: unitPrice,
       quantity: item.quantity,
       subtotalCentavos: lineSubtotal,
     };
   });
 
-  // No shipping fee or tax calculation in this demo — total mirrors subtotal.
-  const totalCentavos = subtotalCentavos;
+  const deliveryFeeCentavos = DELIVERY_FEE_CENTAVOS;
+  const discountCentavos = 0;
+  const totalCentavos = subtotalCentavos + deliveryFeeCentavos - discountCentavos;
 
   const order = await prisma.order.create({
     data: {
       customerName: input.customer.name,
       email: input.customer.email,
       phone: input.customer.phone,
-      address: input.customer.address,
+      addressLine: input.customer.addressLine,
+      barangay: input.customer.barangay,
+      city: input.customer.city,
+      province: input.customer.province,
+      postalCode: input.customer.postalCode || null,
+      deliveryNotes: input.customer.deliveryNotes || null,
       subtotalCentavos,
+      deliveryFeeCentavos,
+      discountCentavos,
       totalCentavos,
-      status: "PENDING",
+      orderStatus: "PENDING",
+      paymentStatus: "PENDING",
       items: { create: orderItemsData },
     },
     include: { items: true },
@@ -77,8 +104,28 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
   return prisma.order.findUnique({ where: { paymentIntentId }, include: { items: true } });
 }
 
-export async function listOrders() {
+export type ListOrdersFilters = {
+  search?: string;
+  orderStatus?: string;
+  paymentStatus?: string;
+};
+
+export async function listOrders(filters: ListOrdersFilters = {}) {
   return prisma.order.findMany({
+    where: {
+      ...(filters.orderStatus ? { orderStatus: filters.orderStatus as never } : {}),
+      ...(filters.paymentStatus ? { paymentStatus: filters.paymentStatus as never } : {}),
+      ...(filters.search
+        ? {
+            OR: [
+              { customerName: { contains: filters.search } },
+              { email: { contains: filters.search } },
+              { phone: { contains: filters.search } },
+              { id: { contains: filters.search } },
+            ],
+          }
+        : {}),
+    },
     include: { items: true },
     orderBy: { createdAt: "desc" },
   });
@@ -88,18 +135,22 @@ export async function attachPaymentIntentToOrder(
   orderId: string,
   data: { paymentIntentId: string; paymentMethod: string; isMockPayment: boolean }
 ) {
-  return prisma.order.update({ where: { id: orderId }, data });
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { ...data, paymentStatus: "PROCESSING" },
+  });
 }
 
 /**
- * Marks an order PAID and decrements product stock. Idempotent — safe to
- * call more than once for the same order (e.g. webhook retries, or both the
- * webhook and the return-page fallback poll firing for the same event).
+ * Marks an order's payment PAID and decrements product stock, and advances
+ * a still-PENDING order to CONFIRMED. Idempotent — safe to call more than
+ * once for the same order (e.g. webhook retries, or both the webhook and
+ * the return-page fallback poll firing for the same event).
  */
 export async function markOrderPaid(orderId: string) {
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
-    if (!order || order.status === "PAID") return;
+    if (!order || order.paymentStatus === "PAID") return;
 
     for (const item of order.items) {
       if (!item.productId) continue;
@@ -109,14 +160,33 @@ export async function markOrderPaid(orderId: string) {
       });
     }
 
-    await tx.order.update({ where: { id: orderId }, data: { status: "PAID" } });
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        paymentStatus: "PAID",
+        orderStatus: order.orderStatus === "PENDING" ? "CONFIRMED" : order.orderStatus,
+      },
+    });
   });
 }
 
-/** Marks an order FAILED. Does nothing if the order is already PAID. */
-export async function markOrderFailed(orderId: string) {
+/** Marks an order's payment FAILED. Does nothing if payment already succeeded. */
+export async function markOrderPaymentFailed(orderId: string) {
   await prisma.order.updateMany({
-    where: { id: orderId, status: { not: "PAID" } },
-    data: { status: "FAILED" },
+    where: { id: orderId, paymentStatus: { not: "PAID" } },
+    data: { paymentStatus: "FAILED" },
+  });
+}
+
+/**
+ * Records a cash-on-delivery or bank-transfer order — no payment gateway
+ * involved. Payment status stays PENDING (COD: collected on delivery; bank
+ * transfer: awaiting manual staff verification) until staff confirm funds
+ * were actually received via the admin order screen.
+ */
+export async function attachOfflinePaymentMethod(orderId: string, method: "cod" | "bank_transfer") {
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { paymentMethod: method, isMockPayment: false, orderStatus: "CONFIRMED" },
   });
 }

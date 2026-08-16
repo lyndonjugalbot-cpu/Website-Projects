@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import type { PaymentMethodType } from "@/lib/types";
+import { PAYMENT_METHOD_LABELS } from "@/lib/types";
 
-const METHODS: { value: PaymentMethodType; label: string }[] = [
-  { value: "gcash", label: "GCash" },
-  { value: "paymaya", label: "Maya" },
-  { value: "card", label: "Card" },
+const METHODS: { value: PaymentMethodType; label: string; hint?: string }[] = [
+  { value: "gcash", label: PAYMENT_METHOD_LABELS.gcash },
+  { value: "paymaya", label: PAYMENT_METHOD_LABELS.paymaya },
+  { value: "card", label: PAYMENT_METHOD_LABELS.card },
+  { value: "cod", label: PAYMENT_METHOD_LABELS.cod, hint: "Pay when your order arrives" },
+  { value: "bank_transfer", label: PAYMENT_METHOD_LABELS.bank_transfer, hint: "Manual verification" },
 ];
 
 export function PaymentPanel({ orderId }: { orderId: string }) {
@@ -56,23 +59,30 @@ export function PaymentPanel({ orderId }: { orderId: string }) {
     method !== "card" ||
     (card.cardNumber.replace(/\s+/g, "").length >= 12 && card.expMonth && card.expYear && card.cvc.length >= 3);
 
+  const isOffline = method === "cod" || method === "bank_transfer";
+
   return (
     <div className="rounded-2xl border border-neutral-200 p-5">
       <h2 className="font-medium text-neutral-900">Pay with</h2>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {METHODS.map((m) => (
           <button
             key={m.value}
             type="button"
             onClick={() => setMethod(m.value)}
-            className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
+            className={`flex flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
               method === m.value
-                ? "border-neutral-900 bg-neutral-900 text-white"
+                ? "border-brand-red bg-brand-red text-white"
                 : "border-neutral-200 text-neutral-600 hover:border-neutral-400"
             }`}
           >
-            {m.label}
+            <span>{m.label}</span>
+            {m.hint && (
+              <span className={`text-[11px] font-normal ${method === m.value ? "text-white/80" : "text-neutral-400"}`}>
+                {m.hint}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -122,15 +132,31 @@ export function PaymentPanel({ orderId }: { orderId: string }) {
         </div>
       )}
 
+      {method === "cod" && (
+        <p className="mt-4 rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          Pay in cash to the rider when your order is delivered. Please have the exact amount ready.
+        </p>
+      )}
+      {method === "bank_transfer" && (
+        <p className="mt-4 rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          Bank account details will be shown after you confirm — your order will be marked &ldquo;pending
+          verification&rdquo; until our team confirms your transfer.
+        </p>
+      )}
+
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <button
         type="button"
         onClick={handlePay}
         disabled={isSubmitting || !canSubmit}
-        className="mt-5 w-full rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className="mt-5 w-full rounded-full bg-brand-red px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-red-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
-        {isSubmitting ? "Processing…" : `Pay with ${METHODS.find((m) => m.value === method)?.label}`}
+        {isSubmitting
+          ? "Processing…"
+          : isOffline
+            ? `Place order — ${METHODS.find((m) => m.value === method)?.label}`
+            : `Pay with ${METHODS.find((m) => m.value === method)?.label}`}
       </button>
     </div>
   );

@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { CartIconLink } from "@/components/CartIconLink";
+import { STORE_NAME } from "@/lib/store-config";
 
 const NAV_LINKS = [
   { href: "/products", label: "Shop" },
@@ -12,12 +15,18 @@ const NAV_LINKS = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-lg font-semibold tracking-tight text-neutral-900">
-          ShopEase<span className="text-neutral-400">PH</span>
+        <Link href="/" className="flex items-center gap-2.5" aria-label={`${STORE_NAME} home`}>
+          <Image src="/brand/logo.png" alt="" width={140} height={120} className="h-10 w-auto" priority />
+          <span className="hidden text-base font-semibold tracking-tight text-neutral-900 sm:inline">
+            {STORE_NAME}
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-6 sm:flex">
@@ -25,7 +34,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-neutral-600 transition hover:text-neutral-900"
+              className="text-sm font-medium text-neutral-600 transition hover:text-brand-red"
             >
               {link.label}
             </Link>
@@ -60,7 +69,7 @@ export function Header() {
       </div>
 
       {isMenuOpen && (
-        <nav className="border-t border-neutral-200 bg-white px-4 py-3 sm:hidden">
+        <nav className="animate-fade-in border-t border-neutral-200 bg-white px-4 py-3 sm:hidden">
           <ul className="flex flex-col gap-3">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
