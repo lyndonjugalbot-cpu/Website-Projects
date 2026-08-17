@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { put } from "@vercel/blob";
 import sharp from "sharp";
 import { requireRole, UnauthorizedError } from "@/lib/authz";
 
-// Local filesystem storage under public/uploads/products/ — no cloud
-// storage bucket is configured for this project (see README "Product
-// image storage"). This works for local dev and single-instance hosting;
-// it will NOT persist across deploys/instances on serverless platforms
-// like Vercel, the same caveat the README already documents for SQLite.
-// Swap this for an S3/Cloudinary/Vercel Blob upload before deploying to
-// serverless infrastructure.
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products");
+// Vercel Blob storage — provisioned from the Vercel dashboard's Storage tab,
+// which auto-sets BLOB_READ_WRITE_TOKEN as a project env var. See README
+// "Deploying to Vercel". If that token isn't set (e.g. local dev without a
+// Vercel project connected yet), this falls back to writing the local
+// filesystem under public/uploads/ instead — the same
+// configured-service-or-local-fallback pattern lib/paymongo.ts uses for
+// payments. The local fallback only works for single-instance hosting
+// (won't persist on serverless) — fine for dev, not for a real deploy.
+const LOCAL_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products");
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -45,12 +47,19 @@ export async function POST(request: NextRequest) {
       .webp({ quality: 82 })
       .toBuffer();
 
-    await mkdir(UPLOAD_DIR, { recursive: true });
-    await writeFile(path.join(UPLOAD_DIR, filename), optimized);
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await put(`products/${filename}`, optimized, {
+        access: "public",
+        contentType: "image/webp",
+      });
+      return NextResponse.json({ imageUrl: blob.url });
+    }
+
+    await mkdir(LOCAL_UPLOAD_DIR, { recursive: true });
+    await writeFile(path.join(LOCAL_UPLOAD_DIR, filename), optimized);
+    return NextResponse.json({ imageUrl: `/uploads/products/${filename}` });
   } catch (err) {
-    console.error("Failed to process uploaded image", err);
+    console.error("Failed to process/upload image", err);
     return NextResponse.json({ error: "Could not process image" }, { status: 500 });
   }
-
-  return NextResponse.json({ imageUrl: `/uploads/products/${filename}` });
 }

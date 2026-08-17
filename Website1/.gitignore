@@ -37,10 +37,11 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma
+/generated
+# stray local SQLite artifacts from this project's pre-Postgres days
 /prisma/dev.db
 /prisma/dev.db-journal
-/generated
 
-# admin-uploaded product images (local filesystem storage — see README)
+# local-fallback product image uploads (see app/api/admin/products/upload-image)
 /public/uploads/*
 !/public/uploads/.gitkeep

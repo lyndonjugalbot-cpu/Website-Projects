@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // better-sqlite3 is a native addon — it must run as a real Node require()
-  // at runtime rather than be bundled by webpack, or its binding loader
-  // breaks (see https://nextjs.org/docs/app/api-reference/next-config-js/serverComponentsExternalPackages).
+  // sharp ships native platform binaries — keep it out of the webpack
+  // bundle and required as a real Node module at runtime instead, same
+  // reasoning Next.js itself uses for sharp inside next/image.
   experimental: {
-    serverComponentsExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
+    serverComponentsExternalPackages: ["sharp"],
   },
 };
 

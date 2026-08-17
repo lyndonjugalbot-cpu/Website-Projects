@@ -1,17 +1,18 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { resolveSqliteUrl } from "@/lib/db-url";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 // Standard Next.js singleton pattern so hot-reload in dev doesn't spawn a
-// new PrismaClient (and a new SQLite connection) on every file save.
+// new PrismaClient (and a new connection pool) on every file save.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: resolveSqliteUrl(process.env.DATABASE_URL ?? "file:./prisma/dev.db"),
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not set — see .env.example");
+  }
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 }
 

@@ -57,8 +57,8 @@ export async function getAllProducts(filters: ProductFilters = {}): Promise<Prod
       ...(filters.search
         ? {
             OR: [
-              { name: { contains: filters.search } },
-              { description: { contains: filters.search } },
+              { name: { contains: filters.search, mode: "insensitive" } },
+              { description: { contains: filters.search, mode: "insensitive" } },
             ],
           }
         : {}),

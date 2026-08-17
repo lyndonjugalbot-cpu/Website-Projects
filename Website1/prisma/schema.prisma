@@ -1,6 +1,9 @@
 // Prisma schema for Seoul Stop Kmart.
-// Uses SQLite for local/demo simplicity — swap the datasource provider below
-// for Postgres (or another provider) before going to production. See README.
+// Postgres (e.g. Neon, provisioned via Vercel's Storage tab) — see README
+// "Deploying to Vercel". Originally built against SQLite for local-demo
+// simplicity; migration history before 20260817 was written for SQLite and
+// squashed into a single Postgres-native init migration when switching, so
+// `prisma migrate deploy` on a fresh Postgres database applies cleanly.
 //
 // Prisma 7 generates the client as TypeScript source into ./generated/prisma
 // (gitignored, regenerated via `npm run postinstall` / `prisma generate`) and
@@ -14,7 +17,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum UserRole {

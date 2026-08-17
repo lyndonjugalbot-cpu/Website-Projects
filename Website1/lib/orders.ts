@@ -120,8 +120,8 @@ export async function listOrders(filters: ListOrdersFilters = {}) {
       ...(filters.search
         ? {
             OR: [
-              { customerName: { contains: filters.search } },
-              { email: { contains: filters.search } },
+              { customerName: { contains: filters.search, mode: "insensitive" } },
+              { email: { contains: filters.search, mode: "insensitive" } },
               { phone: { contains: filters.search } },
               { id: { contains: filters.search } },
             ],

@@ -5,7 +5,7 @@ checkout with Cebu delivery details, GCash/Maya/card payments via PayMongo
 (sandbox by default), cash-on-delivery and bank-transfer options, and a
 role-based admin dashboard for managing products, orders, staff, an in-store
 POS terminal, inventory ledger, and profit/loss reports. Built with Next.js 14
-(App Router), TypeScript, Tailwind CSS, and Prisma + SQLite.
+(App Router), TypeScript, Tailwind CSS, and Prisma + Postgres.
 
 Facebook: https://www.facebook.com/seoulstopkmart
 
@@ -16,10 +16,12 @@ before using this with real customers or real money.
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- Prisma 7 + SQLite (via a driver adapter — see note below), easy to swap for Postgres
+- Prisma 7 + Postgres (via a driver adapter — see note below)
+- Vercel Blob for product image uploads (falls back to local disk storage
+  when unconfigured, e.g. local dev without a Vercel project connected yet)
 - NextAuth (Credentials provider, JWT sessions) for admin authentication
 - PayMongo Payment Intent + Payment Method API, with a built-in mock fallback, plus COD/bank transfer
-- Deployable to Vercel
+- Built for Vercel
 
 ## Getting started
 
@@ -31,15 +33,32 @@ npm install
 
 This also runs `prisma generate` automatically (via the `postinstall` script).
 
-### 2. Set up environment variables
+### 2. Get a Postgres database for local dev
+
+Any Postgres works — a free-tier [Neon](https://neon.tech) project, or run
+one locally in Docker:
+
+```bash
+docker volume create kmart-postgres-data
+docker run -d --name kmart-postgres \
+  -e POSTGRES_PASSWORD=devpassword -e POSTGRES_DB=seoulstopkmart \
+  -p 55432:5432 -v kmart-postgres-data:/var/lib/postgresql/data \
+  --restart unless-stopped postgres:16-alpine
+```
+
+(To stop/start it later: `docker stop kmart-postgres` / `docker start kmart-postgres` — data persists in the named volume either way.)
+
+### 3. Set up environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-The defaults work out of the box for local development. Open `.env.example`
-for a description of every variable. Notably:
+Open `.env.example` for a description of every variable. Notably:
 
+- `DATABASE_URL` — point this at the Postgres from step 2, e.g.
+  `postgresql://postgres:devpassword@localhost:55432/seoulstopkmart` for
+  the Docker command above.
 - Leave the PayMongo keys blank to use the built-in **mock payment flow**.
 - `NEXTAUTH_SECRET` / `NEXTAUTH_URL` are required for admin login to work —
   a dev secret is pre-filled in `.env`; generate a fresh one for production
@@ -49,15 +68,18 @@ for a description of every variable. Notably:
   login** (Staff accounts page is not yet self-service for password
   changes; update it via `/admin/staff` → edit, or Prisma Studio, until
   a "change my password" screen is added).
+- `BLOB_READ_WRITE_TOKEN` — leave blank for local dev; product image
+  uploads automatically fall back to `public/uploads/` on disk when it's
+  unset (see "Product image storage" below).
 
-### 3. Set up the database
+### 4. Set up the database
 
 ```bash
-npm run db:migrate   # creates prisma/dev.db and applies the schema
+npm run db:migrate   # applies the schema to your Postgres database
 npm run db:seed      # adds demo products + the initial OWNER admin account
 ```
 
-### 4. Run the dev server
+### 5. Run the dev server
 
 ```bash
 npm run dev
@@ -75,6 +97,52 @@ npm run db:studio    # Prisma Studio, a GUI for browsing/editing the database
 npm run build         # production build
 npm run lint          # ESLint
 ```
+
+## Deploying to Vercel
+
+1. **Push this repo to GitHub** (already connected as `origin` if you're
+   working from the version this was set up in) and import it in the
+   [Vercel dashboard](https://vercel.com/new) — "Add New Project" → pick
+   the repo. Vercel auto-detects Next.js; no config needed there.
+2. **Add a Postgres database**: in the new project, go to **Storage → Create
+   Database → Postgres** (Vercel's own integration, backed by Neon) and
+   connect it. This automatically sets `DATABASE_URL` (and a few related
+   vars) as environment variables on the project — you don't need to copy
+   anything manually. Use a **separate** database from your local dev one.
+3. **Add Blob storage**: **Storage → Create Database → Blob**, connect it to
+   the project. This sets `BLOB_READ_WRITE_TOKEN` automatically, which
+   switches product image uploads from the local-disk fallback to real
+   cloud storage.
+4. **Set the remaining environment variables** under **Settings →
+   Environment Variables**:
+   - `NEXTAUTH_SECRET` — generate a fresh one: `openssl rand -base64 32`
+     (do **not** reuse the local dev one).
+   - `NEXTAUTH_URL` — your production URL, e.g. `https://seoulstopkmart.vercel.app`
+     (update this if/when you attach a custom domain).
+   - `NEXT_PUBLIC_APP_URL` — same value as `NEXTAUTH_URL`.
+   - `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` — only needed if you're
+     running the seed script against production (see step 6).
+   - PayMongo keys — optional; leave unset to launch in mock mode, add
+     real sandbox/live keys when ready (see "Testing payments" below).
+5. **Apply the database schema.** The `vercel-build` script
+   (`prisma migrate deploy && next build`) runs migrations automatically on
+   every deploy — Vercel uses it automatically if your project's **Build
+   Command** is left as the framework default, or set it explicitly under
+   **Settings → Build & Development Settings** if it isn't already picking
+   it up.
+6. **Seed initial data** (demo products + the first OWNER account) by
+   running the seed script once from your local machine, pointed at the
+   production database:
+   ```bash
+   vercel env pull .env.production.local   # pulls DATABASE_URL etc. from the Vercel project
+   DATABASE_URL="$(grep ^DATABASE_URL .env.production.local | cut -d= -f2- | tr -d '"')" npm run db:seed
+   ```
+   Change the seeded owner's password immediately after your first login.
+7. **Deploy.** Push to the branch Vercel is tracking (usually `main`), or
+   click **Deploy** in the dashboard. Future schema changes: create the
+   migration locally (`npm run db:migrate`), commit the generated
+   `prisma/migrations/...` folder, push — `vercel-build` applies it on
+   deploy automatically.
 
 ## Project structure
 
@@ -239,13 +307,15 @@ context.
 ## Product image storage
 
 Admin-uploaded product images are optimized with `sharp` (resized, converted
-to WebP) and saved to `public/uploads/products/` on the local filesystem —
-no cloud storage bucket is configured. This works for local development and
-single-instance hosting, but **will not persist across deploys/instances on
-serverless platforms like Vercel** (same caveat as the SQLite note below).
-Before deploying to serverless infrastructure, swap
-`app/api/admin/products/upload-image/route.ts` for an upload to S3,
-Cloudinary, or Vercel Blob, and update the returned `imageUrl` accordingly.
+to WebP), then uploaded to **Vercel Blob** if `BLOB_READ_WRITE_TOKEN` is set
+(`app/api/admin/products/upload-image/route.ts`). If it isn't — e.g. local
+dev before connecting a Vercel project — it falls back to writing
+`public/uploads/products/` on the local filesystem instead, the same
+configured-service-or-local-fallback pattern `lib/paymongo.ts` uses for
+payments. The local fallback only persists on a single long-running
+instance; it will **not** survive across deploys/instances on serverless
+platforms, which is exactly why Blob is the real path for anything deployed
+to Vercel — see "Deploying to Vercel" above.
 
 ## Seed data
 
@@ -323,19 +393,9 @@ gateway entirely (see above).
 - **Generate a fresh `NEXTAUTH_SECRET`** for production (`openssl rand -base64 32`)
   and set `NEXTAUTH_URL` to your real domain. Change the seeded owner
   password immediately.
-- **Switch from SQLite to a production database** (Postgres is the easiest
-  swap). SQLite is a single local file, which doesn't work well with
-  serverless/multi-instance hosting like Vercel (no shared, persistent
-  filesystem across invocations). To switch:
-  1. Change `provider = "sqlite"` to `provider = "postgresql"` in
-     `prisma/schema.prisma`.
-  2. Point `DATABASE_URL` at your Postgres instance.
-  3. Swap the driver adapter in `lib/prisma.ts` and `prisma.config.ts` from
-     `@prisma/adapter-better-sqlite3` to `@prisma/adapter-pg` (`npm install
-     @prisma/adapter-pg pg`), and update the adapter construction accordingly.
-  4. Re-run `npx prisma migrate dev`.
-- **Move product image uploads to real cloud storage** (S3/Cloudinary/Vercel
-  Blob) — see "Product image storage" above.
+- **Use a separate production Postgres database and Blob store** from your
+  local dev ones — see "Deploying to Vercel" above (both are already wired
+  up in the code; this is purely an account/config step, not a code change).
 - **Replace the placeholder contact/bank-transfer details** in
   `lib/store-config.ts` with real ones.
 - **Add proper error monitoring/logging** (e.g. Sentry) — the current code
@@ -356,12 +416,15 @@ gateway entirely (see above).
 ## Notes on the tech choices
 
 - **Prisma 7** changed how the client is generated and connected: the
-  connection string is no longer read from `schema.prisma` — instead the
-  app constructs an explicit driver adapter at runtime
-  (`@prisma/adapter-better-sqlite3` here). See `lib/prisma.ts`,
-  `prisma.config.ts`, and `lib/db-url.ts` for details and why `lib/db-url.ts`
-  exists (the Prisma CLI and the raw driver adapter resolve relative sqlite
-  paths differently, so it's resolved to an absolute path once and reused).
+  connection string is no longer read from `schema.prisma`'s `datasource`
+  block — instead the app constructs an explicit driver adapter at runtime
+  (`@prisma/adapter-pg` here, see `lib/prisma.ts`), and the Prisma CLI reads
+  the connection string from `prisma.config.ts` (which just forwards
+  `DATABASE_URL` from the environment).
 - **NextAuth v4** (not v5/Auth.js) was chosen for compatibility with Next.js
   14's App Router without extra beta dependencies. Sessions are JWT-based —
   no `Session`/`Account` database tables needed, just the `User` model.
+- **Postgres `contains` filters are case-sensitive by default** (unlike
+  SQLite's, which this project briefly used during early development) —
+  product and order search (`lib/products.ts`, `lib/orders.ts`) explicitly
+  pass `mode: "insensitive"` so search behaves the way customers expect.
