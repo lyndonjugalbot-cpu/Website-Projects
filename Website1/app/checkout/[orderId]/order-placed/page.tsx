@@ -28,7 +28,7 @@ export default async function OrderPlacedPage({ params }: { params: { orderId: s
       </div>
       <h1 className="mt-5 text-2xl font-semibold tracking-tight text-neutral-900">Order placed!</h1>
       <p className="mt-2 text-neutral-500">
-        Thanks, {order.customerName.split(" ")[0]}! We&apos;ve received your order and our team will confirm it
+        Thanks, {order.customerName?.split(" ")[0] ?? "there"}! We&apos;ve received your order and our team will confirm it
         shortly.
       </p>
 

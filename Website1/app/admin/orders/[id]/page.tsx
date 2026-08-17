@@ -22,25 +22,45 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
           Order <span className="font-mono text-lg text-neutral-500">{order.id}</span>
+          <span className="ml-2 align-middle text-xs font-medium uppercase tracking-wide text-neutral-400">
+            {order.channel === "POS" ? "In-store" : "Online"}
+          </span>
         </h1>
         <span className="text-sm text-neutral-500">Placed {dateFormatter.format(order.createdAt)}</span>
       </div>
 
+      {order.voidedAt && (
+        <p className="mt-3 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          Voided by {order.voidedByName ?? "unknown"} on {dateFormatter.format(order.voidedAt)}
+          {order.voidReason && <> — &ldquo;{order.voidReason}&rdquo;</>}
+        </p>
+      )}
+
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5">
-            <h2 className="font-medium text-neutral-900">Customer &amp; delivery</h2>
-            <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-              <Info label="Name" value={order.customerName} />
-              <Info label="Phone" value={order.phone} />
-              <Info label="Email" value={order.email} />
-              <Info
-                label="Address"
-                value={`${order.addressLine}, ${order.barangay}, ${order.city}, ${order.province}${order.postalCode ? " " + order.postalCode : ""}`}
-              />
-              {order.deliveryNotes && <Info label="Delivery notes" value={order.deliveryNotes} />}
-            </dl>
-          </section>
+          {order.channel === "POS" ? (
+            <section className="rounded-2xl border border-neutral-200 bg-white p-5">
+              <h2 className="font-medium text-neutral-900">In-store sale</h2>
+              <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                <Info label="Cashier" value={order.cashierName ?? "—"} />
+                {order.customerName && <Info label="Customer" value={order.customerName} />}
+              </dl>
+            </section>
+          ) : (
+            <section className="rounded-2xl border border-neutral-200 bg-white p-5">
+              <h2 className="font-medium text-neutral-900">Customer &amp; delivery</h2>
+              <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                <Info label="Name" value={order.customerName ?? "—"} />
+                <Info label="Phone" value={order.phone ?? "—"} />
+                <Info label="Email" value={order.email ?? "—"} />
+                <Info
+                  label="Address"
+                  value={`${order.addressLine}, ${order.barangay}, ${order.city}, ${order.province}${order.postalCode ? " " + order.postalCode : ""}`}
+                />
+                {order.deliveryNotes && <Info label="Delivery notes" value={order.deliveryNotes} />}
+              </dl>
+            </section>
+          )}
 
           <section className="rounded-2xl border border-neutral-200 bg-white p-5">
             <h2 className="font-medium text-neutral-900">Items</h2>
@@ -83,7 +103,13 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                 label="Method"
                 value={order.paymentMethod ? PAYMENT_METHOD_LABELS[order.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS] ?? order.paymentMethod : "—"}
               />
-              <Info label="Sandbox/demo payment" value={order.isMockPayment ? "Yes" : "No"} />
+              {order.channel === "ONLINE" && <Info label="Sandbox/demo payment" value={order.isMockPayment ? "Yes" : "No"} />}
+              {order.cashReceivedCentavos !== null && (
+                <Info label="Cash received" value={formatCentavosAsPHP(order.cashReceivedCentavos)} />
+              )}
+              {order.changeGivenCentavos !== null && (
+                <Info label="Change given" value={formatCentavosAsPHP(order.changeGivenCentavos)} />
+              )}
             </dl>
           </section>
         </div>

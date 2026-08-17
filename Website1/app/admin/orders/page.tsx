@@ -46,6 +46,7 @@ export default async function AdminOrdersPage({
             <thead className="border-b border-neutral-200 bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
               <tr>
                 <th className="px-4 py-3 font-medium">Order</th>
+                <th className="px-4 py-3 font-medium">Channel</th>
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Items</th>
                 <th className="px-4 py-3 font-medium">Total</th>
@@ -63,7 +64,12 @@ export default async function AdminOrdersPage({
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-neutral-900">{order.customerName}</div>
+                    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                      {order.channel === "POS" ? "In-store" : "Online"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-neutral-900">{order.customerName ?? (order.channel === "POS" ? "Walk-in" : "—")}</div>
                     <div className="text-xs text-neutral-500">{order.phone}</div>
                   </td>
                   <td className="px-4 py-3 text-neutral-600">

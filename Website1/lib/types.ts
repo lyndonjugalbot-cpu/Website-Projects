@@ -106,7 +106,7 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   REFUNDED: "Refunded",
 };
 
-export type PaymentMethodType = "gcash" | "paymaya" | "card" | "cod" | "bank_transfer";
+export type PaymentMethodType = "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash";
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
   gcash: "GCash",
@@ -114,4 +114,31 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
   card: "Card",
   cod: "Cash on Delivery",
   bank_transfer: "Bank Transfer",
+  cash: "Cash",
+};
+
+export type SalesChannel = "ONLINE" | "POS";
+
+export const SALES_CHANNEL_LABELS: Record<SalesChannel, string> = {
+  ONLINE: "Online",
+  POS: "In-store (POS)",
+};
+
+export type StockMovementType =
+  | "ONLINE_SALE"
+  | "POS_SALE"
+  | "RESTOCK"
+  | "MANUAL_ADJUSTMENT"
+  | "RETURN"
+  | "CANCELLATION"
+  | "REFUND";
+
+export const STOCK_MOVEMENT_TYPE_LABELS: Record<StockMovementType, string> = {
+  ONLINE_SALE: "Online sale",
+  POS_SALE: "POS sale",
+  RESTOCK: "Restock",
+  MANUAL_ADJUSTMENT: "Manual adjustment",
+  RETURN: "Return",
+  CANCELLATION: "Cancellation",
+  REFUND: "Refund",
 };

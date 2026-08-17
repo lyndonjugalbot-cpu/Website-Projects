@@ -3,8 +3,9 @@
 A Korean grocery storefront for Cebu, Philippines — product catalog, cart,
 checkout with Cebu delivery details, GCash/Maya/card payments via PayMongo
 (sandbox by default), cash-on-delivery and bank-transfer options, and a
-role-based admin dashboard for managing products, orders, and staff. Built
-with Next.js 14 (App Router), TypeScript, Tailwind CSS, and Prisma + SQLite.
+role-based admin dashboard for managing products, orders, staff, an in-store
+POS terminal, inventory ledger, and profit/loss reports. Built with Next.js 14
+(App Router), TypeScript, Tailwind CSS, and Prisma + SQLite.
 
 Facebook: https://www.facebook.com/seoulstopkmart
 
@@ -82,16 +83,22 @@ app/                     Routes (App Router)
   products/               Catalog listing (search/filter/sort) + product detail
   cart/                   Cart page
   checkout/                Checkout form → payment → return/success/failed/order-placed
-  admin/                   Role-gated dashboard: orders, products, staff accounts
+  admin/                   Role-gated dashboard: overview, POS, orders, products,
+                            inventory, reports, staff accounts
     login/                 Staff sign-in (public)
+    pos/                    In-store point-of-sale terminal + receipts
+    inventory/              Stock movement ledger + manual adjustments
+    reports/                Sales/profit reports + operating expenses
   api/
-    orders/                 Create/read orders
+    orders/                 Create/read orders (online checkout)
     payments/                Create/attach PayMongo payment intents, mock confirm
     webhooks/paymongo/       Real PayMongo webhook receiver
-    admin/                   Admin-only APIs (products, orders, users) — see below
+    admin/                   Admin-only APIs (products, orders, pos, inventory,
+                              reports, expenses, users) — see below
     auth/[...nextauth]/      NextAuth handler
 components/               Reusable UI (ProductCard, CartItemRow, etc.) + components/admin/
-lib/                      Data access (Prisma), cart context, auth, PayMongo client, money formatting
+lib/                      Data access (Prisma), cart context, auth, inventory ledger,
+                          POS sale logic, reports, PayMongo client, money/timezone formatting
 prisma/                   schema.prisma, migrations, seed script
 middleware.ts             Gatekeeper for every /admin page and /api/admin/* route
 ```
@@ -103,13 +110,94 @@ just hidden in the UI) via `lib/authz.ts` → `requireRole()`:
 
 | Role    | Can do |
 |---------|--------|
-| Staff   | View and process orders (status, payment status for COD/bank transfer, internal notes) |
-| Manager | Everything Staff can, plus manage products (add/edit/delete, images, pricing, stock, featured/best-seller flags) |
+| Staff   | Use the POS, view and process orders (status, payment status for COD/bank transfer, internal notes), void their own POS sales within 10 minutes |
+| Manager | Everything Staff can, plus manage products (add/edit/delete, images, pricing, stock, featured/best-seller flags, cost/supplier/barcode), view Inventory + Reports, void any POS sale, log expenses |
 | Owner   | Everything Manager can, plus create/manage staff accounts and roles |
 
 `middleware.ts` blocks every `/admin/**` page and `/api/admin/**` route for
 unauthenticated requests; each route additionally checks the caller's role
 before making changes.
+
+## Point of sale (POS)
+
+`/admin/pos` is a register screen for in-store sales, built on the exact
+same `Product`/`Order`/`OrderItem` tables as the online store (see
+"Shared inventory" below) — there's no separate "POS product" or "POS sale"
+data model.
+
+- **Search or scan**: the single search box doubles as a barcode scanner
+  input. Hardware/Bluetooth barcode scanners emit keystrokes + Enter just
+  like a keyboard, so typing (or scanning) an exact `Product.barcode` and
+  hitting Enter adds it directly; typing a name filters the product grid.
+  Set barcodes per-product in the product edit form.
+- **Discounts**: Staff can self-approve a discount up to
+  `STAFF_MAX_DISCOUNT_PERCENT` (10% by default, in `lib/store-config.ts`) of
+  the sale subtotal; Manager/Owner have no cap. Enforced server-side in
+  `app/api/admin/pos/route.ts`, not just disabled in the UI.
+- **Payment**: Cash (with a live change calculation), GCash, Maya, or Bank
+  Transfer. Unlike online payments, a POS payment is marked `PAID`
+  immediately once the cashier confirms it — the cashier is physically
+  present for the exchange, which *is* the verification, unlike an online
+  payment status that can only ever come from a real gateway.
+- **Receipts**: `/admin/pos/[orderId]/receipt` is a print-friendly page
+  (browser print, no PDF library) showing the same figures as the sale.
+- **Voiding a sale**: the original cashier can void their own sale within 10
+  minutes (to fix a ring-up mistake); Manager/Owner can void any POS sale
+  at any time. Voiding requires a reason, restores the stock it deducted
+  (as a `CANCELLATION` movement in the ledger), and marks the order
+  `CANCELLED` / `REFUNDED`.
+
+## Shared inventory & the stock ledger
+
+`Product.stock` is the single number both the storefront and the POS read
+and write — there's no separate POS inventory. Every place stock changes
+(online sale, POS sale, restock, manual adjustment, void/cancellation) goes
+through one function, `lib/inventory.ts` → `recordStockMovement()`, which:
+
+1. Performs the stock change as **one conditional SQL update**
+   (`UPDATE Product SET stock = stock - qty WHERE stock >= qty`) instead of
+   "read stock, check in JS, then write" — the pattern that causes
+   overselling races. If two nearly-simultaneous sales (POS + online, or
+   two POS registers) both try to sell the last unit, only one can win;
+   the other is cleanly rejected as out of stock.
+2. Writes a `StockMovement` row in the same transaction — product, previous
+   quantity, signed change, new quantity, movement type, the order it's
+   tied to (if any), who did it, and an optional note. `Product.stock` is a
+   fast-read cache of the current total; `StockMovement` is the audit trail.
+   View/filter it at `/admin/inventory`, which also has the manual
+   adjustment form (a reason is required).
+3. Per-product `allowOversell` (default off) lets you explicitly allow a
+   product to go negative — everything else is blocked at 0.
+
+**One edge case worth knowing about**: online orders only reserve stock at
+*payment-confirmation* time, not at checkout time. In the rare case where
+two customers both complete PayMongo payment for the last unit at nearly
+the same moment, the loser's payment has already been captured by PayMongo
+before the stock check discovers the conflict. Since auto-refunding via
+PayMongo isn't wired up, that order is cancelled with an automatic
+`internalNotes` flag ("⚠️ STOCK CONFLICT... needs manual refund review")
+instead of silently overselling — see `lib/orders.ts` → `markOrderPaid`.
+
+## Cost tracking & reports
+
+- `Product.costCentavos` (optional) is the purchase cost / COGS. Every
+  `OrderItem` snapshots both `unitPriceCentavos` and `unitCostCentavos` at
+  the moment of sale — editing a product's price or cost later never
+  changes historical reports.
+- `/admin/reports` (Manager/Owner) filters by date range (required),
+  channel, category, payment method, and order status — all interpreted in
+  **Asia/Manila** time (`lib/timezone.ts`; the Philippines has no DST, so
+  this is a fixed UTC+8 offset, not a timezone library). It shows
+  transactions, units sold, gross/net sales, discounts, refunds, delivery
+  income, COGS, gross profit & margin, operating expenses (logged on the
+  same page), and net profit/loss — every figure's formula is printed
+  under it in the UI. Also: sales by product/category/payment method,
+  POS-vs-online split, low-stock products, and inventory valuation.
+- **Payment processing fees are not tracked** — PayMongo's API does expose
+  a `fee` field on the underlying Payment resource, but this integration
+  only stores Payment Intent IDs, not individual Payment fetches. Shown as
+  ₱0 in reports with this called out explicitly rather than silently
+  omitted; wire up a Payment fetch in `lib/paymongo.ts` to fill this in.
 
 ## How the cart works
 
@@ -258,6 +346,12 @@ gateway entirely (see above).
   several high-severity advisories fixed in later major versions; staying on
   14 was a deliberate choice to avoid a breaking framework upgrade alongside
   this rebrand, but it should be revisited before a public launch.
+- **Enter real cost data** for every product (`Product.costCentavos`) —
+  Reports treats missing cost as ₱0, which understates COGS and overstates
+  profit for any product without it. The Reports page surfaces how many
+  items/products are affected so this is never silent.
+- **Wire up PayMongo processing-fee retrieval** if you want it in Reports —
+  see "Cost tracking & reports" above.
 
 ## Notes on the tech choices
 

@@ -43,6 +43,11 @@ export async function POST(request: NextRequest) {
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
+  if (order.channel !== "ONLINE" || !order.customerName || !order.email || !order.phone) {
+    // POS sales are completed directly by lib/pos.ts and never reach this
+    // gateway-payment route; this is just a defensive guard.
+    return NextResponse.json({ error: "This order can't be paid through the online gateway" }, { status: 400 });
+  }
   if (order.paymentStatus === "PAID") {
     return NextResponse.json({ status: "succeeded", redirectUrl: null, isMock: order.isMockPayment });
   }

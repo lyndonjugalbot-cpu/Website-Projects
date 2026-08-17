@@ -23,8 +23,13 @@ const productUpdateSchema = z.object({
   description: z.string().trim().min(1).max(2000),
   priceCentavos: z.number().int().min(1),
   salePriceCentavos: z.number().int().min(1).nullable().optional(),
+  costCentavos: z.number().int().min(0).nullable().optional(),
+  supplier: z.string().trim().max(200).nullable().optional(),
+  barcode: z.string().trim().max(100).nullable().optional(),
   imageUrl: z.string().trim().min(1),
   stock: z.number().int().min(0),
+  lowStockThreshold: z.number().int().min(0).optional(),
+  allowOversell: z.boolean().optional(),
   category: z.enum(ALL_CATEGORIES as [ProductCategory, ...ProductCategory[]]),
   status: z.enum(["ACTIVE", "INACTIVE", "OUT_OF_STOCK"]),
   isFeatured: z.boolean().optional(),
@@ -52,12 +57,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const existing = await prisma.product.findUnique({ where: { id: params.id } });
   if (!existing) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
-  const product = await prisma.product.update({
-    where: { id: params.id },
-    data: { ...data, salePriceCentavos: data.salePriceCentavos ?? null },
-  });
+  // Manual stock edits here would bypass the ledger — stock changes on
+  // existing products go through /admin/inventory (recordStockMovement)
+  // instead, so every change is traceable. This endpoint updates catalog
+  // fields only.
+  const { stock: _ignoredStock, ...catalogData } = data;
+  void _ignoredStock;
 
-  return NextResponse.json({ product });
+  try {
+    const product = await prisma.product.update({
+      where: { id: params.id },
+      data: {
+        ...catalogData,
+        salePriceCentavos: data.salePriceCentavos ?? null,
+        costCentavos: data.costCentavos ?? null,
+        supplier: data.supplier || null,
+        barcode: data.barcode || null,
+      },
+    });
+    return NextResponse.json({ product });
+  } catch (err) {
+    if (err instanceof Error && "code" in err && err.code === "P2002") {
+      return NextResponse.json({ error: "Another product already uses this barcode" }, { status: 400 });
+    }
+    throw err;
+  }
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {

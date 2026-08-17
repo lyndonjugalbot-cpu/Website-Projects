@@ -24,7 +24,7 @@ export default async function CheckoutSuccessPage({
       </div>
       <h1 className="mt-5 text-2xl font-semibold tracking-tight text-neutral-900">Payment successful</h1>
       <p className="mt-2 text-neutral-500">
-        Thanks, {order.customerName.split(" ")[0]}! Your order has been placed.
+        Thanks, {order.customerName?.split(" ")[0] ?? "there"}! Your order has been placed.
       </p>
 
       <div className="mt-8 rounded-2xl border border-neutral-200 p-6 text-left">

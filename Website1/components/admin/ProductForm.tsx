@@ -11,8 +11,13 @@ export type ProductFormValues = {
   description: string;
   priceCentavos: number;
   salePriceCentavos: number | null;
+  costCentavos: number | null;
+  supplier: string;
+  barcode: string;
   imageUrl: string;
   stock: number;
+  lowStockThreshold: number;
+  allowOversell: boolean;
   category: ProductCategory;
   status: ProductStatus;
   isFeatured: boolean;
@@ -24,8 +29,13 @@ const EMPTY: ProductFormValues = {
   description: "",
   priceCentavos: 0,
   salePriceCentavos: null,
+  costCentavos: null,
+  supplier: "",
+  barcode: "",
   imageUrl: "",
   stock: 0,
+  lowStockThreshold: 5,
+  allowOversell: false,
   category: "OTHER",
   status: "ACTIVE",
   isFeatured: false,
@@ -46,6 +56,7 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
   const [values, setValues] = useState<ProductFormValues>(initial ?? EMPTY);
   const [priceInput, setPriceInput] = useState(centavosToPesos(values.priceCentavos));
   const [saleInput, setSaleInput] = useState(values.salePriceCentavos ? centavosToPesos(values.salePriceCentavos) : "");
+  const [costInput, setCostInput] = useState(values.costCentavos ? centavosToPesos(values.costCentavos) : "");
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +86,7 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
 
     const priceCentavos = pesosToCentavos(priceInput);
     const salePriceCentavos = saleInput.trim() ? pesosToCentavos(saleInput) : null;
+    const costCentavos = costInput.trim() ? pesosToCentavos(costInput) : null;
 
     if (!values.imageUrl) {
       setError("Upload a product image first");
@@ -87,7 +99,14 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
 
     setIsSaving(true);
     try {
-      const payload = { ...values, priceCentavos, salePriceCentavos };
+      const payload = {
+        ...values,
+        priceCentavos,
+        salePriceCentavos,
+        costCentavos,
+        supplier: values.supplier || null,
+        barcode: values.barcode || null,
+      };
       const res = await fetch(isEdit ? `/api/admin/products/${values.id}` : "/api/admin/products", {
         method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,16 +170,47 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Stock quantity" required>
+        <Field label="Cost / COGS (₱, optional)">
           <input
             type="number"
+            step="0.01"
             min="0"
-            required
-            value={values.stock}
-            onChange={(e) => setValues({ ...values, stock: Number.parseInt(e.target.value, 10) || 0 })}
+            value={costInput}
+            onChange={(e) => setCostInput(e.target.value)}
+            className="input"
+            placeholder="Used for profit reports"
+          />
+        </Field>
+        <Field label="Supplier (optional)">
+          <input
+            type="text"
+            value={values.supplier}
+            onChange={(e) => setValues({ ...values, supplier: e.target.value })}
             className="input"
           />
         </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {isEdit ? (
+          <Field label="Stock quantity">
+            <div className="input flex items-center justify-between bg-neutral-50 text-neutral-500">
+              <span>{values.stock}</span>
+              <a href="/admin/inventory" className="text-xs font-medium text-brand-red hover:underline">Adjust in Inventory</a>
+            </div>
+          </Field>
+        ) : (
+          <Field label="Initial stock quantity" required>
+            <input
+              type="number"
+              min="0"
+              required
+              value={values.stock}
+              onChange={(e) => setValues({ ...values, stock: Number.parseInt(e.target.value, 10) || 0 })}
+              className="input"
+            />
+          </Field>
+        )}
         <Field label="Category" required>
           <select
             value={values.category}
@@ -171,6 +221,28 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
               <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
             ))}
           </select>
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Barcode (optional)">
+          <input
+            type="text"
+            value={values.barcode}
+            onChange={(e) => setValues({ ...values, barcode: e.target.value })}
+            placeholder="Scan or type — used by the POS"
+            className="input"
+          />
+        </Field>
+        <Field label="Low stock threshold" required>
+          <input
+            type="number"
+            min="0"
+            required
+            value={values.lowStockThreshold}
+            onChange={(e) => setValues({ ...values, lowStockThreshold: Number.parseInt(e.target.value, 10) || 0 })}
+            className="input"
+          />
         </Field>
       </div>
 
@@ -204,6 +276,15 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
             className="h-4 w-4 rounded border-neutral-300 text-brand-red focus:ring-brand-red"
           />
           Best seller
+        </label>
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
+          <input
+            type="checkbox"
+            checked={values.allowOversell}
+            onChange={(e) => setValues({ ...values, allowOversell: e.target.checked })}
+            className="h-4 w-4 rounded border-neutral-300 text-brand-red focus:ring-brand-red"
+          />
+          Allow overselling (stock can go negative)
         </label>
       </div>
 

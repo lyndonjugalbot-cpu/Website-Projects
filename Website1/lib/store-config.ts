@@ -31,3 +31,15 @@ export const BANK_TRANSFER_DETAILS = {
   accountName: "Seoul Stop Kmart",
   accountNumber: "[Account number — to be provided]",
 };
+
+// Business timezone used throughout Reports (date-range filters, "today"
+// boundaries) — the Philippines has one fixed offset year-round (no DST),
+// so this is safe to hardcode rather than pulling in a timezone library.
+export const BUSINESS_TIMEZONE = "Asia/Manila";
+export const BUSINESS_UTC_OFFSET_HOURS = 8;
+
+// Staff (not Manager/Owner) can apply a POS discount up to this percentage
+// of the sale subtotal without needing anyone else's approval; anything
+// above requires a Manager or Owner to ring up the sale themselves. Every
+// discount is still recorded with who applied it either way.
+export const STAFF_MAX_DISCOUNT_PERCENT = 10;

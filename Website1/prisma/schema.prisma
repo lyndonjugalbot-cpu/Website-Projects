@@ -62,8 +62,22 @@ model Product {
   // point rounding errors. Divide by 100 to display pesos.
   priceCentavos     Int
   salePriceCentavos Int?
+  // Purchase cost / cost of goods sold, in centavos. Never exposed via any
+  // public/storefront API — admin- and reports-only. Optional since not
+  // every seed/demo product will have real cost data entered yet.
+  costCentavos      Int?
+  supplier          String?
+  // Unique barcode/SKU for POS lookup (hardware scanners emit this as
+  // keystrokes). Optional — not every product needs one.
+  barcode           String?         @unique
   imageUrl          String
   stock             Int             @default(0)
+  // Below this quantity, the product surfaces in the admin "low stock" view.
+  lowStockThreshold Int             @default(5)
+  // When false (default), stock can never go negative — POS/online sales
+  // are rejected once stock hits 0. An admin can flip this per-product to
+  // explicitly allow overselling (e.g. made-to-order items).
+  allowOversell     Boolean         @default(false)
   category          ProductCategory @default(OTHER)
   status            ProductStatus   @default(ACTIVE)
   isFeatured        Boolean         @default(false)
@@ -71,7 +85,8 @@ model Product {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  orderItems  OrderItem[]
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
 }
 
 // Fulfillment pipeline — tracked separately from PaymentStatus below, since
@@ -99,18 +114,29 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum SalesChannel {
+  ONLINE // storefront checkout
+  POS    // in-store, rung up by staff
+}
+
 model Order {
-  id           String @id @default(cuid())
-  customerName String
-  email        String
-  phone        String
+  id    String       @id @default(cuid())
+  channel SalesChannel @default(ONLINE)
+
+  // Required for ONLINE (delivery) orders; null for walk-in POS sales.
+  // Validated at the application layer per-channel — see lib/orders.ts /
+  // lib/pos.ts — since Prisma can't express "required unless POS".
+  customerName String?
+  email        String?
+  phone        String?
 
   // Cebu delivery address, broken out for legibility on the admin side and
   // for riders/dispatch — see README for why this isn't just one field.
-  addressLine  String
-  barangay     String
-  city         String @default("Cebu City")
-  province     String @default("Cebu")
+  // Null for POS sales (no delivery).
+  addressLine  String?
+  barangay     String?
+  city         String?
+  province     String?
   postalCode   String?
   deliveryNotes String?
 
@@ -122,17 +148,27 @@ model Order {
   orderStatus   OrderStatus   @default(PENDING)
   paymentStatus PaymentStatus @default(PENDING)
 
-  // PayMongo (or mock) payment intent tracking — null for COD/bank transfer.
+  // PayMongo (or mock) payment intent tracking — null for COD/bank transfer/POS.
   paymentIntentId String? @unique
-  // "gcash" | "paymaya" | "card" | "cod" | "bank_transfer"
+  // "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash"
   paymentMethod   String?
   isMockPayment   Boolean @default(false)
+
+  // POS-only fields — null for ONLINE orders.
+  cashierId            String?
+  cashierName          String? // snapshot, survives the User being edited/deactivated
+  cashReceivedCentavos Int?
+  changeGivenCentavos  Int?
+  voidedAt             DateTime?
+  voidedByName         String?
+  voidReason           String?
 
   // Lightweight internal note + attribution, editable by staff/manager/owner.
   internalNotes      String?
   lastUpdatedByName  String?
 
-  items OrderItem[]
+  items          OrderItem[]
+  stockMovements StockMovement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -145,10 +181,56 @@ model OrderItem {
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productId String?
 
-  // Snapshot fields so order history stays accurate even if the product
-  // is later edited, repriced, or deleted.
+  // Snapshot fields so order history — and profit reports — stay accurate
+  // even if the product is later repriced, recosted, or deleted.
   productName       String
   unitPriceCentavos Int
+  // Cost snapshot at time of sale. Null if the product had no cost entered
+  // yet — reports treat null cost as "unknown", not zero, so margin figures
+  // aren't silently inflated.
+  unitCostCentavos  Int?
   quantity          Int
   subtotalCentavos  Int
+}
+
+enum StockMovementType {
+  ONLINE_SALE
+  POS_SALE
+  RESTOCK
+  MANUAL_ADJUSTMENT
+  RETURN
+  CANCELLATION
+  REFUND
+}
+
+// Append-only audit trail — every stock change writes exactly one row here.
+// Product.stock is a derived cache of "sum of all movements"; this table is
+// the source of truth for "what happened and why."
+model StockMovement {
+  id             String            @id @default(cuid())
+  product        Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String
+  previousStock  Int
+  quantityChange Int // signed: negative for sales/deductions, positive for restocks/returns
+  newStock       Int
+  type           StockMovementType
+  order          Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderId        String?
+  userName       String? // snapshot of who made the change; null for system/webhook-triggered
+  note           String?
+  createdAt      DateTime          @default(now())
+
+  @@index([productId])
+  @@index([orderId])
+}
+
+// Admin-entered operating expenses, used for net profit/loss in Reports.
+model Expense {
+  id              String   @id @default(cuid())
+  date            DateTime
+  category        String
+  amountCentavos  Int
+  note            String?
+  createdByName   String?
+  createdAt       DateTime @default(now())
 }

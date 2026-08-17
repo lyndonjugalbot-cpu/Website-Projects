@@ -17,9 +17,16 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 function navLinksFor(role: UserRole) {
-  const links = [{ href: "/admin/orders", label: "Orders" }];
+  const links = [
+    { href: "/admin/pos", label: "POS" },
+    { href: "/admin/orders", label: "Orders" },
+  ];
   if (role === "OWNER" || role === "MANAGER") {
-    links.push({ href: "/admin/products", label: "Products" });
+    links.push(
+      { href: "/admin/products", label: "Products" },
+      { href: "/admin/inventory", label: "Inventory" },
+      { href: "/admin/reports", label: "Reports" }
+    );
   }
   if (role === "OWNER") {
     links.push({ href: "/admin/staff", label: "Staff accounts" });

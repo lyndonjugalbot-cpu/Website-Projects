@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { effectivePrice } from "@/lib/types";
 import { DELIVERY_FEE_CENTAVOS } from "@/lib/store-config";
+import { InsufficientStockError, recordStockMovement } from "@/lib/inventory";
 
 export { DELIVERY_FEE_CENTAVOS };
 
@@ -62,6 +63,7 @@ export async function createOrderFromCart(input: CheckoutInput) {
       productId: product.id,
       productName: product.name,
       unitPriceCentavos: unitPrice,
+      unitCostCentavos: product.costCentavos,
       quantity: item.quantity,
       subtotalCentavos: lineSubtotal,
     };
@@ -146,18 +148,44 @@ export async function attachPaymentIntentToOrder(
  * a still-PENDING order to CONFIRMED. Idempotent — safe to call more than
  * once for the same order (e.g. webhook retries, or both the webhook and
  * the return-page fallback poll firing for the same event).
+ *
+ * Online orders only reserve stock at *this* point (payment confirmation),
+ * not at order creation — so it's possible, in a genuine race between two
+ * customers checking out the last unit, for PayMongo to have already
+ * captured payment before we discover here that the item sold out (e.g.
+ * via the POS) in the meantime. We can't safely auto-refund via PayMongo
+ * from here, so that case is surfaced rather than silently dropped: the
+ * order is cancelled with an internal note flagging it for manual refund
+ * review, and stock is never allowed to go negative.
  */
 export async function markOrderPaid(orderId: string) {
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({ where: { id: orderId }, include: { items: true } });
     if (!order || order.paymentStatus === "PAID") return;
 
-    for (const item of order.items) {
-      if (!item.productId) continue;
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } },
-      });
+    try {
+      for (const item of order.items) {
+        if (!item.productId) continue;
+        await recordStockMovement(tx, {
+          productId: item.productId,
+          quantityChange: -item.quantity,
+          type: "ONLINE_SALE",
+          orderId: order.id,
+        });
+      }
+    } catch (err) {
+      if (err instanceof InsufficientStockError) {
+        await tx.order.update({
+          where: { id: orderId },
+          data: {
+            paymentStatus: "PAID",
+            orderStatus: "CANCELLED",
+            internalNotes: `⚠️ STOCK CONFLICT: payment was captured but "${err.productName}" sold out before fulfillment (${err.available} left, ${err.requested} needed). Needs manual refund review.`,
+          },
+        });
+        return;
+      }
+      throw err;
     }
 
     await tx.order.update({
