@@ -1,3 +1,6 @@
+// Voids a completed POS sale (the "Void sale" button on the receipt page).
+// Permission logic (who can void what, when) lives in lib/pos.ts —
+// voidPosSale() — this route is just the HTTP wrapper around it.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole, UnauthorizedError } from "@/lib/authz";

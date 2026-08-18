@@ -1,3 +1,5 @@
+// View, edit, and delete a single product — backs the admin product edit
+// page and the delete button on the product list.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";

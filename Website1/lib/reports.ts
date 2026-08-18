@@ -95,6 +95,8 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
   const byProduct = new Map<string, ProductSalesLine>();
   const byCategory = new Map<string, CategorySalesLine>();
 
+  // Walk every line item of every sold order once, accumulating totals and
+  // the per-product / per-category breakdown tables at the same time.
   for (const order of soldOrders) {
     for (const item of order.items) {
       grossSalesCentavos += item.subtotalCentavos;
@@ -142,6 +144,8 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
   const deliveryIncomeCentavos = soldOrders.reduce((sum, o) => sum + o.deliveryFeeCentavos, 0);
   const refundsCentavos = refundedOrders.reduce((sum, o) => sum + o.totalCentavos, 0);
 
+  // The core formulas — also shown to the admin directly in the Reports UI
+  // (components/admin/ReportsView.tsx) so nothing here is a "hidden" number.
   const netSalesCentavos = grossSalesCentavos - discountsCentavos + deliveryIncomeCentavos - refundsCentavos;
   const grossProfitCentavos = netSalesCentavos - cogsCentavos;
   const grossProfitMarginPercent = netSalesCentavos > 0 ? (grossProfitCentavos / netSalesCentavos) * 100 : 0;

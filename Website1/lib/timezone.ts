@@ -1,3 +1,5 @@
+// Date/time helpers for the admin Reports page, which always works in
+// Asia/Manila local time regardless of where the server or browser is.
 import { BUSINESS_UTC_OFFSET_HOURS } from "@/lib/store-config";
 
 /**
@@ -29,6 +31,7 @@ const manilaDateTimeFormatter = new Intl.DateTimeFormat("en-PH", {
   timeStyle: "short",
 });
 
+/** Formats a Date as a human-readable Manila-local date + time, e.g. for order/receipt timestamps. */
 export function formatManilaDateTime(date: Date): string {
   return manilaDateTimeFormatter.format(date);
 }

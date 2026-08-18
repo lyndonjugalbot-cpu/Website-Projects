@@ -1,8 +1,12 @@
+// Operating expenses (rent, utilities, etc.) logged by a manager/owner on
+// the Reports page — these feed into the "Net profit/loss" figure in
+// lib/reports.ts.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireRole, UnauthorizedError } from "@/lib/authz";
 
+// Lists expenses, optionally within a date range.
 export async function GET(request: NextRequest) {
   try {
     await requireRole("MANAGER");
@@ -33,6 +37,7 @@ const expenseSchema = z.object({
   note: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
+// Logs a new expense.
 export async function POST(request: NextRequest) {
   let session;
   try {

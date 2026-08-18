@@ -1,3 +1,6 @@
+// Order list for the admin Orders page — any signed-in staff/manager/owner
+// can view (this is a read; write actions on a specific order are gated
+// per-role in app/api/admin/orders/[id]/route.ts).
 import { NextRequest, NextResponse } from "next/server";
 import { listOrders } from "@/lib/orders";
 import { requireRole, UnauthorizedError } from "@/lib/authz";

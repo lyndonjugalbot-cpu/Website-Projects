@@ -28,6 +28,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     }
   }
 
+  // Re-fetch since markOrderPaid/markOrderPaymentFailed above may have just
+  // changed the status — this response should reflect that, not the stale
+  // copy read before the poll.
   const fresh = await getOrderById(params.id);
   return NextResponse.json({
     id: fresh!.id,

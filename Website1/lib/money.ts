@@ -1,3 +1,5 @@
+// Shared PHP currency formatter — used everywhere a price needs to be shown
+// to a user (storefront, cart, checkout, receipts, admin dashboard).
 const pesoFormatter = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",

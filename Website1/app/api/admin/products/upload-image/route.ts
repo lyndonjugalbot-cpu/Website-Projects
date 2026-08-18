@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
   const filename = `${randomUUID()}.webp`;
 
   try {
+    // Downscale (never upscale) to a reasonable max size and convert to
+    // WebP, regardless of the uploaded format — keeps storage and page
+    // weight down without needing the admin to pre-resize photos themselves.
     const optimized = await sharp(buffer)
       .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
       .webp({ quality: 82 })

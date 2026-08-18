@@ -16,14 +16,18 @@ import type { PaymentMethodType } from "@/lib/types";
 
 const API_BASE = "https://api.paymongo.com/v1";
 
+/** True if real PayMongo API keys are set — otherwise the app uses the mock payment flow everywhere. */
 export function isPaymongoConfigured(): boolean {
   return Boolean(process.env.PAYMONGO_SECRET_KEY && process.env.NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY);
 }
 
+// PayMongo uses HTTP Basic auth with the API key as the username and an
+// empty password.
 function authHeader(key: string): string {
   return "Basic " + Buffer.from(`${key}:`).toString("base64");
 }
 
+// Shared fetch wrapper for every PayMongo API call below — handles auth headers and turns error responses into thrown Errors.
 async function paymongoFetch<T>(
   path: string,
   key: string,

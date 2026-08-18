@@ -1,3 +1,4 @@
+// Completes an in-store sale from the POS terminal (components/admin/pos/POSTerminal.tsx).
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, UnauthorizedError } from "@/lib/authz";
 import { createPosSale, posSaleInputSchema, PosSaleError } from "@/lib/pos";

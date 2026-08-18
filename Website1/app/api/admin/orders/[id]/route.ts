@@ -1,3 +1,5 @@
+// Single-order detail + update, backing the admin order detail page
+// (app/admin/orders/[id]/page.tsx and components/admin/OrderStatusEditor.tsx).
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";

@@ -1,5 +1,8 @@
+// Generates the URL-friendly slugs used in product URLs (/products/[slug]),
+// created automatically from the product name when an admin adds a product.
 import { prisma } from "@/lib/prisma";
 
+// Converts a name like "Choco Pie (12-Pack)!" into "choco-pie-12-pack".
 export function slugify(input: string): string {
   return input
     .toLowerCase()

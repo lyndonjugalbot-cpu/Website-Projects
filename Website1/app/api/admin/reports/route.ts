@@ -1,3 +1,6 @@
+// Runs the sales/profit report for the admin Reports page — all the actual
+// calculation happens in lib/reports.ts; this just parses the filter
+// query params and enforces the Manager/Owner-only permission.
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, UnauthorizedError } from "@/lib/authz";
 import { generateReport } from "@/lib/reports";

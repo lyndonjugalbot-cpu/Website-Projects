@@ -1,3 +1,5 @@
+// Product list (GET) and create (POST) for the admin Products page. Editing
+// and deleting a specific product live in app/api/admin/products/[id]/route.ts.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +9,8 @@ import { ALL_CATEGORIES } from "@/lib/types";
 import type { ProductCategory } from "@/lib/types";
 import { recordStockMovement } from "@/lib/inventory";
 
+// Full product list, including INACTIVE ones — the public storefront query
+// in lib/products.ts is separate and always hides those.
 export async function GET() {
   try {
     await requireRole("STAFF");
@@ -19,6 +23,7 @@ export async function GET() {
   return NextResponse.json({ products });
 }
 
+// Validates the "add product" form (components/admin/ProductForm.tsx).
 const productSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200),
   description: z.string().trim().min(1, "Description is required").max(2000),
@@ -58,6 +63,9 @@ export async function POST(request: NextRequest) {
 
   const slug = await uniqueProductSlug(data.name);
 
+  // Product creation + its initial stock ledger entry happen in one
+  // transaction, so a crash partway through can't leave a product with
+  // stock but no matching StockMovement row.
   try {
     const product = await prisma.$transaction(async (tx) => {
       const created = await tx.product.create({
@@ -84,6 +92,8 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ product }, { status: 201 });
   } catch (err) {
+    // P2002 = Prisma's unique-constraint-violation code — here that means
+    // the barcode is already used by another product.
     if (err instanceof Error && "code" in err && err.code === "P2002") {
       return NextResponse.json({ error: "Another product already uses this barcode" }, { status: 400 });
     }

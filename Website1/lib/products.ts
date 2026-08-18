@@ -1,6 +1,12 @@
+// Read-only product queries used by the public storefront (home page,
+// /products listing, product detail page). Deliberately never selects
+// cost/supplier/barcode — those are admin-only and should never reach a
+// public API response. Admin CRUD lives separately in
+// app/api/admin/products/*.
 import { prisma } from "@/lib/prisma";
 import type { ProductCategory, ProductStatus, ProductView } from "@/lib/types";
 
+// Trimmed-down shape of a Prisma Product row, enough to build a ProductView.
 type PrismaProductRow = {
   id: string;
   slug: string;
@@ -16,6 +22,7 @@ type PrismaProductRow = {
   isBestSeller: boolean;
 };
 
+// Converts a raw Prisma row into the plain ProductView type components use.
 function toProductView(p: PrismaProductRow): ProductView {
   return {
     id: p.id,
@@ -68,6 +75,7 @@ export async function getAllProducts(filters: ProductFilters = {}): Promise<Prod
   return products.map(toProductView);
 }
 
+/** Products flagged "Featured" by an admin — shown in their own section on the home page. */
 export async function getFeaturedProducts(limit = 4): Promise<ProductView[]> {
   const products = await prisma.product.findMany({
     where: { status: "ACTIVE", isFeatured: true },
@@ -77,6 +85,7 @@ export async function getFeaturedProducts(limit = 4): Promise<ProductView[]> {
   return products.map(toProductView);
 }
 
+/** Products flagged "Best seller" by an admin — shown in their own section on the home page. */
 export async function getBestSellerProducts(limit = 4): Promise<ProductView[]> {
   const products = await prisma.product.findMany({
     where: { status: "ACTIVE", isBestSeller: true },
@@ -86,6 +95,7 @@ export async function getBestSellerProducts(limit = 4): Promise<ProductView[]> {
   return products.map(toProductView);
 }
 
+/** Looks up one product for the /products/[slug] detail page. Hides INACTIVE products (404s them). */
 export async function getProductBySlug(slug: string): Promise<ProductView | null> {
   const product = await prisma.product.findUnique({ where: { slug } });
   if (!product || product.status === "INACTIVE") return null;

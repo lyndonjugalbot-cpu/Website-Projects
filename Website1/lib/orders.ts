@@ -1,3 +1,7 @@
+// Order creation and lifecycle for ONLINE (storefront checkout) orders.
+// POS (in-store) sales use the same Order/OrderItem tables but go through
+// lib/pos.ts instead, since a POS sale is rung up and paid in one step
+// rather than created-then-paid-later like an online order.
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { effectivePrice } from "@/lib/types";
@@ -6,6 +10,9 @@ import { InsufficientStockError, recordStockMovement } from "@/lib/inventory";
 
 export { DELIVERY_FEE_CENTAVOS };
 
+// Validates the checkout form (app/checkout/page.tsx) server-side — the
+// client-side form has the same rules, but this is the one that's actually
+// enforced (see app/api/orders/route.ts).
 export const checkoutInputSchema = z.object({
   customer: z.object({
     name: z.string().trim().min(1, "Full name is required").max(200),
@@ -98,10 +105,12 @@ export async function createOrderFromCart(input: CheckoutInput) {
   return order;
 }
 
+/** Fetches one order with its line items — used by order-detail pages/APIs and the checkout status poller. */
 export async function getOrderById(id: string) {
   return prisma.order.findUnique({ where: { id }, include: { items: true } });
 }
 
+/** Looks up the order tied to a given PayMongo Payment Intent — used by the webhook handler to know which order to update. */
 export async function getOrderByPaymentIntentId(paymentIntentId: string) {
   return prisma.order.findUnique({ where: { paymentIntentId }, include: { items: true } });
 }
@@ -112,6 +121,7 @@ export type ListOrdersFilters = {
   paymentStatus?: string;
 };
 
+/** Order list for the admin Orders page, with optional search/status filters. */
 export async function listOrders(filters: ListOrdersFilters = {}) {
   return prisma.order.findMany({
     where: {
@@ -133,6 +143,7 @@ export async function listOrders(filters: ListOrdersFilters = {}) {
   });
 }
 
+/** Records the PayMongo Payment Intent an order is now attempting payment through, and marks it PROCESSING. */
 export async function attachPaymentIntentToOrder(
   orderId: string,
   data: { paymentIntentId: string; paymentMethod: string; isMockPayment: boolean }

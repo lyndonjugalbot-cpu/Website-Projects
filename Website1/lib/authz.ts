@@ -1,7 +1,11 @@
+// Called at the top of every /api/admin/* route handler to enforce
+// role-based permissions server-side — see README "Roles & admin access".
 import { getServerSession, type Session } from "next-auth";
 import { authOptions, roleAtLeast } from "@/lib/auth";
 import type { UserRole } from "@/generated/prisma/enums";
 
+// Thrown by requireRole() below; API routes catch this and turn it into
+// the right HTTP status code (401 = not signed in, 403 = wrong role).
 export class UnauthorizedError extends Error {
   status: number;
   constructor(message = "Unauthorized", status = 401) {

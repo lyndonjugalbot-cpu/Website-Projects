@@ -1,3 +1,7 @@
+// Business logic for the in-store POS (/admin/pos) — ringing up a sale and
+// voiding one. Called from app/api/admin/pos/route.ts and
+// app/api/admin/pos/[id]/void/route.ts, which handle auth/HTTP concerns
+// and delegate the actual work here.
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { effectivePrice } from "@/lib/types";
@@ -5,6 +9,8 @@ import { InsufficientStockError, recordStockMovement } from "@/lib/inventory";
 
 export class PosSaleError extends Error {}
 
+// Validates the request body for POST /api/admin/pos (a completed sale
+// from the POS terminal).
 export const posSaleInputSchema = z.object({
   items: z
     .array(
@@ -36,6 +42,8 @@ export async function createPosSale(input: PosSaleInput, cashier: { id: string; 
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
   const productById = new Map(products.map((p) => [p.id, p]));
 
+  // Re-price every line from the current product data — never trust prices
+  // the POS terminal UI sent, same principle as online checkout.
   let subtotalCentavos = 0;
   const lines = input.items.map((item) => {
     const product = productById.get(item.productId);
@@ -67,6 +75,9 @@ export async function createPosSale(input: PosSaleInput, cashier: { id: string; 
   const changeGivenCentavos =
     input.paymentMethod === "cash" ? (input.cashReceivedCentavos as number) - totalCentavos : null;
 
+  // Create the order and deduct stock for every line in one transaction —
+  // if stock deduction fails partway through (someone else just bought the
+  // last unit), the whole sale rolls back instead of leaving a half-rung-up order.
   try {
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({

@@ -1,3 +1,10 @@
+// Shared TypeScript types + enum-label lookups used by both the storefront
+// and the admin dashboard. These mirror the Prisma schema's enums as plain
+// string unions so client components (which can't import Prisma directly)
+// can use the same types as the server.
+
+// --- Cart -------------------------------------------------------------
+
 /** A single line item in the client-side cart, persisted to localStorage. */
 export type CartItem = {
   productId: string;
@@ -10,6 +17,8 @@ export type CartItem = {
   /** Stock available at the time the item was added, used for client-side quantity limits. */
   stock: number;
 };
+
+// --- Products -----------------------------------------------------------
 
 export type ProductCategory =
   | "SNACKS"
@@ -66,6 +75,8 @@ export function isPurchasable(product: Pick<ProductView, "status" | "stock">): b
   return product.status === "ACTIVE" && product.stock > 0;
 }
 
+// --- Orders ---------------------------------------------------------------
+
 // Fulfillment pipeline, tracked separately from payment status.
 export type OrderStatus =
   | "PENDING"
@@ -95,6 +106,8 @@ export const ORDER_STATUS_FLOW: OrderStatus[] = [
   "COMPLETED",
 ];
 
+// --- Payments -------------------------------------------------------------
+
 // Verified independently of order fulfillment — never implied by it.
 export type PaymentStatus = "PENDING" | "PROCESSING" | "PAID" | "FAILED" | "REFUNDED";
 
@@ -117,6 +130,12 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
   cash: "Cash",
 };
 
+// --- POS / channel --------------------------------------------------------
+
+// Which "register" an order came through — the online storefront, or a
+// staff member ringing it up in person at /admin/pos. Both use the same
+// Order/OrderItem tables; this field is how reports and the admin order
+// list tell them apart.
 export type SalesChannel = "ONLINE" | "POS";
 
 export const SALES_CHANNEL_LABELS: Record<SalesChannel, string> = {
@@ -124,6 +143,10 @@ export const SALES_CHANNEL_LABELS: Record<SalesChannel, string> = {
   POS: "In-store (POS)",
 };
 
+// --- Inventory ledger -------------------------------------------------
+
+// Why a stock quantity changed — every change to Product.stock writes one
+// StockMovement row with one of these types, so the history stays auditable.
 export type StockMovementType =
   | "ONLINE_SALE"
   | "POS_SALE"

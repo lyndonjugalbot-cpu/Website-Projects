@@ -3,15 +3,19 @@
 // confirmations). Update these constants as real details become available —
 // anything still a placeholder is marked below.
 
+// Displayed name and one-line tagline — shown in the header, footer, home
+// page hero, and browser tab title.
 export const STORE_NAME = "Seoul Stop Kmart";
 export const STORE_TAGLINE = "Your neighborhood Korean mart in Cebu";
 
+// Linked from the footer and home page "Follow us" button.
 export const FACEBOOK_URL = "https://www.facebook.com/seoulstopkmart";
 
 // PLACEHOLDER — replace with the real contact details before launch.
 export const CONTACT_EMAIL = "seoulstopkmart@gmail.com";
 export const CONTACT_PHONE = "+63 900 000 0000";
 
+// Shown on the home page, about page, and contact page.
 export const DELIVERY_AREAS = "Cebu City and nearby areas";
 
 // Flat delivery fee for Cebu addresses — a demo default. Replace with

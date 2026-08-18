@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
     let intentId = order.paymentIntentId;
     let isMock = order.isMockPayment;
 
+    // First payment attempt for this order — create the Payment Intent.
+    // Reused on retry (e.g. after a declined card) instead of creating a
+    // second one.
     if (!intentId) {
       const intent = await createPaymentIntent({
         amountCentavos: order.totalCentavos,
@@ -101,6 +104,8 @@ export async function POST(request: NextRequest) {
       isMock: isMock || paymentMethod.isMock,
     });
 
+    // No real PayMongo keys configured — send the customer to our own fake
+    // gateway screen instead of a real one.
     if (isMock || paymentMethod.isMock) {
       return NextResponse.json({
         status: "redirect",
@@ -109,6 +114,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Real PayMongo GCash/Maya/3DS card payments need the customer to
+    // authorize on a page PayMongo hosts — send them there.
     if (attachResult.nextActionRedirectUrl) {
       return NextResponse.json({
         status: "redirect",

@@ -1,6 +1,13 @@
+// The shared inventory engine — every place in the app that changes
+// Product.stock (online checkout, POS sales, manual adjustments, voids)
+// goes through recordStockMovement() below, so stock changes are both
+// race-safe and fully logged in the StockMovement table (the "ledger").
 import type { Prisma } from "@/generated/prisma/client";
 import type { StockMovementType } from "@/generated/prisma/enums";
 
+// Thrown when a stock deduction would take a product below 0 and
+// allowOversell isn't set — callers (checkout, POS) turn this into a
+// user-facing "out of stock" error.
 export class InsufficientStockError extends Error {
   productId: string;
   productName: string;
@@ -65,10 +72,10 @@ export async function recordStockMovement(
 
     // The actual safety mechanism: one conditional UPDATE. `result.count`
     // is the ground truth — if another transaction already changed this
-    // row's stock between the read above and this write, the WHERE clause
-    // (re-evaluated against current state by SQLite) simply won't match,
-    // and count is 0. There's no window where two callers can both believe
-    // they succeeded.
+    // row's stock between the read above and this write, Postgres
+    // re-evaluates the WHERE clause against the row's current state at
+    // write time, so a now-stale condition simply won't match and count is
+    // 0. There's no window where two callers can both believe they succeeded.
     const result = await tx.product.updateMany({
       where: {
         id: productId,

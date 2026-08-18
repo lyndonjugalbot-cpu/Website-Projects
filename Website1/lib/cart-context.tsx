@@ -1,5 +1,10 @@
 "use client";
 
+// The shopping cart, kept entirely in the browser (React Context +
+// localStorage) — there is no server-side "cart" table. It only becomes a
+// real Order once the customer submits the checkout form
+// (see lib/orders.ts). This means the cart survives page reloads/tab
+// closes, but is per-browser, not per-account.
 import {
   createContext,
   useCallback,
@@ -25,11 +30,14 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+// Wraps the whole app (see app/layout.tsx) so any component can read/update
+// the cart via useCart() below.
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   // Avoids briefly rendering an empty cart before localStorage has been read.
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // On first mount, load whatever was saved from a previous visit.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -41,11 +49,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Persist to localStorage every time the cart changes.
   useEffect(() => {
     if (!isLoaded) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, isLoaded]);
 
+  // Adds a product to the cart, or increases its quantity if it's already
+  // there — capped at the stock quantity known when the item was added.
   const addItem = useCallback<CartContextValue["addItem"]>((item, quantity = 1) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === item.productId);
@@ -63,6 +74,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
   }, []);
 
+  // Sets a specific quantity for an item (used by the quantity stepper in
+  // the cart page); removes the item entirely if set to 0 or below.
   const updateQuantity = useCallback((productId: string, quantity: number) => {
     setItems((prev) => {
       if (quantity <= 0) return prev.filter((i) => i.productId !== productId);
@@ -74,6 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Empties the cart — called after an order is successfully placed.
   const clearCart = useCallback(() => setItems([]), []);
 
   const itemCount = useMemo(
@@ -102,6 +116,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
+// Hook every component uses to read the cart or call its actions —
+// throws if used outside <CartProvider> (a bug, not a runtime edge case).
 export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used within a CartProvider");

@@ -1,9 +1,12 @@
+// Backs the admin Inventory page: the stock-movement ledger view (GET) and
+// the manual stock adjustment form (POST). Both require Manager/Owner.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireRole, UnauthorizedError } from "@/lib/authz";
 import { recordStockMovement } from "@/lib/inventory";
 
+// Recent stock movements, optionally filtered by product or movement type.
 export async function GET(request: NextRequest) {
   try {
     await requireRole("MANAGER");
@@ -35,6 +38,8 @@ const adjustSchema = z.object({
   reason: z.string().trim().min(1, "A reason is required").max(500),
 });
 
+// Manually corrects a product's stock (e.g. after a physical recount, or
+// damaged goods) — always requires a reason, recorded as a MANUAL_ADJUSTMENT movement.
 export async function POST(request: NextRequest) {
   let session;
   try {
