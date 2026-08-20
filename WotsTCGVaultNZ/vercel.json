@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/cleanup-reservations", "schedule": "*/2 * * * *" },
+    { "path": "/api/cron/release-payouts", "schedule": "*/10 * * * *" }
+  ]
+}

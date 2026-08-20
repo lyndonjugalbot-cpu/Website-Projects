@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-50: #eefdf5;
+  --color-brand-100: #d6f9e3;
+  --color-brand-200: #b0f0cb;
+  --color-brand-300: #79e2a9;
+  --color-brand-400: #3fcb82;
+  --color-brand-500: #19af64;
+  --color-brand-600: #0f8d50;
+  --color-brand-700: #0f7042;
+  --color-brand-800: #115937;
+  --color-brand-900: #0f492f;
+
+  --color-ocean-50: #eef6ff;
+  --color-ocean-100: #d9ecff;
+  --color-ocean-200: #bcdfff;
+  --color-ocean-300: #8ecafe;
+  --color-ocean-400: #58aefa;
+  --color-ocean-500: #338df1;
+  --color-ocean-600: #2170e4;
+  --color-ocean-700: #1d5bc9;
+  --color-ocean-800: #1e4ca2;
+  --color-ocean-900: #1e4280;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  font-family: var(--font-sans);
+  --chart-surface: #ffffff;
+}
+
+.dark body {
+  --chart-surface: #0f172a;
+}
+
+::selection {
+  @apply bg-brand-200 text-brand-900;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
