@@ -14,6 +14,8 @@ React 19, TypeScript, Tailwind CSS v4, [Recharts](https://recharts.org) for
 charts, [Lucide React](https://lucide.dev) for icons, [date-fns](https://date-fns.org)
 (with the `en-NZ` locale) for date handling, and [Convex](https://convex.dev)
 for the real-time database (queries, mutations, and a scheduled cleanup job).
+[Capacitor](https://capacitorjs.com) wraps the same build as native iOS and
+Android apps — see [iOS and Android apps](#ios-and-android-apps) below.
 
 There is still no login/authentication — anyone with the app URL reads and
 writes the same shared dataset, the same way a shared spreadsheet would.
@@ -49,6 +51,40 @@ npx vercel --prod    # builds the frontend (reads VITE_CONVEX_URL from Vercel's
 Vercel project (`vercel env ls` to view, `vercel env add` to change it) —
 pointing at the Convex production deployment's `.convex.cloud` URL, not the
 dev one.
+
+## iOS and Android apps
+
+The `ios/` and `android/` folders are [Capacitor](https://capacitorjs.com)
+native shells that wrap the built web app (`dist/`) in a native app. There's
+no separate mobile codebase — the same React components, Convex data, and
+business logic run on web and mobile, so a change to `src/` reaches all three
+once you rebuild.
+
+```bash
+npm run ios       # build web app, sync into ios/, open Xcode
+npm run android   # build web app, sync into android/, open Android Studio
+npm run cap:sync  # just build + sync, without opening an IDE
+```
+
+From Xcode or Android Studio, use the Run button to build onto a simulator/
+emulator or a connected device. First-time setup per platform:
+
+- **iOS** — requires Xcode, with an iOS Simulator runtime installed (Xcode →
+  Settings → Components) or a real device. To run on a physical iPhone or
+  submit to the App Store you need an Apple Developer account, set up under
+  the `App` target's *Signing & Capabilities* tab in Xcode.
+- **Android** — requires [Android Studio](https://developer.android.com/studio),
+  which installs the Android SDK via its setup wizard on first launch. To
+  publish to the Play Store you need a Google Play Developer account.
+
+Both apps load `VITE_CONVEX_URL` from the same `.env.local` used by the web
+build (baked in at `npm run build` time, same as the Vercel deploy), so they
+talk to whichever Convex deployment that value points at — there is no
+separate mobile backend or mobile-only data.
+
+`capacitor.config.ts` sets the app ID (`com.nzfinancetracker.app`) and
+display name — change the app ID there (and re-run `npx cap sync`) before
+submitting to either store, since it can't be changed after a first release.
 
 ## Folder structure
 
