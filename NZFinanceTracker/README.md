@@ -77,10 +77,32 @@ emulator or a connected device. First-time setup per platform:
   which installs the Android SDK via its setup wizard on first launch. To
   publish to the Play Store you need a Google Play Developer account.
 
-Both apps load `VITE_CONVEX_URL` from the same `.env.local` used by the web
-build (baked in at `npm run build` time, same as the Vercel deploy), so they
-talk to whichever Convex deployment that value points at — there is no
-separate mobile backend or mobile-only data.
+`VITE_CONVEX_URL` is baked into the JS bundle at `npm run build` time (Vite
+inlines it as a literal string — there's no runtime config). `.env.local`
+points at the **dev** Convex deployment (`npx convex dev`'s), which is
+separate from the **production** deployment the live web app at
+nz-finance-tracker.vercel.app talks to. If the mobile apps are built with
+just `.env.local` in place, they'll show a different, empty-looking dataset
+instead of your real data.
+
+To keep the mobile apps in sync with the live web app, `.env.production.local`
+overrides `.env.local` with the production URL (Vite loads `.env.production.local`
+before `.env.local` when building — see [Vite's env docs](https://vite.dev/guide/env-and-mode)).
+It's gitignored, like `.env.local`, since it's just a local convenience — get
+the value with:
+
+```bash
+npx vercel env pull --environment=production .env.production.local
+```
+
+(Vercel marks `VITE_CONVEX_URL` as a *Sensitive* env var, so `vercel env pull`
+writes a `[SENSITIVE]` placeholder instead of the real value — pull it
+manually from the Vercel dashboard, or from the deployed bundle itself:
+`curl -s https://nz-finance-tracker.vercel.app/ | grep -oE '/assets/index-[^"]+\.js'`
+to find the asset path, then grep that file for `.convex.cloud`.)
+
+Without `.env.production.local`, `npm run ios` / `npm run android` /
+`npm run cap:sync` silently fall back to the dev deployment from `.env.local`.
 
 `capacitor.config.ts` sets the app ID (`com.nzfinancetracker.app`) and
 display name — change the app ID there (and re-run `npx cap sync`) before
