@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { SessionProviderWrapper } from "@/components/layout/session-provider";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
 
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
           <Toaster />
+          <ChatWidget />
         </SessionProviderWrapper>
       </body>
     </html>

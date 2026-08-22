@@ -70,6 +70,12 @@ charge) — the seller's share only moves via a Transfer once payout eligibility
 | POST | `/api/upload/listing-image` | User | Presigned S3 PUT URL for a listing photo |
 | POST | `/api/upload/identity-document` | User | Presigned S3 PUT URL for an ID document (private bucket) |
 
+## Chat
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | `/api/chat` | User | Caller's most recent AI conversation + messages (for hydrating the widget) |
+| POST | `/api/chat` | — (optional) | Send a message to the support chatbot; streams the reply as plain text (`X-Conversation-Id` response header). Anonymous callers get general FAQ answers only, no persistence; logged-in callers additionally get account-scoped order/listing lookups and DB-persisted history |
+
 ## Collections
 | Method | Route | Auth | Description |
 |---|---|---|---|
