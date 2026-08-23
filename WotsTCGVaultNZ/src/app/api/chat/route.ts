@@ -125,6 +125,7 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch (err) {
+        console.error("[/api/chat] stream error:", err);
         controller.error(err);
         return;
       }
