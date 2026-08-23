@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import type Anthropic from "@anthropic-ai/sdk";
+import type OpenAI from "openai";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { chatMessageSchema } from "@/lib/validations/chat";
-import { anthropic, AI_MODEL, AI_MAX_TOKENS, AI_MAX_TOOL_ITERATIONS } from "@/lib/ai/anthropic";
+import { gemini, AI_MODEL, AI_MAX_TOKENS, AI_MAX_TOOL_ITERATIONS } from "@/lib/ai/gemini";
 import { AI_TOOLS, executeTool } from "@/lib/ai/tools";
 import { buildSystemPrompt } from "@/lib/ai/system-prompt";
 import { getPaymentSettings } from "@/lib/platform-settings";
@@ -26,7 +26,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json({ error: "Chat is not configured yet." }, { status: 503 });
   }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   const data = parsed.data;
 
   let conversation: { id: string } | null = null;
-  const history: Anthropic.MessageParam[] = [];
+  const history: OpenAI.ChatCompletionMessageParam[] = [];
 
   if (userId) {
     if (data.conversationId) {
@@ -72,7 +72,11 @@ export async function POST(req: NextRequest) {
   const settings = await getPaymentSettings();
   const system = buildSystemPrompt(settings, Boolean(userId));
   const tools = userId ? AI_TOOLS : [];
-  const messages: Anthropic.MessageParam[] = [...history, { role: "user", content: data.message }];
+  const messages: OpenAI.ChatCompletionMessageParam[] = [
+    { role: "system", content: system },
+    ...history,
+    { role: "user", content: data.message },
+  ];
 
   const encoder = new TextEncoder();
   let assistantText = "";
@@ -82,34 +86,63 @@ export async function POST(req: NextRequest) {
       try {
         let current = messages;
         for (let i = 0; i < AI_MAX_TOOL_ITERATIONS; i++) {
-          const msgStream = anthropic.messages.stream({
+          const completion = await gemini.chat.completions.create({
             model: AI_MODEL,
             max_tokens: AI_MAX_TOKENS,
             temperature: 0.3,
-            system,
             messages: current,
-            tools,
+            tools: tools.length ? tools : undefined,
+            stream: true,
           });
-          msgStream.on("text", (delta) => {
-            assistantText += delta;
-            controller.enqueue(encoder.encode(delta));
-          });
-          const final = await msgStream.finalMessage();
 
-          if (final.stop_reason !== "tool_use") break;
+          let turnText = "";
+          let finishReason: string | null = null;
+          const toolCallsAcc: Record<number, { id?: string; name: string; args: string }> = {};
 
-          const toolUses = final.content.filter(
-            (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
-          );
-          if (toolUses.length === 0) break;
+          for await (const chunk of completion) {
+            const choice = chunk.choices[0];
+            if (!choice) continue;
 
-          const toolResults: Anthropic.ToolResultBlockParam[] = [];
-          for (const toolUse of toolUses) {
-            const result = await executeTool(toolUse.name, toolUse.input, userId as string);
-            toolResults.push({ type: "tool_result", tool_use_id: toolUse.id, content: JSON.stringify(result) });
+            if (choice.delta?.content) {
+              turnText += choice.delta.content;
+              assistantText += choice.delta.content;
+              controller.enqueue(encoder.encode(choice.delta.content));
+            }
+
+            if (choice.delta?.tool_calls) {
+              for (const tc of choice.delta.tool_calls) {
+                const acc = toolCallsAcc[tc.index] ?? { name: "", args: "" };
+                if (tc.id) acc.id = tc.id;
+                if (tc.function?.name) acc.name += tc.function.name;
+                if (tc.function?.arguments) acc.args += tc.function.arguments;
+                toolCallsAcc[tc.index] = acc;
+              }
+            }
+
+            if (choice.finish_reason) finishReason = choice.finish_reason;
           }
 
-          current = [...current, { role: "assistant", content: final.content }, { role: "user", content: toolResults }];
+          const toolCallEntries = Object.values(toolCallsAcc);
+          if (finishReason !== "tool_calls" || toolCallEntries.length === 0) break;
+
+          const toolCalls: OpenAI.ChatCompletionMessageFunctionToolCall[] = toolCallEntries.map((tc, idx) => ({
+            id: tc.id ?? `call_${idx}`,
+            type: "function" as const,
+            function: { name: tc.name, arguments: tc.args },
+          }));
+
+          current = [...current, { role: "assistant", content: turnText || null, tool_calls: toolCalls }];
+
+          for (const toolCall of toolCalls) {
+            let parsedArgs: unknown = {};
+            try {
+              parsedArgs = toolCall.function.arguments ? JSON.parse(toolCall.function.arguments) : {};
+            } catch {
+              parsedArgs = {};
+            }
+            const result = await executeTool(toolCall.function.name, parsedArgs, userId as string);
+            current = [...current, { role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(result) }];
+          }
         }
 
         if (conversation && assistantText) {

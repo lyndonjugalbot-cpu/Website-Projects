@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { formatNZD, formatDate } from "@/lib/utils";
 import { ORDER_STATUS_LABELS } from "@/lib/constants";
@@ -20,34 +20,40 @@ const LISTING_STATUSES: ListingStatus[] = [
  * taken from the model's tool `input`, so the model has no way to request
  * another user's data.
  */
-export const AI_TOOLS: Anthropic.Tool[] = [
+export const AI_TOOLS: OpenAI.ChatCompletionTool[] = [
   {
-    name: "get_my_orders",
-    description:
-      "Look up the signed-in user's own recent orders, either as buyer or as seller. Returns at most the 10 most recent, scoped only to this user.",
-    input_schema: {
-      type: "object",
-      properties: {
-        role: {
-          type: "string",
-          enum: ["buyer", "seller"],
-          description: "Whether to look up orders where this user was the buyer or the seller.",
+    type: "function",
+    function: {
+      name: "get_my_orders",
+      description:
+        "Look up the signed-in user's own recent orders, either as buyer or as seller. Returns at most the 10 most recent, scoped only to this user.",
+      parameters: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            enum: ["buyer", "seller"],
+            description: "Whether to look up orders where this user was the buyer or the seller.",
+          },
         },
+        required: ["role"],
       },
-      required: ["role"],
     },
   },
   {
-    name: "get_my_listings",
-    description:
-      "Look up the signed-in user's own listings. Returns at most the 10 most recent, scoped only to this user.",
-    input_schema: {
-      type: "object",
-      properties: {
-        status: {
-          type: "string",
-          enum: LISTING_STATUSES,
-          description: "Optional filter by listing status.",
+    type: "function",
+    function: {
+      name: "get_my_listings",
+      description:
+        "Look up the signed-in user's own listings. Returns at most the 10 most recent, scoped only to this user.",
+      parameters: {
+        type: "object",
+        properties: {
+          status: {
+            type: "string",
+            enum: LISTING_STATUSES,
+            description: "Optional filter by listing status.",
+          },
         },
       },
     },
