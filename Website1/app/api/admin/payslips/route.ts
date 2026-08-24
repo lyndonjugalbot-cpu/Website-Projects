@@ -10,7 +10,7 @@ import { requireRole, UnauthorizedError } from "@/lib/authz";
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole("OWNER");
+    await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;
@@ -47,7 +47,7 @@ const generatePayslipSchema = z
 export async function POST(request: NextRequest) {
   let session;
   try {
-    session = await requireRole("OWNER");
+    session = await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;

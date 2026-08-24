@@ -25,11 +25,12 @@ function navLinksFor(role: UserRole) {
     links.push(
       { href: "/admin/products", label: "Products" },
       { href: "/admin/inventory", label: "Inventory" },
-      { href: "/admin/reports", label: "Reports" }
+      { href: "/admin/reports", label: "Reports" },
+      { href: "/admin/payroll", label: "Payroll" }
     );
   }
   if (role === "OWNER") {
-    links.push({ href: "/admin/staff", label: "Staff accounts" }, { href: "/admin/payroll", label: "Payroll" });
+    links.push({ href: "/admin/staff", label: "Staff accounts" });
   }
   return links;
 }

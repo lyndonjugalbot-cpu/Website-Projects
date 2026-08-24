@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, roleAtLeast } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Forbidden } from "@/components/admin/Forbidden";
 import { formatCentavosAsPHP } from "@/lib/money";
@@ -14,7 +14,7 @@ type Adjustment = { label: string; amountCentavos: number };
 
 export default async function PayslipPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "OWNER") {
+  if (!session?.user || !roleAtLeast(session.user.role, "MANAGER")) {
     return <Forbidden />;
   }
 

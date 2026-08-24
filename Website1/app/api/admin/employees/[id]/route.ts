@@ -11,7 +11,7 @@ const patchSchema = z.object({
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireRole("OWNER");
+    await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;

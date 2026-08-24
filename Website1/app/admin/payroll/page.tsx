@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, roleAtLeast } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Forbidden } from "@/components/admin/Forbidden";
 import { PayrollManager } from "@/components/admin/PayrollManager";
@@ -9,7 +9,7 @@ export const metadata = { title: "Payroll" };
 
 export default async function PayrollPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "OWNER") {
+  if (!session?.user || !roleAtLeast(session.user.role, "MANAGER")) {
     return <Forbidden />;
   }
 

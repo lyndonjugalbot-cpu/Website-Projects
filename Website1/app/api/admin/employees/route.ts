@@ -1,5 +1,5 @@
-// Employee roster management — base pay is sensitive, so this whole
-// resource is OWNER-only (same bar as Staff accounts).
+// Employee roster management — same access bar as Reports/Inventory
+// (MANAGER and up). Staff account management stays OWNER-only separately.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -7,7 +7,7 @@ import { requireRole, UnauthorizedError } from "@/lib/authz";
 
 export async function GET() {
   try {
-    await requireRole("OWNER");
+    await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;
@@ -25,7 +25,7 @@ const createEmployeeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    await requireRole("OWNER");
+    await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;
