@@ -8,8 +8,7 @@ export default defineSchema({
   ...authTables,
 
   expenses: defineTable({
-    // Optional during the auth migration; backfilled via migrations.ts then tightened to required.
-    userId: v.optional(v.id("users")),
+    userId: v.id("users"),
     description: v.string(),
     amount: v.number(),
     category: v.string(),
@@ -22,7 +21,7 @@ export default defineSchema({
     .index("by_date", ["date"]),
 
   budgets: defineTable({
-    userId: v.optional(v.id("users")),
+    userId: v.id("users"),
     weekly: v.union(v.number(), v.null()),
     monthly: v.union(v.number(), v.null()),
     savingsWeekly: v.union(v.number(), v.null()),
@@ -49,7 +48,7 @@ export default defineSchema({
   }).index("by_user", ["userId"]),
 
   meta: defineTable({
-    userId: v.optional(v.id("users")),
+    userId: v.id("users"),
     sampleSeeded: v.boolean(),
   }).index("by_user", ["userId"]),
 });
