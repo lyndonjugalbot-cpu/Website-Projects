@@ -46,6 +46,20 @@ export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   Other: "#78716c", // stone (catch-all)
 };
 
+/** Curated note-card palette; each entry gives a light/dark-safe background + border pair. */
+export const NOTE_COLORS = {
+  default: { label: "Default", bg: "bg-white dark:bg-slate-900", border: "border-slate-200 dark:border-slate-800" },
+  yellow: { label: "Yellow", bg: "bg-amber-50 dark:bg-amber-950/40", border: "border-amber-200 dark:border-amber-900/60" },
+  green: { label: "Green", bg: "bg-emerald-50 dark:bg-emerald-950/40", border: "border-emerald-200 dark:border-emerald-900/60" },
+  blue: { label: "Blue", bg: "bg-sky-50 dark:bg-sky-950/40", border: "border-sky-200 dark:border-sky-900/60" },
+  pink: { label: "Pink", bg: "bg-pink-50 dark:bg-pink-950/40", border: "border-pink-200 dark:border-pink-900/60" },
+  purple: { label: "Purple", bg: "bg-violet-50 dark:bg-violet-950/40", border: "border-violet-200 dark:border-violet-900/60" },
+  orange: { label: "Orange", bg: "bg-orange-50 dark:bg-orange-950/40", border: "border-orange-200 dark:border-orange-900/60" },
+} as const;
+
+export type NoteColorKey = keyof typeof NOTE_COLORS;
+export const NOTE_COLOR_KEYS = Object.keys(NOTE_COLORS) as NoteColorKey[];
+
 export const LOCAL_STORAGE_KEYS = {
   expenses: "nz-finance-tracker:expenses",
   budgets: "nz-finance-tracker:budgets",

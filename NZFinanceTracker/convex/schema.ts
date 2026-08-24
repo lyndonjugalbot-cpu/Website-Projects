@@ -51,4 +51,28 @@ export default defineSchema({
     userId: v.id("users"),
     sampleSeeded: v.boolean(),
   }).index("by_user", ["userId"]),
+
+  notes: defineTable({
+    userId: v.id("users"),
+    type: v.union(v.literal("text"), v.literal("checklist")),
+    title: v.string(),
+    body: v.string(),
+    checklistItems: v.array(v.object({ id: v.string(), text: v.string(), done: v.boolean() })),
+    color: v.string(),
+    audioStorageId: v.optional(v.id("_storage")),
+    transcript: v.optional(v.string()),
+    transcriptionStatus: v.union(
+      v.literal("none"),
+      v.literal("pending"),
+      v.literal("done"),
+      v.literal("failed"),
+    ),
+    scheduledDate: v.union(v.string(), v.null()), // ISO "yyyy-MM-dd"
+    scheduledTime: v.union(v.string(), v.null()), // "HH:mm"
+    reminderEnabled: v.boolean(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_date", ["userId", "scheduledDate"]),
 });

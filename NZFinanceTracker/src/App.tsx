@@ -1,5 +1,5 @@
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { BarChart3, Info, ListChecks, PiggyBank as PiggyBankIcon, Settings, TrendingUp } from "lucide-react";
+import { BarChart3, Info, ListChecks, NotebookPen, PiggyBank as PiggyBankIcon, Settings, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BudgetCard } from "./components/BudgetCard";
 import { BudgetSettings } from "./components/BudgetSettings";
@@ -12,23 +12,26 @@ import { Forecast } from "./components/Forecast";
 import { Header } from "./components/Header";
 import { Modal } from "./components/Modal";
 import { MonthlyReport } from "./components/MonthlyReport";
+import { Notes } from "./components/Notes";
 import { ReportControls } from "./components/ReportControls";
 import { SavingsGoalCard } from "./components/SavingsGoalCard";
 import { WeeklyReport } from "./components/WeeklyReport";
 import { SignInForm } from "./components/auth/SignInForm";
+import { ReminderBanner } from "./components/notes/ReminderBanner";
 import { FinanceProvider, useFinance } from "./context/FinanceContext";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useReportRange } from "./hooks/useReportRange";
 import type { Expense, ExpenseInput } from "./types";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
 
-type TabId = "report" | "expenses" | "budget" | "forecast" | "data";
+type TabId = "report" | "expenses" | "budget" | "forecast" | "notes" | "data";
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
   { id: "report", label: "Report", icon: BarChart3 },
   { id: "expenses", label: "Expenses", icon: ListChecks },
   { id: "budget", label: "Budget", icon: PiggyBankIcon },
   { id: "forecast", label: "Forecast", icon: TrendingUp },
+  { id: "notes", label: "Notes", icon: NotebookPen },
   { id: "data", label: "Data", icon: Settings },
 ];
 
@@ -38,6 +41,7 @@ function AppContent() {
     expenses,
     budgets,
     recurringExpenses,
+    notes,
     isLoading,
     addExpense,
     updateExpense,
@@ -110,6 +114,8 @@ function AppContent() {
             maximum of three months.
           </p>
         </div>
+
+        <ReminderBanner notes={notes} />
 
         <ReportControls
           view={reportRange.view}
@@ -192,6 +198,8 @@ function AppContent() {
               onConfigureSettings={() => setIsBudgetModalOpen(true)}
             />
           )}
+
+          {activeTab === "notes" && <Notes />}
 
           {activeTab === "data" && (
             <DataManagement

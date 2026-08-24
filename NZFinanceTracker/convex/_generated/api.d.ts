@@ -14,6 +14,7 @@ import type * as constants from "../constants.js";
 import type * as crons from "../crons.js";
 import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
+import type * as notes from "../notes.js";
 import type * as recurringExpenses from "../recurringExpenses.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   expenses: typeof expenses;
   http: typeof http;
+  notes: typeof notes;
   recurringExpenses: typeof recurringExpenses;
 }>;
 

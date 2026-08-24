@@ -62,3 +62,34 @@ export interface DateRange {
 }
 
 export type SortOption = "newest" | "oldest" | "highest" | "lowest";
+
+export type NoteType = "text" | "checklist";
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export type TranscriptionStatus = "none" | "pending" | "done" | "failed";
+
+export interface Note {
+  id: string;
+  type: NoteType;
+  title: string;
+  body: string;
+  checklistItems: ChecklistItem[];
+  color: string;
+  audioUrl: string | null;
+  transcript: string | null;
+  transcriptionStatus: TranscriptionStatus;
+  /** ISO date string; the day this note is scheduled onto in the calendar view. */
+  scheduledDate: string | null;
+  /** "HH:mm"; time of day for the reminder, if any. */
+  scheduledTime: string | null;
+  reminderEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NoteInput = Omit<Note, "id" | "audioUrl" | "transcript" | "transcriptionStatus" | "createdAt" | "updatedAt">;

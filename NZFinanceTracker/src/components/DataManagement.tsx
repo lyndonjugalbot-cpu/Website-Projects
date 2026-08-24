@@ -122,7 +122,7 @@ export function DataManagement({ allExpenses, reportExpenses, onImport, onClearA
       <ConfirmationDialog
         isOpen={confirmClearOpen}
         title="Clear all data?"
-        message="This will permanently delete all expenses and budgets stored in this browser. This action cannot be undone."
+        message="This will permanently delete all expenses, budgets, recurring bills, and notes on your account. This action cannot be undone."
         confirmLabel="Clear everything"
         onConfirm={() => {
           onClearAll();

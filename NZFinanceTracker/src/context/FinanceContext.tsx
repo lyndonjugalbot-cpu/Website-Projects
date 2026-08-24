@@ -2,12 +2,13 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { Budgets, Expense, ExpenseInput, RecurringExpense, RecurringExpenseInput } from "../types";
+import type { Budgets, Expense, ExpenseInput, Note, NoteInput, RecurringExpense, RecurringExpenseInput } from "../types";
 
 interface FinanceContextValue {
   expenses: Expense[];
   budgets: Budgets;
   recurringExpenses: RecurringExpense[];
+  notes: Note[];
   isLoading: boolean;
   addExpense: (input: ExpenseInput) => void;
   updateExpense: (id: string, input: ExpenseInput) => void;
@@ -19,6 +20,11 @@ interface FinanceContextValue {
   updateRecurringExpense: (id: string, input: RecurringExpenseInput) => void;
   toggleRecurringExpenseActive: (id: string, active: boolean) => void;
   deleteRecurringExpense: (id: string) => void;
+  addNote: (input: NoteInput) => Promise<string>;
+  updateNote: (id: string, input: NoteInput) => void;
+  deleteNote: (id: string) => void;
+  uploadNoteAudio: (id: string, blob: Blob) => Promise<void>;
+  retryNoteTranscription: (id: string) => void;
 }
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
@@ -28,6 +34,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const expenseDocs = useQuery(api.expenses.list);
   const budgetsDoc = useQuery(api.budgets.get);
   const recurringExpenseDocs = useQuery(api.recurringExpenses.list);
+  const noteDocs = useQuery(api.notes.list);
 
   const addExpenseMutation = useMutation(api.expenses.add);
   const updateExpenseMutation = useMutation(api.expenses.update);
@@ -40,6 +47,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const updateRecurringMutation = useMutation(api.recurringExpenses.update);
   const toggleRecurringActiveMutation = useMutation(api.recurringExpenses.toggleActive);
   const removeRecurringMutation = useMutation(api.recurringExpenses.remove);
+  const addNoteMutation = useMutation(api.notes.add);
+  const updateNoteMutation = useMutation(api.notes.update);
+  const removeNoteMutation = useMutation(api.notes.remove);
+  const generateUploadUrlMutation = useMutation(api.notes.generateUploadUrl);
+  const attachAudioMutation = useMutation(api.notes.attachAudio);
+  const retryTranscriptionMutation = useMutation(api.notes.retryTranscription);
 
   const hasRequestedSeed = useRef(false);
   useEffect(() => {
@@ -77,6 +90,27 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     [recurringExpenseDocs],
   );
 
+  const notes = useMemo<Note[]>(
+    () =>
+      (noteDocs ?? []).map((doc) => ({
+        id: doc._id,
+        type: doc.type,
+        title: doc.title,
+        body: doc.body,
+        checklistItems: doc.checklistItems,
+        color: doc.color,
+        audioUrl: doc.audioUrl,
+        transcript: doc.transcript ?? null,
+        transcriptionStatus: doc.transcriptionStatus,
+        scheduledDate: doc.scheduledDate,
+        scheduledTime: doc.scheduledTime,
+        reminderEnabled: doc.reminderEnabled,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+      })),
+    [noteDocs],
+  );
+
   const budgets: Budgets = budgetsDoc ?? {
     weekly: null,
     monthly: null,
@@ -91,7 +125,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       expenses,
       budgets,
       recurringExpenses,
-      isLoading: expenseDocs === undefined || budgetsDoc === undefined || recurringExpenseDocs === undefined,
+      notes,
+      isLoading:
+        expenseDocs === undefined ||
+        budgetsDoc === undefined ||
+        recurringExpenseDocs === undefined ||
+        noteDocs === undefined,
       addExpense: (input) => {
         void addExpenseMutation(input);
       },
@@ -130,14 +169,36 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       deleteRecurringExpense: (id) => {
         void removeRecurringMutation({ id: id as Id<"recurringExpenses"> });
       },
+      addNote: async (input) => await addNoteMutation(input),
+      updateNote: (id, input) => {
+        void updateNoteMutation({ id: id as Id<"notes">, ...input });
+      },
+      deleteNote: (id) => {
+        void removeNoteMutation({ id: id as Id<"notes"> });
+      },
+      uploadNoteAudio: async (id, blob) => {
+        const uploadUrl = await generateUploadUrlMutation({});
+        const result = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": blob.type || "audio/webm" },
+          body: blob,
+        });
+        const { storageId } = await result.json();
+        await attachAudioMutation({ id: id as Id<"notes">, storageId });
+      },
+      retryNoteTranscription: (id) => {
+        void retryTranscriptionMutation({ id: id as Id<"notes"> });
+      },
     }),
     [
       expenses,
       budgets,
       recurringExpenses,
+      notes,
       expenseDocs,
       budgetsDoc,
       recurringExpenseDocs,
+      noteDocs,
       addExpenseMutation,
       updateExpenseMutation,
       removeExpenseMutation,
@@ -148,6 +209,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       updateRecurringMutation,
       toggleRecurringActiveMutation,
       removeRecurringMutation,
+      addNoteMutation,
+      updateNoteMutation,
+      removeNoteMutation,
+      generateUploadUrlMutation,
+      attachAudioMutation,
+      retryTranscriptionMutation,
     ],
   );
 
