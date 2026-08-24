@@ -21,7 +21,7 @@ export default async function PayrollPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Payroll</h1>
-      <p className="mt-1 text-sm text-neutral-500">Manage employees' base pay and generate payslips.</p>
+      <p className="mt-1 text-sm text-neutral-500">Manage employees&apos; base pay and generate payslips.</p>
 
       <div className="mt-8">
         <PayrollManager
