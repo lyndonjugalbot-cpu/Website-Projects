@@ -17,12 +17,14 @@ import { ReportControls } from "./components/ReportControls";
 import { SavingsGoalCard } from "./components/SavingsGoalCard";
 import { WeeklyReport } from "./components/WeeklyReport";
 import { SignInForm } from "./components/auth/SignInForm";
+import { NoteForm } from "./components/notes/NoteForm";
 import { ReminderBanner } from "./components/notes/ReminderBanner";
 import { FinanceProvider, useFinance } from "./context/FinanceContext";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useReportRange } from "./hooks/useReportRange";
-import type { Expense, ExpenseInput } from "./types";
+import type { Expense, ExpenseInput, Note, NoteInput } from "./types";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
+import { cancelNoteReminder, scheduleNoteReminder } from "./utils/notifications";
 
 type TabId = "report" | "expenses" | "budget" | "forecast" | "notes" | "data";
 
@@ -53,6 +55,11 @@ function AppContent() {
     updateRecurringExpense,
     toggleRecurringExpenseActive,
     deleteRecurringExpense,
+    addNote,
+    updateNote,
+    deleteNote,
+    uploadNoteAudio,
+    retryNoteTranscription,
   } = useFinance();
   const reportRange = useReportRange();
 
@@ -61,6 +68,9 @@ function AppContent() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isNoteFormOpen, setIsNoteFormOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [deletingNote, setDeletingNote] = useState<Note | null>(null);
 
   const rangeExpenses = useMemo(
     () => filterExpensesByRange(expenses, reportRange.range),
@@ -91,6 +101,55 @@ function AppContent() {
     closeForm();
   };
 
+  const openAddNoteForm = () => {
+    setEditingNote(null);
+    setIsNoteFormOpen(true);
+  };
+  const openEditNoteForm = (note: Note) => {
+    setEditingNote(note);
+    setIsNoteFormOpen(true);
+  };
+  const closeNoteForm = () => {
+    setIsNoteFormOpen(false);
+    setEditingNote(null);
+  };
+
+  const applyNoteReminder = async (id: string, input: NoteInput) => {
+    await cancelNoteReminder(id);
+    if (input.reminderEnabled) {
+      await scheduleNoteReminder({
+        id,
+        ...input,
+        audioUrl: null,
+        transcript: null,
+        transcriptionStatus: "none",
+        createdAt: "",
+        updatedAt: "",
+      });
+    }
+  };
+
+  const handleSubmitNote = async (input: NoteInput, pendingAudioBlob: Blob | null) => {
+    if (editingNote) {
+      updateNote(editingNote.id, input);
+      if (pendingAudioBlob) await uploadNoteAudio(editingNote.id, pendingAudioBlob);
+      await applyNoteReminder(editingNote.id, input);
+    } else {
+      const newId = await addNote(input);
+      if (pendingAudioBlob) await uploadNoteAudio(newId, pendingAudioBlob);
+      await applyNoteReminder(newId, input);
+    }
+    closeNoteForm();
+  };
+
+  const handleDeleteNote = async () => {
+    if (deletingNote) {
+      await cancelNoteReminder(deletingNote.id);
+      deleteNote(deletingNote.id);
+    }
+    setDeletingNote(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
@@ -104,7 +163,12 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Header isDark={isDark} onToggleDark={() => setIsDark((prev) => !prev)} onAddExpense={openAddForm} />
+      <Header
+        isDark={isDark}
+        onToggleDark={() => setIsDark((prev) => !prev)}
+        onAddExpense={openAddForm}
+        onAddNote={openAddNoteForm}
+      />
 
       <main className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6">
         <div className="flex items-start gap-2 rounded-xl border border-ocean-100 bg-ocean-50 px-4 py-2.5 text-sm text-ocean-800 dark:border-ocean-800/60 dark:bg-ocean-900/30 dark:text-ocean-200">
@@ -199,7 +263,7 @@ function AppContent() {
             />
           )}
 
-          {activeTab === "notes" && <Notes />}
+          {activeTab === "notes" && <Notes notes={notes} onEdit={openEditNoteForm} onDelete={setDeletingNote} />}
 
           {activeTab === "data" && (
             <DataManagement
@@ -241,6 +305,26 @@ function AppContent() {
           setDeletingExpense(null);
         }}
         onCancel={() => setDeletingExpense(null)}
+      />
+
+      <Modal isOpen={isNoteFormOpen} onClose={closeNoteForm} title={editingNote ? "Edit note" : "Add note"}>
+        <NoteForm
+          initialNote={editingNote ?? undefined}
+          onSubmit={handleSubmitNote}
+          onCancel={closeNoteForm}
+          onRetryTranscription={editingNote ? () => retryNoteTranscription(editingNote.id) : undefined}
+        />
+      </Modal>
+
+      <ConfirmationDialog
+        isOpen={deletingNote !== null}
+        title="Delete note?"
+        message={
+          deletingNote ? `Are you sure you want to delete "${deletingNote.title || "this note"}"? This cannot be undone.` : ""
+        }
+        confirmLabel="Delete"
+        onConfirm={handleDeleteNote}
+        onCancel={() => setDeletingNote(null)}
       />
     </div>
   );

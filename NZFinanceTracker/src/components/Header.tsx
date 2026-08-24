@@ -1,13 +1,14 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { LogOut, Moon, PiggyBank, Plus, Sun } from "lucide-react";
+import { LogOut, Moon, NotebookPen, PiggyBank, Plus, Sun } from "lucide-react";
 
 interface HeaderProps {
   isDark: boolean;
   onToggleDark: () => void;
   onAddExpense: () => void;
+  onAddNote: () => void;
 }
 
-export function Header({ isDark, onToggleDark, onAddExpense }: HeaderProps) {
+export function Header({ isDark, onToggleDark, onAddExpense, onAddNote }: HeaderProps) {
   const { signOut } = useAuthActions();
   return (
     <header
@@ -40,6 +41,14 @@ export function Header({ isDark, onToggleDark, onAddExpense }: HeaderProps) {
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <LogOut className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onAddNote}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.98] dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            <NotebookPen className="h-4 w-4" />
+            Add Note
           </button>
           <button
             type="button"
