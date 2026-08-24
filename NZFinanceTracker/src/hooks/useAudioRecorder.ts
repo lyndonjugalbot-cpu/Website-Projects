@@ -43,15 +43,32 @@ export function useAudioRecorder(): UseAudioRecorderResult {
         resolve(null);
         return;
       }
-      recorder.onstop = () => {
-        const blob = chunksRef.current.length > 0 ? new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }) : null;
+
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        const blob =
+          chunksRef.current.length > 0 ? new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }) : null;
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
         mediaRecorderRef.current = null;
         setIsRecording(false);
         resolve(blob);
       };
-      recorder.stop();
+
+      // Some WebViews (notably iOS) have been observed to not reliably fire `onstop` — never
+      // let the UI wait forever on it. Whatever was captured so far still gets used.
+      const timeoutId = setTimeout(finish, 4000);
+
+      recorder.onstop = finish;
+      try {
+        recorder.stop();
+      } catch {
+        // Already inactive (e.g. a stray double-press) — nothing to wait for.
+        finish();
+      }
     });
   }, []);
 

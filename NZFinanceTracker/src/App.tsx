@@ -132,24 +132,34 @@ function AppContent() {
   };
 
   const handleSubmitNote = async (input: NoteInput, pendingAudioBlob: Blob | null) => {
-    if (editingNote) {
-      updateNote(editingNote.id, input);
-      if (pendingAudioBlob) await uploadNoteAudio(editingNote.id, pendingAudioBlob);
-      await applyNoteReminder(editingNote.id, input);
-    } else {
-      const newId = await addNote(input);
-      if (pendingAudioBlob) await uploadNoteAudio(newId, pendingAudioBlob);
-      await applyNoteReminder(newId, input);
+    try {
+      if (editingNote) {
+        updateNote(editingNote.id, input);
+        if (pendingAudioBlob) await uploadNoteAudio(editingNote.id, pendingAudioBlob);
+        await applyNoteReminder(editingNote.id, input);
+      } else {
+        const newId = await addNote(input);
+        if (pendingAudioBlob) await uploadNoteAudio(newId, pendingAudioBlob);
+        await applyNoteReminder(newId, input);
+      }
+    } catch (error) {
+      console.error("Failed to save note", error);
+    } finally {
+      closeNoteForm();
     }
-    closeNoteForm();
   };
 
   const handleDeleteNote = async () => {
-    if (deletingNote) {
-      await cancelNoteReminder(deletingNote.id);
-      deleteNote(deletingNote.id);
+    try {
+      if (deletingNote) {
+        await cancelNoteReminder(deletingNote.id);
+        deleteNote(deletingNote.id);
+      }
+    } catch (error) {
+      console.error("Failed to delete note", error);
+    } finally {
+      setDeletingNote(null);
     }
-    setDeletingNote(null);
   };
 
   if (isLoading) {
