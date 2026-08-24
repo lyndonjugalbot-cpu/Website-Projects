@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
 const expenseSchema = z.object({
   date: z.string().min(1),
   category: z.string().trim().min(1, "Category is required").max(100),
+  receiptName: z.string().trim().max(200).optional().or(z.literal("")),
   amountCentavos: z.number().int().min(1, "Amount must be greater than 0"),
   note: z.string().trim().max(500).optional().or(z.literal("")),
 });
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
     data: {
       date: new Date(`${parsed.data.date}T00:00:00+08:00`),
       category: parsed.data.category,
+      receiptName: parsed.data.receiptName || null,
       amountCentavos: parsed.data.amountCentavos,
       note: parsed.data.note || null,
       createdByName: session.user.name ?? session.user.email ?? "Staff",

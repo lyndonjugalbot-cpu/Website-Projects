@@ -29,7 +29,7 @@ function navLinksFor(role: UserRole) {
     );
   }
   if (role === "OWNER") {
-    links.push({ href: "/admin/staff", label: "Staff accounts" });
+    links.push({ href: "/admin/staff", label: "Staff accounts" }, { href: "/admin/payroll", label: "Payroll" });
   }
   return links;
 }

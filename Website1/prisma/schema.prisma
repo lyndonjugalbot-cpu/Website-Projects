@@ -228,12 +228,54 @@ model StockMovement {
 }
 
 // Admin-entered operating expenses, used for net profit/loss in Reports.
+// Also doubles as the "record a receipt" feature — receiptName holds the
+// name on the physical/digital receipt being logged (e.g. a supplier
+// invoice), while category keeps its existing grouping role for reports.
 model Expense {
   id              String   @id @default(cuid())
   date            DateTime
   category        String
+  receiptName     String?
   amountCentavos  Int
   note            String?
   createdByName   String?
   createdAt       DateTime @default(now())
+}
+
+// Admin-maintained employee roster, used to compute pay and generate
+// payslips. Employees are deactivated (isActive = false) rather than
+// deleted, same pattern as User, so payslip history stays intact.
+model Employee {
+  id              String   @id @default(cuid())
+  name            String
+  position        String?
+  basePayCentavos Int
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payslips Payslip[]
+}
+
+// One generated payslip for one employee covering one pay period. Base pay
+// and employee identity are snapshotted at generation time so a payslip
+// stays accurate even if the employee's base pay or position later changes.
+model Payslip {
+  id              String   @id @default(cuid())
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employeeName    String
+  position        String?
+  periodStart     DateTime
+  periodEnd       DateTime
+  basePayCentavos Int
+  // Manual line items on top of base pay, e.g. [{ label: "Overtime",
+  // amountCentavos: 50000 }, { label: "Cash advance", amountCentavos: -20000 }].
+  // Negative amounts are deductions, positive are bonuses/allowances.
+  adjustments     Json
+  netPayCentavos  Int
+  generatedByName String?
+  createdAt       DateTime @default(now())
+
+  @@index([employeeId])
 }
