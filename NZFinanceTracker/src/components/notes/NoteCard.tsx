@@ -15,13 +15,13 @@ export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
 
   return (
     <div
-      className={`group flex flex-col gap-2 rounded-2xl border p-4 shadow-sm transition hover:shadow-md ${palette.bg} ${palette.border}`}
+      className={`flex flex-col gap-2 rounded-2xl border p-4 shadow-sm transition hover:shadow-md ${palette.bg} ${palette.border}`}
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
           {note.title || (note.type === "checklist" ? "Checklist" : "Note")}
         </h3>
-        <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={() => onEdit(note)}
