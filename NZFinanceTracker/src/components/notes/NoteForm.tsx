@@ -1,8 +1,9 @@
-import { Plus, X } from "lucide-react";
-import { useState } from "react";
+import { Plus, Sparkles, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { NOTE_COLOR_KEYS, NOTE_COLORS, type NoteColorKey } from "../../config";
 import type { ChecklistItem, Note, NoteInput, NoteType } from "../../types";
 import { generateId } from "../../utils/id";
+import { parseScheduleFromText } from "../../utils/scheduleFromText";
 import { AudioRecorder } from "./AudioRecorder";
 
 interface NoteFormProps {
@@ -24,6 +25,40 @@ export function NoteForm({ initialNote, onSubmit, onCancel, onRetryTranscription
   const [reminderEnabled, setReminderEnabled] = useState(initialNote?.reminderEnabled ?? false);
   const [pendingAudioBlob, setPendingAudioBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const userEditedScheduleRef = useRef(Boolean(initialNote?.scheduledDate));
+  const [autoFillHint, setAutoFillHint] = useState<string | null>(null);
+
+  // Pre-fills the schedule from whatever mentions a date/time: typed text as you compose, or a
+  // voice transcript once it's back. Stops touching the fields the moment the user edits them directly.
+  useEffect(() => {
+    if (userEditedScheduleRef.current) return;
+    const textToParse = [
+      title,
+      type === "text" ? body : checklistItems.map((item) => item.text).join(". "),
+      initialNote?.transcript ?? "",
+    ]
+      .filter(Boolean)
+      .join(". ");
+    if (!textToParse.trim()) return;
+
+    const parsed = parseScheduleFromText(textToParse);
+    if (!parsed) return;
+
+    setScheduledDate(parsed.date);
+    if (parsed.time) {
+      setScheduledTime(parsed.time);
+      setReminderEnabled(true);
+    }
+    setAutoFillHint(parsed.matchedText);
+    // Only re-parse on text changes; the schedule fields themselves are set here, not read.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, body, checklistItems, type, initialNote?.transcript]);
+
+  const markScheduleEditedByUser = () => {
+    userEditedScheduleRef.current = true;
+    setAutoFillHint(null);
+  };
 
   const inputClass =
     "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500";
@@ -199,6 +234,12 @@ export function NoteForm({ initialNote, onSubmit, onCancel, onRetryTranscription
 
       <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
         <p className={labelClass}>Schedule (optional)</p>
+        {autoFillHint && (
+          <p className="-mt-2 flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            Detected "{autoFillHint}" — adjust below if that's not right.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="noteDate" className="sr-only">
@@ -208,7 +249,10 @@ export function NoteForm({ initialNote, onSubmit, onCancel, onRetryTranscription
               id="noteDate"
               type="date"
               value={scheduledDate}
-              onChange={(e) => setScheduledDate(e.target.value)}
+              onChange={(e) => {
+                markScheduleEditedByUser();
+                setScheduledDate(e.target.value);
+              }}
               className={inputClass}
             />
           </div>
@@ -220,7 +264,10 @@ export function NoteForm({ initialNote, onSubmit, onCancel, onRetryTranscription
               id="noteTime"
               type="time"
               value={scheduledTime}
-              onChange={(e) => setScheduledTime(e.target.value)}
+              onChange={(e) => {
+                markScheduleEditedByUser();
+                setScheduledTime(e.target.value);
+              }}
               disabled={!scheduledDate}
               className={`${inputClass} disabled:opacity-50`}
             />
@@ -231,7 +278,10 @@ export function NoteForm({ initialNote, onSubmit, onCancel, onRetryTranscription
             <input
               type="checkbox"
               checked={reminderEnabled}
-              onChange={(e) => setReminderEnabled(e.target.checked)}
+              onChange={(e) => {
+                markScheduleEditedByUser();
+                setReminderEnabled(e.target.checked);
+              }}
               className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30 dark:border-slate-600"
             />
             Remind me

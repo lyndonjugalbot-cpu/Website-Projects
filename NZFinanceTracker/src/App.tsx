@@ -22,6 +22,7 @@ import { ReminderBanner } from "./components/notes/ReminderBanner";
 import { FinanceProvider, useFinance } from "./context/FinanceContext";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useReportRange } from "./hooks/useReportRange";
+import { useSyncNoteReminders } from "./hooks/useSyncNoteReminders";
 import type { Expense, ExpenseInput, Note, NoteInput } from "./types";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
 import { cancelNoteReminder, scheduleNoteReminder } from "./utils/notifications";
@@ -62,6 +63,7 @@ function AppContent() {
     retryNoteTranscription,
   } = useFinance();
   const reportRange = useReportRange();
+  useSyncNoteReminders(notes);
 
   const [activeTab, setActiveTab] = useState<TabId>("report");
   const [isFormOpen, setIsFormOpen] = useState(false);

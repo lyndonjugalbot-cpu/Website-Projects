@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { parseScheduleFromText } from "./scheduleFromText";
 import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 // Ambient here (rather than relying on @types/node) so this file type-checks the same way
@@ -163,8 +164,14 @@ export const transcribeAudio = internalAction({
       }
       const result = await response.json();
       const transcript: string = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+      const parsedSchedule = transcript ? parseScheduleFromText(transcript) : null;
 
-      await ctx.runMutation(internal.notes.saveTranscript, { noteId, transcript, status: "done" });
+      await ctx.runMutation(internal.notes.saveTranscript, {
+        noteId,
+        transcript,
+        status: "done",
+        parsedSchedule: parsedSchedule ?? undefined,
+      });
     } catch (error) {
       console.error("Transcription failed", error);
       await ctx.runMutation(internal.notes.saveTranscript, { noteId, transcript: "", status: "failed" });
@@ -185,10 +192,20 @@ export const saveTranscript = internalMutation({
     noteId: v.id("notes"),
     transcript: v.string(),
     status: v.union(v.literal("done"), v.literal("failed")),
+    parsedSchedule: v.optional(v.object({ date: v.string(), time: v.union(v.string(), v.null()) })),
   },
-  handler: async (ctx, { noteId, transcript, status }) => {
+  handler: async (ctx, { noteId, transcript, status, parsedSchedule }) => {
     const note = await ctx.db.get(noteId);
     if (!note) return;
-    await ctx.db.patch(noteId, { transcript, transcriptionStatus: status });
+    // Only auto-schedule if the note isn't already scheduled, so we never clobber a date the user chose themselves.
+    const schedulePatch =
+      parsedSchedule && !note.scheduledDate
+        ? {
+            scheduledDate: parsedSchedule.date,
+            scheduledTime: parsedSchedule.time,
+            reminderEnabled: parsedSchedule.time !== null,
+          }
+        : {};
+    await ctx.db.patch(noteId, { transcript, transcriptionStatus: status, ...schedulePatch });
   },
 });
