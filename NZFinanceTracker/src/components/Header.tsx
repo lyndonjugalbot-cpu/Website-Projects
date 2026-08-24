@@ -21,7 +21,7 @@ export function Header({ isDark, onToggleDark, onAddExpense, onAddNote }: Header
             <PiggyBank className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-tight text-slate-900 dark:text-white">NZ Finance Tracker</h1>
+            <h1 className="text-lg font-bold leading-tight text-slate-900 dark:text-white">WOTS</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">Track your spending. Understand your habits.</p>
           </div>
         </div>

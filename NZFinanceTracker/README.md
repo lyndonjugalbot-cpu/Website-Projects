@@ -1,4 +1,4 @@
-# NZ Finance Tracker
+# WOTS
 
 A modern, responsive personal spending and budget tracker for New Zealand
 users. Record daily purchases, browse up to three months of history, generate

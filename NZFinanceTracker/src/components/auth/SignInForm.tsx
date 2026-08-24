@@ -38,7 +38,7 @@ export function SignInForm() {
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-ocean-500 text-white shadow-sm">
             <PiggyBank className="h-5 w-5" aria-hidden="true" />
           </div>
-          <h1 className="text-lg font-bold text-slate-900 dark:text-white">NZ Finance Tracker</h1>
+          <h1 className="text-lg font-bold text-slate-900 dark:text-white">WOTS</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {mode === "signIn" ? "Sign in to your account" : "Create an account to get started"}
           </p>
