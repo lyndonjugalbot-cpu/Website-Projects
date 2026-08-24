@@ -13,9 +13,11 @@
     "android": "npm run cap:sync && npx cap open android"
   },
   "dependencies": {
+    "@auth/core": "^0.41.3",
     "@capacitor/android": "^8.5.0",
     "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.5.0",
+    "@convex-dev/auth": "^0.0.95",
     "convex": "^1.44.0",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.33.0",

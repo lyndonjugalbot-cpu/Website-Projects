@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { subMonths } from "date-fns";
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
@@ -10,10 +11,12 @@ function retentionCutoffISO(): string {
 export const list = query({
   args: {},
   handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
     const cutoff = retentionCutoffISO();
     const expenses = await ctx.db
       .query("expenses")
-      .withIndex("by_date", (q) => q.gte("date", cutoff))
+      .withIndex("by_user_and_date", (q) => q.eq("userId", userId).gte("date", cutoff))
       .collect();
     return expenses.sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
@@ -32,13 +35,19 @@ const expenseFields = {
 export const add = mutation({
   args: expenseFields,
   handler: async (ctx, args) => {
-    await ctx.db.insert("expenses", { ...args, createdAt: new Date().toISOString() });
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    await ctx.db.insert("expenses", { ...args, userId, createdAt: new Date().toISOString() });
   },
 });
 
 export const update = mutation({
   args: { id: v.id("expenses"), ...expenseFields },
   handler: async (ctx, { id, ...patch }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const existing = await ctx.db.get(id);
+    if (!existing || existing.userId !== userId) throw new Error("Not found");
     await ctx.db.patch(id, { ...patch, isSample: false });
   },
 });
@@ -46,6 +55,10 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("expenses") },
   handler: async (ctx, { id }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const existing = await ctx.db.get(id);
+    if (!existing || existing.userId !== userId) throw new Error("Not found");
     await ctx.db.delete(id);
   },
 });
@@ -53,13 +66,26 @@ export const remove = mutation({
 export const clearAll = mutation({
   args: {},
   handler: async (ctx) => {
-    const [expenses, budgetDocs] = await Promise.all([
-      ctx.db.query("expenses").collect(),
-      ctx.db.query("budgets").collect(),
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const [expenses, budgetDocs, recurringExpenses] = await Promise.all([
+      ctx.db
+        .query("expenses")
+        .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("budgets")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("recurringExpenses")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
     ]);
     await Promise.all([
       ...expenses.map((e) => ctx.db.delete(e._id)),
       ...budgetDocs.map((b) => ctx.db.delete(b._id)),
+      ...recurringExpenses.map((r) => ctx.db.delete(r._id)),
     ]);
   },
 });
@@ -74,6 +100,8 @@ export const importMany = mutation({
     ),
   },
   handler: async (ctx, { expenses }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const cutoff = retentionCutoffISO();
     const today = new Date().toISOString().slice(0, 10);
     let importedCount = 0;
@@ -81,7 +109,7 @@ export const importMany = mutation({
       if (expense.date < cutoff || expense.date > today || expense.amount <= 0 || !expense.description.trim()) {
         continue;
       }
-      await ctx.db.insert("expenses", expense);
+      await ctx.db.insert("expenses", { ...expense, userId });
       importedCount += 1;
     }
     return importedCount;
@@ -91,15 +119,24 @@ export const importMany = mutation({
 export const seedSampleIfEmpty = mutation({
   args: {},
   handler: async (ctx) => {
-    const existingMeta = await ctx.db.query("meta").first();
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const existingMeta = await ctx.db
+      .query("meta")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
     if (existingMeta?.sampleSeeded) return;
 
-    const existingExpenses = await ctx.db.query("expenses").first();
+    const existingExpenses = await ctx.db
+      .query("expenses")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
+      .first();
     if (existingExpenses) {
       if (existingMeta) {
         await ctx.db.patch(existingMeta._id, { sampleSeeded: true });
       } else {
-        await ctx.db.insert("meta", { sampleSeeded: true });
+        await ctx.db.insert("meta", { userId, sampleSeeded: true });
       }
       return;
     }
@@ -122,6 +159,7 @@ export const seedSampleIfEmpty = mutation({
 
     for (const sample of samples) {
       await ctx.db.insert("expenses", {
+        userId,
         description: sample.description,
         amount: sample.amount,
         category: sample.category,
@@ -135,7 +173,7 @@ export const seedSampleIfEmpty = mutation({
     if (existingMeta) {
       await ctx.db.patch(existingMeta._id, { sampleSeeded: true });
     } else {
-      await ctx.db.insert("meta", { sampleSeeded: true });
+      await ctx.db.insert("meta", { userId, sampleSeeded: true });
     }
   },
 });

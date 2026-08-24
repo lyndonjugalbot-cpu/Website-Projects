@@ -17,6 +17,17 @@ export const EXPENSE_CATEGORIES = [
 
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
+/** Categories excluded from savings-suggestion trimming since they're generally non-discretionary. */
+export const ESSENTIAL_CATEGORIES: ExpenseCategory[] = ["Rent or mortgage", "Utilities", "Health", "Education"];
+
+export const FREQUENCIES = ["weekly", "fortnightly", "monthly"] as const;
+
+export const FREQUENCY_LABELS: Record<(typeof FREQUENCIES)[number], string> = {
+  weekly: "Weekly",
+  fortnightly: "Fortnightly",
+  monthly: "Monthly",
+};
+
 /**
  * Fixed categorical order (never cycled) drawn from a CVD-validated 8-hue palette,
  * extended with 3 additional distinguishable hues for the remaining categories.

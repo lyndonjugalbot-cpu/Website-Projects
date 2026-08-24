@@ -1,5 +1,6 @@
 import {
   addDays,
+  addMonths,
   eachDayOfInterval,
   eachWeekOfInterval,
   endOfMonth,
@@ -15,6 +16,7 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
+  subDays,
   subMonths,
   subWeeks,
 } from "date-fns";
@@ -131,4 +133,4 @@ export function isTodayOrEarlier(date: Date, today: Date = new Date()): boolean 
   return !isAfter(startOfDay(date), startOfDay(today));
 }
 
-export { addDays, startOfDay };
+export { addDays, addMonths, startOfDay, subDays };

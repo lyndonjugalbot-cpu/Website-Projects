@@ -8,10 +8,14 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as budgets from "../budgets.js";
 import type * as constants from "../constants.js";
 import type * as crons from "../crons.js";
 import type * as expenses from "../expenses.js";
+import type * as http from "../http.js";
+import type * as migrations from "../migrations.js";
+import type * as recurringExpenses from "../recurringExpenses.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +24,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   budgets: typeof budgets;
   constants: typeof constants;
   crons: typeof crons;
   expenses: typeof expenses;
+  http: typeof http;
+  migrations: typeof migrations;
+  recurringExpenses: typeof recurringExpenses;
 }>;
 
 /**

@@ -1,4 +1,5 @@
-import { BarChart3, Info, ListChecks, PiggyBank as PiggyBankIcon, Settings } from "lucide-react";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { BarChart3, Info, ListChecks, PiggyBank as PiggyBankIcon, Settings, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BudgetCard } from "./components/BudgetCard";
 import { BudgetSettings } from "./components/BudgetSettings";
@@ -7,23 +8,27 @@ import { Dashboard } from "./components/Dashboard";
 import { DataManagement } from "./components/DataManagement";
 import { ExpenseForm } from "./components/ExpenseForm";
 import { ExpenseList } from "./components/ExpenseList";
+import { Forecast } from "./components/Forecast";
 import { Header } from "./components/Header";
 import { Modal } from "./components/Modal";
 import { MonthlyReport } from "./components/MonthlyReport";
 import { ReportControls } from "./components/ReportControls";
+import { SavingsGoalCard } from "./components/SavingsGoalCard";
 import { WeeklyReport } from "./components/WeeklyReport";
+import { SignInForm } from "./components/auth/SignInForm";
 import { FinanceProvider, useFinance } from "./context/FinanceContext";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useReportRange } from "./hooks/useReportRange";
 import type { Expense, ExpenseInput } from "./types";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
 
-type TabId = "report" | "expenses" | "budget" | "data";
+type TabId = "report" | "expenses" | "budget" | "forecast" | "data";
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
   { id: "report", label: "Report", icon: BarChart3 },
   { id: "expenses", label: "Expenses", icon: ListChecks },
   { id: "budget", label: "Budget", icon: PiggyBankIcon },
+  { id: "forecast", label: "Forecast", icon: TrendingUp },
   { id: "data", label: "Data", icon: Settings },
 ];
 
@@ -32,6 +37,7 @@ function AppContent() {
   const {
     expenses,
     budgets,
+    recurringExpenses,
     isLoading,
     addExpense,
     updateExpense,
@@ -39,6 +45,10 @@ function AppContent() {
     importExpenses,
     clearAllData,
     setBudgets,
+    addRecurringExpense,
+    updateRecurringExpense,
+    toggleRecurringExpenseActive,
+    deleteRecurringExpense,
   } = useFinance();
   const reportRange = useReportRange();
 
@@ -161,7 +171,26 @@ function AppContent() {
                 totalSpent={totalSpentInRange}
                 onConfigure={() => setIsBudgetModalOpen(true)}
               />
+              <SavingsGoalCard
+                view={reportRange.view}
+                budgets={budgets}
+                totalSpent={totalSpentInRange}
+                onConfigure={() => setIsBudgetModalOpen(true)}
+              />
             </div>
+          )}
+
+          {activeTab === "forecast" && (
+            <Forecast
+              expenses={expenses}
+              budgets={budgets}
+              recurringExpenses={recurringExpenses}
+              onAddRecurring={addRecurringExpense}
+              onUpdateRecurring={updateRecurringExpense}
+              onToggleRecurringActive={toggleRecurringExpenseActive}
+              onDeleteRecurring={deleteRecurringExpense}
+              onConfigureSettings={() => setIsBudgetModalOpen(true)}
+            />
           )}
 
           {activeTab === "data" && (
@@ -211,9 +240,24 @@ function AppContent() {
 
 function App() {
   return (
-    <FinanceProvider>
-      <AppContent />
-    </FinanceProvider>
+    <>
+      <AuthLoading>
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+          <div className="flex flex-col items-center gap-3 text-slate-400 dark:text-slate-500">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-brand-600 dark:border-slate-700 dark:border-t-brand-500" />
+            <p className="text-sm">Connecting…</p>
+          </div>
+        </div>
+      </AuthLoading>
+      <Unauthenticated>
+        <SignInForm />
+      </Unauthenticated>
+      <Authenticated>
+        <FinanceProvider>
+          <AppContent />
+        </FinanceProvider>
+      </Authenticated>
+    </>
   );
 }
 

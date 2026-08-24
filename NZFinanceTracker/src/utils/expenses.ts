@@ -1,6 +1,6 @@
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "../config";
 import type { DateRange, Expense } from "../types";
-import { formatNZDate, getDaysInRange, getStartOfWeek, isDateWithinRange, toISODateString } from "./date";
+import { formatNZDate, getDaysInRange, getStartOfWeek, isDateWithinRange, startOfDay, subDays, toISODateString } from "./date";
 
 export function filterExpensesByRange(expenses: Expense[], range: DateRange): Expense[] {
   return expenses.filter((expense) => isDateWithinRange(expense.date, range));
@@ -171,6 +171,14 @@ export function getHighestSpendingWeek(expenses: Expense[], range: DateRange): W
   const weeks = groupSpendingByWeek(expenses, range).filter((w) => w.count > 0);
   if (weeks.length === 0) return null;
   return weeks.reduce((highest, week) => (week.total > highest.total ? week : highest));
+}
+
+/** Average daily spend over the trailing `days` window ending today, used as the forecast's variable-spend estimate. */
+export function getRecentDailyAverage(expenses: Expense[], days: number, today: Date = new Date()): number {
+  const end = startOfDay(today);
+  const range: DateRange = { start: subDays(end, days - 1), end };
+  const recent = filterExpensesByRange(expenses, range);
+  return getTotalSpent(recent) / days;
 }
 
 export function getOldestExpenseDate(expenses: Expense[]): string | null {
