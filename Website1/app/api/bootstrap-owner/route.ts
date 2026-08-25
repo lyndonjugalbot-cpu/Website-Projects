@@ -1,6 +1,8 @@
 // TEMPORARY, ONE-OFF: creates/promotes a single hardcoded OWNER account.
 // Protected by BOOTSTRAP_OWNER_SECRET (set only in Production). Delete this
 // route and the env var immediately after use — never leave it deployed.
+// Deliberately NOT under /api/admin — that prefix is gated by middleware.ts
+// requiring a signed-in session, which this route can't have yet.
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
