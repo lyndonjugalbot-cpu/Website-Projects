@@ -45,3 +45,4 @@ next-env.d.ts
 # local-fallback product image uploads (see app/api/admin/products/upload-image)
 /public/uploads/*
 !/public/uploads/.gitkeep
+.env*
