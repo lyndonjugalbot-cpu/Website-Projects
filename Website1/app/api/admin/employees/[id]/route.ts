@@ -5,7 +5,7 @@ import { requireRole, UnauthorizedError } from "@/lib/authz";
 
 const patchSchema = z.object({
   position: z.string().trim().max(100).optional().or(z.literal("")),
-  basePayCentavos: z.number().int().min(1, "Base pay must be greater than 0").optional(),
+  dailyRateCentavos: z.number().int().min(1, "Daily rate must be greater than 0").optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -26,7 +26,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     where: { id: params.id },
     data: {
       ...(parsed.data.position !== undefined ? { position: parsed.data.position || null } : {}),
-      ...(parsed.data.basePayCentavos !== undefined ? { basePayCentavos: parsed.data.basePayCentavos } : {}),
+      ...(parsed.data.dailyRateCentavos !== undefined ? { dailyRateCentavos: parsed.data.dailyRateCentavos } : {}),
       ...(parsed.data.isActive !== undefined ? { isActive: parsed.data.isActive } : {}),
     },
   });

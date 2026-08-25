@@ -26,7 +26,7 @@ export function PayrollManager({
     <div className="flex flex-col gap-10">
       <section>
         <h2 className="text-lg font-medium text-neutral-900">Employees</h2>
-        <p className="mt-1 text-sm text-neutral-500">Base pay is per pay period — set the period length that matches how often you run payroll.</p>
+        <p className="mt-1 text-sm text-neutral-500">Set each employee&apos;s daily rate — payslips compute pay from hours worked plus any holiday bonuses.</p>
         <div className="mt-4">
           <EmployeeManager initialEmployees={initialEmployees} onChange={setEmployees} />
         </div>

@@ -7,7 +7,7 @@ export type Employee = {
   id: string;
   name: string;
   position: string | null;
-  basePayCentavos: number;
+  dailyRateCentavos: number;
   isActive: boolean;
 };
 
@@ -19,7 +19,7 @@ export function EmployeeManager({
   onChange?: (employees: Employee[]) => void;
 }) {
   const [employees, setEmployees] = useState(initialEmployees);
-  const [form, setForm] = useState({ name: "", position: "", basePayInput: "" });
+  const [form, setForm] = useState({ name: "", position: "", dailyRateInput: "" });
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,9 +31,9 @@ export function EmployeeManager({
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const basePayCentavos = Math.round((Number.parseFloat(form.basePayInput) || 0) * 100);
-    if (!form.name.trim() || basePayCentavos <= 0) {
-      setError("Enter a name and a base pay greater than 0");
+    const dailyRateCentavos = Math.round((Number.parseFloat(form.dailyRateInput) || 0) * 100);
+    if (!form.name.trim() || dailyRateCentavos <= 0) {
+      setError("Enter a name and a daily rate greater than 0");
       return;
     }
     setIsCreating(true);
@@ -41,12 +41,12 @@ export function EmployeeManager({
       const res = await fetch("/api/admin/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, position: form.position, basePayCentavos }),
+        body: JSON.stringify({ name: form.name, position: form.position, dailyRateCentavos }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not add employee");
       update([...employees, data.employee]);
-      setForm({ name: "", position: "", basePayInput: "" });
+      setForm({ name: "", position: "", dailyRateInput: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add employee");
     } finally {
@@ -54,7 +54,7 @@ export function EmployeeManager({
     }
   }
 
-  async function patchEmployee(id: string, patch: { basePayCentavos?: number; position?: string; isActive?: boolean }) {
+  async function patchEmployee(id: string, patch: { dailyRateCentavos?: number; position?: string; isActive?: boolean }) {
     const res = await fetch(`/api/admin/employees/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -68,15 +68,15 @@ export function EmployeeManager({
     update(employees.map((emp) => (emp.id === id ? { ...emp, ...data.employee } : emp)));
   }
 
-  function handleEditBasePay(emp: Employee) {
-    const input = prompt(`New base pay for ${emp.name} (₱ per period):`, (emp.basePayCentavos / 100).toFixed(2));
+  function handleEditDailyRate(emp: Employee) {
+    const input = prompt(`New daily rate for ${emp.name} (₱/day):`, (emp.dailyRateCentavos / 100).toFixed(2));
     if (input === null) return;
-    const basePayCentavos = Math.round((Number.parseFloat(input) || 0) * 100);
-    if (basePayCentavos <= 0) {
-      alert("Base pay must be greater than 0");
+    const dailyRateCentavos = Math.round((Number.parseFloat(input) || 0) * 100);
+    if (dailyRateCentavos <= 0) {
+      alert("Daily rate must be greater than 0");
       return;
     }
-    patchEmployee(emp.id, { basePayCentavos });
+    patchEmployee(emp.id, { dailyRateCentavos });
   }
 
   return (
@@ -87,7 +87,7 @@ export function EmployeeManager({
             <tr>
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Position</th>
-              <th className="px-4 py-3 font-medium">Base pay / period</th>
+              <th className="px-4 py-3 font-medium">Daily rate</th>
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
@@ -106,10 +106,10 @@ export function EmployeeManager({
                 <td className="px-4 py-3">
                   <button
                     type="button"
-                    onClick={() => handleEditBasePay(emp)}
+                    onClick={() => handleEditDailyRate(emp)}
                     className="font-medium text-neutral-900 hover:text-brand-red hover:underline"
                   >
-                    {formatCentavosAsPHP(emp.basePayCentavos)}
+                    {formatCentavosAsPHP(emp.dailyRateCentavos)}
                   </button>
                 </td>
                 <td className="px-4 py-3">
@@ -142,14 +142,14 @@ export function EmployeeManager({
           </label>
         </div>
         <label className="flex max-w-[200px] flex-col gap-1.5 text-sm">
-          <span className="font-medium text-neutral-700">Base pay per period (₱)</span>
+          <span className="font-medium text-neutral-700">Daily rate (₱/day)</span>
           <input
             type="number"
             min="0"
             step="0.01"
             required
-            value={form.basePayInput}
-            onChange={(e) => setForm({ ...form, basePayInput: e.target.value })}
+            value={form.dailyRateInput}
+            onChange={(e) => setForm({ ...form, dailyRateInput: e.target.value })}
             className="input"
           />
         </label>

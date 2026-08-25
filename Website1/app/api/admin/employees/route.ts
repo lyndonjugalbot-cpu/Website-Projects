@@ -20,7 +20,7 @@ export async function GET() {
 const createEmployeeSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200),
   position: z.string().trim().max(100).optional().or(z.literal("")),
-  basePayCentavos: z.number().int().min(1, "Base pay must be greater than 0"),
+  dailyRateCentavos: z.number().int().min(1, "Daily rate must be greater than 0"),
 });
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     data: {
       name: parsed.data.name,
       position: parsed.data.position || null,
-      basePayCentavos: parsed.data.basePayCentavos,
+      dailyRateCentavos: parsed.data.dailyRateCentavos,
     },
   });
 

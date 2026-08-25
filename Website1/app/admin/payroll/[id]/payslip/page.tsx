@@ -55,9 +55,17 @@ export default async function PayslipPage({ params }: { params: { id: string } }
         </div>
 
         <div className="mt-3 flex flex-col gap-0.5 border-t border-dashed border-neutral-300 pt-3">
+          <div className="flex justify-between text-neutral-500">
+            <span>Daily rate</span>
+            <span>{formatCentavosAsPHP(payslip.dailyRateCentavos)}</span>
+          </div>
+          <div className="flex justify-between text-neutral-500">
+            <span>Hours worked</span>
+            <span>{payslip.hoursWorked}</span>
+          </div>
           <div className="flex justify-between">
-            <span>Base pay</span>
-            <span>{formatCentavosAsPHP(payslip.basePayCentavos)}</span>
+            <span>Regular pay</span>
+            <span>{formatCentavosAsPHP(payslip.regularPayCentavos)}</span>
           </div>
           {adjustments.map((a, i) => (
             <div key={i} className="flex justify-between">

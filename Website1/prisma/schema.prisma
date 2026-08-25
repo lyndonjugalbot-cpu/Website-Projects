@@ -246,36 +246,42 @@ model Expense {
 // payslips. Employees are deactivated (isActive = false) rather than
 // deleted, same pattern as User, so payslip history stays intact.
 model Employee {
-  id              String   @id @default(cuid())
-  name            String
-  position        String?
-  basePayCentavos Int
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  position          String?
+  dailyRateCentavos Int
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   payslips Payslip[]
 }
 
-// One generated payslip for one employee covering one pay period. Base pay
-// and employee identity are snapshotted at generation time so a payslip
-// stays accurate even if the employee's base pay or position later changes.
+// One generated payslip for one employee covering one pay period. Daily
+// rate and employee identity are snapshotted at generation time so a
+// payslip stays accurate even if the employee record later changes.
+// regularPayCentavos = (dailyRateCentavos / STANDARD_HOURS_PER_DAY) *
+// hoursWorked — see lib/payroll.ts for the shared computation.
 model Payslip {
-  id              String   @id @default(cuid())
-  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId      String
-  employeeName    String
-  position        String?
-  periodStart     DateTime
-  periodEnd       DateTime
-  basePayCentavos Int
-  // Manual line items on top of base pay, e.g. [{ label: "Overtime",
-  // amountCentavos: 50000 }, { label: "Cash advance", amountCentavos: -20000 }].
+  id                 String   @id @default(cuid())
+  employee           Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId         String
+  employeeName       String
+  position           String?
+  periodStart        DateTime
+  periodEnd          DateTime
+  dailyRateCentavos  Int
+  hoursWorked        Float
+  regularPayCentavos Int
+  // Manual line items on top of regular pay — holiday bonuses (computed as
+  // a % of the daily rate at generation time) plus admin-entered bonuses/
+  // deductions, e.g. [{ label: "Holiday: Christmas Day (200%)",
+  // amountCentavos: 120000 }, { label: "Cash advance", amountCentavos: -20000 }].
   // Negative amounts are deductions, positive are bonuses/allowances.
-  adjustments     Json
-  netPayCentavos  Int
-  generatedByName String?
-  createdAt       DateTime @default(now())
+  adjustments        Json
+  netPayCentavos     Int
+  generatedByName    String?
+  createdAt          DateTime @default(now())
 
   @@index([employeeId])
 }

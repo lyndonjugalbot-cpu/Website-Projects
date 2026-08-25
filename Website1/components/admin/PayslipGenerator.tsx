@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatCentavosAsPHP } from "@/lib/money";
 import { todayInManila } from "@/lib/timezone";
+import { computeHolidayBonusCentavos, computeRegularPayCentavos } from "@/lib/payroll";
 import type { Employee } from "@/components/admin/EmployeeManager";
 
 type Adjustment = { label: string; amountInput: string };
+type Holiday = { label: string; percentInput: string };
 
 type Payslip = {
   id: string;
@@ -19,31 +21,61 @@ type Payslip = {
 
 export function PayslipGenerator({ employees, initialPayslips }: { employees: Employee[]; initialPayslips: Payslip[] }) {
   const activeEmployees = employees.filter((emp) => emp.isActive);
+  const activeIds = activeEmployees.map((emp) => emp.id).join(",");
   const today = todayInManila();
 
   const [employeeId, setEmployeeId] = useState(activeEmployees[0]?.id ?? "");
   const [periodStart, setPeriodStart] = useState(today);
   const [periodEnd, setPeriodEnd] = useState(today);
+  const [hoursWorkedInput, setHoursWorkedInput] = useState("");
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payslips, setPayslips] = useState(initialPayslips);
 
+  // activeEmployees is a new array every render, so this only re-runs when
+  // the underlying set of active ids actually changes (e.g. an employee was
+  // just added, or the current selection was deactivated) — otherwise a
+  // freshly-added employee never becomes selectable because the <select>'s
+  // initial value was locked in before it existed.
+  useEffect(() => {
+    if (!activeEmployees.some((emp) => emp.id === employeeId)) {
+      setEmployeeId(activeEmployees[0]?.id ?? "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIds]);
+
   const selectedEmployee = activeEmployees.find((emp) => emp.id === employeeId);
+  const hoursWorked = Number.parseFloat(hoursWorkedInput) || 0;
+  const dailyRateCentavos = selectedEmployee?.dailyRateCentavos ?? 0;
+  const regularPayCentavos = computeRegularPayCentavos(dailyRateCentavos, hoursWorked);
+  const holidayBonusTotalCentavos = holidays.reduce(
+    (sum, h) => sum + computeHolidayBonusCentavos(dailyRateCentavos, Number.parseFloat(h.percentInput) || 0),
+    0
+  );
   const adjustmentsTotalCentavos = adjustments.reduce(
     (sum, a) => sum + Math.round((Number.parseFloat(a.amountInput) || 0) * 100),
     0
   );
-  const previewNetPayCentavos = (selectedEmployee?.basePayCentavos ?? 0) + adjustmentsTotalCentavos;
+  const previewNetPayCentavos = regularPayCentavos + holidayBonusTotalCentavos + adjustmentsTotalCentavos;
+
+  function addHoliday() {
+    setHolidays([...holidays, { label: "", percentInput: "" }]);
+  }
+  function updateHoliday(index: number, patch: Partial<Holiday>) {
+    setHolidays(holidays.map((h, i) => (i === index ? { ...h, ...patch } : h)));
+  }
+  function removeHoliday(index: number) {
+    setHolidays(holidays.filter((_, i) => i !== index));
+  }
 
   function addAdjustment() {
     setAdjustments([...adjustments, { label: "", amountInput: "" }]);
   }
-
   function updateAdjustment(index: number, patch: Partial<Adjustment>) {
     setAdjustments(adjustments.map((a, i) => (i === index ? { ...a, ...patch } : a)));
   }
-
   function removeAdjustment(index: number) {
     setAdjustments(adjustments.filter((_, i) => i !== index));
   }
@@ -55,10 +87,17 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
       setError("Select an employee");
       return;
     }
+    if (hoursWorked <= 0) {
+      setError("Enter hours worked greater than 0");
+      return;
+    }
     if (periodEnd < periodStart) {
       setError("Period end must be on or after period start");
       return;
     }
+    const cleanHolidays = holidays
+      .filter((h) => h.label.trim())
+      .map((h) => ({ label: h.label.trim(), bonusPercent: Number.parseFloat(h.percentInput) || 0 }));
     const cleanAdjustments = adjustments
       .filter((a) => a.label.trim())
       .map((a) => ({ label: a.label.trim(), amountCentavos: Math.round((Number.parseFloat(a.amountInput) || 0) * 100) }));
@@ -68,11 +107,20 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
       const res = await fetch("/api/admin/payslips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId, periodStart, periodEnd, adjustments: cleanAdjustments }),
+        body: JSON.stringify({
+          employeeId,
+          periodStart,
+          periodEnd,
+          hoursWorked,
+          holidays: cleanHolidays,
+          adjustments: cleanAdjustments,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not generate payslip");
       setPayslips([data.payslip, ...payslips]);
+      setHoursWorkedInput("");
+      setHolidays([]);
       setAdjustments([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate payslip");
@@ -90,7 +138,7 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
           <p className="text-sm text-neutral-500">Add an active employee above first.</p>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
               <label className="flex flex-col gap-1.5 text-sm">
                 <span className="font-medium text-neutral-700">Employee</span>
                 <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="input">
@@ -109,6 +157,76 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
                 <span className="font-medium text-neutral-700">Period end</span>
                 <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="input" required />
               </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="font-medium text-neutral-700">Hours worked</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  placeholder="e.g. 80"
+                  value={hoursWorkedInput}
+                  onChange={(e) => setHoursWorkedInput(e.target.value)}
+                  className="input"
+                  required
+                />
+              </label>
+            </div>
+
+            {selectedEmployee && (
+              <p className="text-xs text-neutral-500">
+                {selectedEmployee.name}&apos;s daily rate: {formatCentavosAsPHP(dailyRateCentavos)} — regular pay for{" "}
+                {hoursWorked || 0} hrs: {formatCentavosAsPHP(regularPayCentavos)}
+              </p>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-700">Holidays (optional)</span>
+                <button type="button" onClick={addHoliday} className="text-sm font-medium text-brand-red hover:underline">
+                  + Add holiday
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-neutral-500">
+                Bonus pay as a % of the daily rate, e.g. 100% for a regular holiday, 30% for a special non-working day.
+              </p>
+
+              {holidays.length > 0 && (
+                <div className="mt-3 flex flex-col gap-2">
+                  {holidays.map((h, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Holiday name (e.g. Christmas Day)"
+                        value={h.label}
+                        onChange={(e) => updateHoliday(i, { label: e.target.value })}
+                        className="input flex-1"
+                      />
+                      <div className="flex w-40 items-center gap-1">
+                        <input
+                          type="number"
+                          step="1"
+                          placeholder="100"
+                          value={h.percentInput}
+                          onChange={(e) => updateHoliday(i, { percentInput: e.target.value })}
+                          className="input"
+                        />
+                        <span className="text-sm text-neutral-500">%</span>
+                      </div>
+                      <span className="w-24 text-right text-xs text-neutral-500">
+                        {formatCentavosAsPHP(computeHolidayBonusCentavos(dailyRateCentavos, Number.parseFloat(h.percentInput) || 0))}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeHoliday(i)}
+                        className="rounded-full px-2.5 py-1.5 text-sm text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+                        aria-label="Remove holiday"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
