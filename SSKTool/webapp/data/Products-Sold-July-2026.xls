@@ -1,0 +1,2120 @@
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<?fr-application created="FastReport"?>
+<?fr-application homesite="http://www.fast-report.com"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40">
+<DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+<Title></Title>
+<Author></Author>
+<Created>8/28/2026 12:00:00 AMT15:13:38.2384661Z</Created>
+<Version></Version>
+</DocumentProperties>
+<ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+<ProtectStructure>False</ProtectStructure>
+<ProtectWindows>False</ProtectWindows>
+</ExcelWorkbook>
+<Styles>
+<Style ss:ID="s0">
+<Font ss:FontName="Arial" ss:Size="9" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s1">
+<Font ss:FontName="Arial" ss:Size="11" ss:Color="#000000" ss:Bold="1" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s2">
+<Font ss:FontName="Arial" ss:Size="9" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s3">
+<Font ss:FontName="Arial" ss:Size="9" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s4">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" ss:Bold="1" />
+
+<Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s5">
+<Font ss:FontName="Tahoma" ss:Size="8" ss:Color="#FFFFFF" />
+<Interior ss:Color="#A9A9A9" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A9A9A9"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A9A9A9"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A9A9A9"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A9A9A9"/>
+</Borders>
+</Style>
+<Style ss:ID="s6">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s7">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s8">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s9">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+<NumberFormat ss:Format="#,##0.00;-#,##0.00"/>
+</Style>
+<Style ss:ID="s10">
+<Font ss:FontName="Tahoma" ss:Size="8" ss:Color="#FFFFFF" />
+<Interior ss:Color="#F5F5F5" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s11">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s12">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s13">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" ss:Bold="1" />
+
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+<NumberFormat ss:Format="#,##0.00;-#,##0.00"/>
+</Style>
+<Style ss:ID="s14">
+<Font ss:FontName="Tahoma" ss:Size="8" ss:Color="#FFFFFF" />
+
+<Alignment ss:Horizontal="Left" ss:Vertical="Top" ss:WrapText="1" />
+<Borders>
+</Borders>
+</Style>
+<Style ss:ID="s15">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+<Interior ss:Color="#F5F5F5" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Left" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s16">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+<Interior ss:Color="#F5F5F5" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s17">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+<Interior ss:Color="#F5F5F5" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+</Style>
+<Style ss:ID="s18">
+<Font ss:FontName="Arial" ss:Size="8" ss:Color="#000000" />
+<Interior ss:Color="#F5F5F5" ss:Pattern="Solid"/>
+<Alignment ss:Horizontal="Right" ss:Vertical="Center" ss:WrapText="1" />
+<Borders>
+<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Bottom" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+<Border ss:Position="Right" 
+ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C0C0C0"/>
+</Borders>
+<NumberFormat ss:Format="#,##0.00;-#,##0.00"/>
+</Style>
+</Styles>
+<Worksheet ss:Name="Page 1">
+<Table ss:ExpandedColumnCount="11" ss:ExpandedRowCount="245" x:FullColumns="1" x:FullRows="1">
+<Column ss:AutoFitWidth="0" ss:Width="68.68"/>
+<Column ss:AutoFitWidth="0" ss:Width="13.74"/>
+<Column ss:AutoFitWidth="0" ss:Width="2.37"/>
+<Column ss:AutoFitWidth="0" ss:Width="183.06"/>
+<Column ss:AutoFitWidth="0" ss:Width="6.87"/>
+<Column ss:AutoFitWidth="0" ss:Width="61.81"/>
+<Column ss:AutoFitWidth="0" ss:Width="6.87"/>
+<Column ss:AutoFitWidth="0" ss:Width="41.21"/>
+<Column ss:AutoFitWidth="0" ss:Width="68.68"/>
+<Column ss:AutoFitWidth="0" ss:Width="68.68"/>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s1">
+<Data ss:Type="String">SALES BY PRODUCT</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="6.87">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">Period:</Data></Cell><Cell ss:Index="3" ss:MergeAcross="1" ss:StyleID="s0">
+<Data ss:Type="String">7/1/2026 - 7/31/2026</Data></Cell><Cell ss:Index="5" ss:MergeDown="4" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">Company:</Data></Cell><Cell ss:Index="8" ss:MergeAcross="2" ss:StyleID="s0">
+<Data ss:Type="String">Seoul Stop Kmart</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">Customer:</Data></Cell><Cell ss:Index="3" ss:MergeAcross="1" ss:StyleID="s0">
+<Data ss:Type="String">All</Data></Cell><Cell ss:Index="6" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">Address:</Data></Cell><Cell ss:Index="8" ss:MergeAcross="2" ss:StyleID="s3">
+<Data ss:Type="String">Yati, Liloan, Cebu,  </Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">User:</Data></Cell><Cell ss:Index="3" ss:MergeAcross="1" ss:StyleID="s0">
+<Data ss:Type="String">All</Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:MergeDown="2" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="1" ss:StyleID="s2">
+<Data ss:Type="String">Product:</Data></Cell><Cell ss:Index="3" ss:MergeAcross="1" ss:StyleID="s0">
+<Data ss:Type="String">All</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="6.87">
+<Cell ss:Index="1" ss:MergeAcross="3" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s4">
+<Data ss:Type="String">Code</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s4">
+<Data ss:Type="String">Product</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">Quantity</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">UOM</Data></Cell><Cell ss:Index="9" ss:StyleID="s4">
+<Data ss:Type="String">Total before tax</Data></Cell><Cell ss:Index="10" ss:StyleID="s4">
+<Data ss:Type="String">Total</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="1.37">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s5">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">686</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">1.5L Coke</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">28</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2380.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2380.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">793</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">1.5L Sprite</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">680.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">680.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">635</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">100g White Sesame seeds</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">75.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">75.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">991</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">10won Cream Cheese Bread (Blue)</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">294.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">294.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">992</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">10won Custard Cream Bread (Orange)</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">98.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">98.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">610</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">50g White Sesame seeds</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">195.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">195.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">557</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">aCafela Caramel Macchiato 240ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">327.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">327.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1016</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ahyul Jarae dosirak kim 4G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">39</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PC</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1365.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1365.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">169</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">ALFREDO FEEMAS SPF50+ 70ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">255.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">255.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">324</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">BEEF BULGOGI CUP-BAP</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">20</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2300.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2300.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1008</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Bibigo Jarae Kim 5G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">74</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PC</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2588.25</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2588.25</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1007</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Bibigo Jarae Kim 5G 9 PCS</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">Pack</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">295.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">295.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">632</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Bibigo Kimbop Kim 10g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">889.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">889.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">218</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">BIBIGO SAVORY SEAWEED 5g 8PCS</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">578.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">578.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">426</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">BINGGRAE MILK MELON 200 ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">552.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">552.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">299</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">BINGGRAE MILK TARO 200ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">14</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">966.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">966.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">777</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">BINGGRAE PANGTOA CHOCO ICE CREAM</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">20</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1980.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1980.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">511</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Binggrae Samanco Chocolate 150ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">24</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2136.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2136.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">510</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Binggrae Samanco Strawberry 150ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">445.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">445.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">445</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Boiled Egg</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">84</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2097.50</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2097.50</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">427</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CABBAGE KIMCHI 250ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">112</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">12880.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">12880.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">666</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CABBAGE KIMCHI 500ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">44</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">9152.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">9152.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">436</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CAFE REAL BLUE LEMON ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">18</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1440.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1440.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">219</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CAFE REAL PEACH 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">9</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">720.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">720.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">435</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CAFE REAL SHINE MUSCAT ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">640.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">640.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">773</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CaffeBENE HONEY GRAPEFRUIT 190ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">80.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">80.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">143</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CANTABILE BLUEBERRY FLAVORED ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">80.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">80.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">468</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CANTABILE MELON FLAVORED ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">880.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">880.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">140</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CANTABILE PEACH FLAVORED ICED TEA 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">480.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">480.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">980</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CANTABILE PINEAPPLE FLAVORED ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">240.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">240.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1048</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Cards - MLBB AR Bulk</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">150.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">150.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1050</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Cards - One Piece Bulk</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">200.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">200.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1042</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Cards - One Piece Card</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1002</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CG Ibanjang Cheese Kim 4G * 3 pcs</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">14</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">Pack</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">98</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Cheesy Fries</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">22</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1650.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1650.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">629</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Chia Seeds 100g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">294.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">294.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">634</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Chocmet Chili Spicy Chicken 113g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">85.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">85.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">486</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CHOPSTICKS</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">57</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">171.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">171.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">926</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Chum-churum Blueberry 360ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">13</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1755.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1755.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">861</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Chum-Churum Yogurt 360ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">135.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">135.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="0.45">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="2" ss:StyleID="s12">
+<Data ss:Type="String">8/28/2026 3:12:41 PM</Data></Cell><Cell ss:Index="4" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:StyleID="s11">
+<Data ss:Type="String">Page 1</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s4">
+<Data ss:Type="String">Code</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s4">
+<Data ss:Type="String">Product</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">Quantity</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">UOM</Data></Cell><Cell ss:Index="9" ss:StyleID="s4">
+<Data ss:Type="String">Total before tax</Data></Cell><Cell ss:Index="10" ss:StyleID="s4">
+<Data ss:Type="String">Total</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="1.37">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s5">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">880</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Chupa Chups Room Spray 300ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">250.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">250.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">337</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CJW cheese seaweed 5g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">90</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">4320.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">4320.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">885</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CJW cheese seaweed 5g 9pcs pack</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">866</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">CJW Olive seaweed /pc</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">94</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">3478.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">3478.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">579</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">CJW Olive Seaweed 9pcs</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1196.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1196.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">655</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Classic Corndog </Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">13</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1105.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1105.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">688</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Coke Can 320mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">119</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">5593.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">5593.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">703</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Coke Zero Can</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">148</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">6953.65</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">6953.65</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">367</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">COOKING CHARGE</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">459</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">13762.50</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">13762.50</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">626</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Cucumber Kimchi</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">20</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1780.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1780.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">524</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Cup only</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">63</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">315.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">315.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">990</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Daerim original burger 150g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">575.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">575.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">312</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">DAESANG GOCHUJANG 500G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2299.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2299.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">750</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Daesang Seafood Soup Powder 96g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">982</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Dong a NarangD Cider green apple 245ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">128.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">128.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">983</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Dong a NarangD Cider pineapple 245ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">320.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">320.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">966</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">DONGSU CANTABILE ORANGE ADE 230ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">240.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">240.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">216</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">DONGWON SHRIMP SEAWEED CHIP 50G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">995</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">DW Manul Seaweed Snack 50g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">145.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">145.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">828</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Elleair Tissue Pocket (+water)</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">72.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">72.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">601</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Enoki Mushroom 200g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">17</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2085.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2085.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">167</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">EPOUX HAND CREAM WICKED HONEY 80ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">98.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">98.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">166</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">EPOUX HANDCREAM WICKED ROSE 80ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">175.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">333</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Fresh Raw Egg</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">41</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">820.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">820.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">682</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Fried Fishcake</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">149</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">6705.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">6705.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1014</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Galbi Pork Belly 500G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">GM</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1475.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1475.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">472</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">H&amp;F ricecake 1k</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1300.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1300.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">677</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Half and Half Classic Corndog</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">81</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">8100.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">8100.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">131</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">HANSUNG LUNCHEON MEAT (Bulgogi) 340G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">672.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">672.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">955</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">HANSUNG LUNCHEON MEAT (Chicken) 340G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">15</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2325.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2325.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1003</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Hansung Premium Kim Kim 4G 3pcs</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">20</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">Pack</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2200.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2200.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">385</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Hello Ice Passion Mango Ade2 30ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">10</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">750.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">750.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">658</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Hinged Cup</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">15.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">15.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">696</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">ice bag 1kg</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">368</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">ICE CUP</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">50.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">50.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">575</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Jamaica Lime 350mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">72.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">72.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">116</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">JINRO SOJU FRESH 360ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">123</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">JINRO SOJU PEACH 360ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">127</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">JINRO SOJU PLUM 360ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">125</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">JINRO SOJU STRAWBERRY 360ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">945.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">945.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">743</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">JK ODENG FISH CAKE1KG</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1240.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1240.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">675</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">K-BBQ Beef Samgyupsal 500g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2793.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2793.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">687</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">K-BBQ Spicy Pork Samgyup 500g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">18</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">5400.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">5400.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">38</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Kimchi Trio</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1225.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1225.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1013</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Korean Chicken Chicken BBQ</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">KG</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">329.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">329.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="2.01">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="2" ss:StyleID="s12">
+<Data ss:Type="String">8/28/2026 3:12:41 PM</Data></Cell><Cell ss:Index="4" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:StyleID="s11">
+<Data ss:Type="String">Page 2</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s4">
+<Data ss:Type="String">Code</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s4">
+<Data ss:Type="String">Product</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">Quantity</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">UOM</Data></Cell><Cell ss:Index="9" ss:StyleID="s4">
+<Data ss:Type="String">Total before tax</Data></Cell><Cell ss:Index="10" ss:StyleID="s4">
+<Data ss:Type="String">Total</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="1.37">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s5">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">104</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">LOTTE ALMOND CHOCO BALL 46G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">792.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">792.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">671</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">LOTTE CHEETOS BBQ 82g </Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">252.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">252.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">344</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">LOTTE DORITOS NACHO CHEESE 92G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">875.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">875.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">894</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">LOTTE GHANA CHOCO BAR 50G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">65.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">65.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">999</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">LOTTE LETS BE HAZELNUT COFFEE 240ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">9</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">612.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">612.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">146</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">LOTTE LETS BE MILD COFFEE 175ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">15</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">825.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">825.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">937</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Lotte Lets Be mocha latte 175ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">28</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">498</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Lotte Milkis Original 250ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">30</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1650.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1650.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">813</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Lotte Milkis Peach 250ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">28</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1540.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">657</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Lotte Milkis Soda 1.5L</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">507.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">507.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">652</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Maeil Picnic Apple 200mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">195.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">195.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">651</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Maeil Picnic White Grape 200mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">130.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">130.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">643</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">MELONA BANANA 70ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">310.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">310.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">518</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Melona Mango 70ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">496.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">496.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">517</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Melona Melon 70ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">46</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2852.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2852.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">568</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">MELONA PURPLE YAM 70ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">18</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1116.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1116.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">241</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">MELONA STRAWBERRY 70ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">47</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2914.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2914.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">574</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Milkis Melon 250Ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">275.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">275.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">177</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">NONGSHIM BLACK SHIN RAMYUN BOWL 101G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">405.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">405.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">186</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">NONGSHIM JJAPAGETTI 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">34</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2890.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2890.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">975</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">NONGSHIM JJAPAGETTI DOUBLE BLACK 116g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">13</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1287.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1287.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">785</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Nongshim Kimchi Cup Noodles 86g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">425.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">425.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1021</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Nongshim Kimchi Cup Noodles Big 112g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">122.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">122.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">245</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">NONGSHIM NEOGURI MILD 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">688.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">688.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">636</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Nongshim Ojing O' Champong Cup 67g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">Pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">99.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">99.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1023</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Nongshim Ojing'O Champong 124g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">267.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">267.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">661</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Nongshim OjingO Champong Cup 115G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">347.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">347.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">578</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Nongshim Shin Ramen Small Cup 65g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">13</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1287.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1287.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">12</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Nongshim Shin Ramen Toomba 137g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">15</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1455.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1455.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">254</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">NONGSHIM SHIN RAMYUN CUP BIG 115G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">9</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1053.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1053.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">437</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">NONGSHIM SHIN RAMYUN(RED) 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">66</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">5742.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">5742.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">192</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Nongshim Shrimp Crackers Mini 30g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">SET</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">130.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">130.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">314</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">NONGSHIM SICHUAN SPICY JAPAGETTI 137G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1078.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1078.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">584</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">O Latte Apple 240mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">12</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">705.05</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">705.05</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">738</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">O'food Mild Samjang 500g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">777.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">777.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1011</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">One Piece Card Game</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">12</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">720.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">720.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">369</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Orion Choco Pie 60g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">413.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">413.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">410</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Orion Kosomi 70G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">BOX</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">90.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">90.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">644</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Orion yegam original 64g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">234.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">234.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">301</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">OTTOGI CHEESE BOKKI CUP 95G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">654.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">654.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">494</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ottogi Cheese Ramen 111g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">12</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1128.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1128.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">540</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Ottogi Cheese Ramen Spicy 111g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">25</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2350.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2350.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">763</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ottogi Cheese Ramen Stir-Fry 120g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">37</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">3663.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">3663.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">769</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Ottogi Cheese Ramen Stir-Fry Spicy 120g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">14</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1386.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1386.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">321</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">OTTOGI JIN RAMEN MILD 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">73</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">6497.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">6497.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="2.01">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="2" ss:StyleID="s12">
+<Data ss:Type="String">8/28/2026 3:12:41 PM</Data></Cell><Cell ss:Index="4" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:StyleID="s11">
+<Data ss:Type="String">Page 3</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s4">
+<Data ss:Type="String">Code</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s4">
+<Data ss:Type="String">Product</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">Quantity</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">UOM</Data></Cell><Cell ss:Index="9" ss:StyleID="s4">
+<Data ss:Type="String">Total before tax</Data></Cell><Cell ss:Index="10" ss:StyleID="s4">
+<Data ss:Type="String">Total</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="1.37">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s5">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">700</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Ottogi Jin Ramen Mild Cup 110g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">348.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">348.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">925</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ottogi Jin Ramen Mild Cup 65g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">340.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">340.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">267</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">OTTOGI JIN RAMEN SPICY 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">31</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2759.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2759.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">701</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ottogi Jin Ramen Spicy Cup 110g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">575.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">575.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">33</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">OTTOGI KIMCHI RAMEN 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">15</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1125.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1125.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">259</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Ottogi sesame oil 300ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1592.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1592.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">182</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">OTTOGI SNACK RAMEN 108G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">74.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">74.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">181</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">OTTOGI YEOL RAMEN 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">16</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1312.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1312.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">845</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Pangpare Blueberry 175ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">13</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1235.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1235.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">718</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Pangpare Choco 195ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">23</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2185.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2185.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">747</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Pangpare Strawberry 175ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">15</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1425.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1425.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">99</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">PEPERO ALMOND 32G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">14</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1092.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1092.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">70</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">PEPERO CHOCO COOKIE 32G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">438.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">438.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">247</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">PEPERO CHOCO FILLED 45G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">395.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">395.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">249</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">PEPERO CRUNCHY 39G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">158.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">158.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">340</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">PEPERO ORIGINAL 47G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">395.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">395.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">755</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">PEPERO STRAWBERRY 32G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">869.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">869.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">817</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">PEPERO WHITE COOKIE 32G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1019</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Pokemon Collection - Star Crystal Glass</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">5600.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">5600.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">714</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Pondo Big bottle</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">110.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">110.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">713</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Pondo small bottle</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">12</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">60.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">215</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">PORORO BLUEBERRY DRINK 235ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">24</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1800.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1800.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">462</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Pororo Milk Drink 235mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">21</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1575.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1575.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">761</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Pororo Shine Msucat Drink 235mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">14</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1050.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1050.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">628</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Radish Kimchi 250mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">588.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">588.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">400</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">RAMEN NOODLE TAKE OUT BOX</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">10.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">10.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">707</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Red Horse 1000mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">61</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">8397.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">8397.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">770</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Red Horse 500ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">33</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2489.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2489.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">821</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">RT Crab stick</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">54</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1080.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1080.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">823</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">RT Fish Cake</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">36</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1260.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1260.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">446</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">RT Kimchi</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">27</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">810.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">810.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">289</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">RT MOZZARELLA</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">80</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">3200.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">3200.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">290</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">RT REGULAR CHEDDAR</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">36</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1080.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1080.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">822</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">RT Rice Cake</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">55</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">824</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">RT Sausages</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">34</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1018.50</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1018.50</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">264</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">RT Sliced Cheese</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">77</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1923.75</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1923.75</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">531</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">RT Spam</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">24</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">960.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">960.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">529</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Samlip danpat CREAMpang 115G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">392.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">392.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">20</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Samlip oksusu creampang 100g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">117.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">117.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">36</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG BULDAK 2X SPICY 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">54</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">6750.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">6750.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">31</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SAMYANG BULDAK BLACK 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">64</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">8000.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">8000.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">263</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG BULDAK BLACK CUP 105G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">405.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">405.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">183</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SAMYANG BULDAK CARBONARA 130G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">237</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">29618.75</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">29618.75</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">37</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG BULDAK CHEESE 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">76</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">9500.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">9500.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">806</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SAMYANG BULDAK CHEESE CUP 105G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pc</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1023.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1023.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="2.01">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="2" ss:StyleID="s12">
+<Data ss:Type="String">8/28/2026 3:12:41 PM</Data></Cell><Cell ss:Index="4" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:StyleID="s11">
+<Data ss:Type="String">Page 4</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s4">
+<Data ss:Type="String">Code</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s4">
+<Data ss:Type="String">Product</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">Quantity</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s4">
+<Data ss:Type="String">UOM</Data></Cell><Cell ss:Index="9" ss:StyleID="s4">
+<Data ss:Type="String">Total before tax</Data></Cell><Cell ss:Index="10" ss:StyleID="s4">
+<Data ss:Type="String">Total</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="1.37">
+<Cell ss:Index="1" ss:MergeAcross="9" ss:StyleID="s5">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">279</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG BULDAK CREAM CARBO 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">118</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">14743.75</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">14743.75</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">987</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Samyang Buldak Mayo Sauce 250g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">345.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">345.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">379</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG BULDAK QUATTRO CHEESE 145G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">34</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">4250.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">4250.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">378</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SAMYANG BULDAK ROSE 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">59</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">7375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">7375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">577</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Samyang Cheese Ramen 120g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">17</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1734.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1734.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">952</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Samyang Mala Jjampong Stir fried</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">63.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">63.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">119</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SAMYANG ORIGINAL RAMEN 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">445.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">445.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">731</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SAMYANG ORIGINAL RAMEN SPICY 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">178.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">178.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">805</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Samyang Rose Cup 105g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">775.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">775.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">704</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">San Mig Apple Flavor 330mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">28</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1484.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1484.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">705</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">San Mig Light 330mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">29</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1827.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1827.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">706</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">San Mig Pale Pilsen 320mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">24</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">pcs</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1392.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1392.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">940</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Seaweed love Dosirak kim 3g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">19</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2090.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2090.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">401</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SEMPIO GOCHUKARU COARSE 1KG</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">990.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">990.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">287</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">SEMPIO GOCHUKARU COARSE 250G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1440.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1440.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">286</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">SEMPIO GOCHUKARU FINE 250G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">180.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">180.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">645</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Sempio Topokki Sweet&amp;Spicy 150g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">4</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">460.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">460.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">615</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Sliced Almonds 100g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">210.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">210.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">1005</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Somun-Nan Gwangheon Ocheon Jarae Kim 3G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">21</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">Pack</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2310.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2310.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">500</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Spork</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">1</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">3.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">3.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">978</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">The King Apple 355ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">468.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">468.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">977</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">The King Rush 355ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">7</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">546.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">546.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">386</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">TINYTAN J-HOPE BANDAGE</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">270.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">257</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">TOFU FIRM 500G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">19</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2850.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2850.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">508</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Toys</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">5</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">6110.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">6110.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">1010</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Unmarinated Beef Samgyupsal</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">6</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCK</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">2100.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">2100.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">96</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Unmarinated Pork Samgyupsal </Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">19</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCK</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">4465.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">4465.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">284</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">WELCHS STRAWBERRY SODA 355ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">18</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1530.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1530.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">901</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Welchs ZERO Orange 355ml</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">935.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">935.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">680</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Whole Cheese Corndog</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">125</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">14375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">14375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">683</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Wilkins 1L</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">68</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">2244.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">2244.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">685</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">Wilkins 500mL</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">178</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">3559.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">3559.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">433</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">WOONGJIN YOGURT PEACH 1.5LITER</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">SET</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">350.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">350.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">425</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">YONSEI BANANA MILK 190ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">2</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">136.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">136.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">429</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">YONSEI MELON MILK 190ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">18</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1224.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1224.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">115</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">YONSEI STRAWBERRY MILK 190ML</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">748.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">748.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">44</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">YOPOKKI CHEESE CUP 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">25</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">4375.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">4375.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">412</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">YOPOKKI CHEESE POUCH TOPOKKI 120G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">8</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1432.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1432.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">42</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">YOPOKKI SWEET&amp;SPICY CUP 140G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">11</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">1848.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">1848.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s6">
+<Data ss:Type="String">266</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s6">
+<Data ss:Type="String">YOPOKKI SWEET&amp;SPICY POUCH 280G</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s7">
+<Data ss:Type="String">9</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s8">
+<Data ss:Type="String">PCS</Data></Cell><Cell ss:Index="9" ss:StyleID="s9">
+<Data ss:Type="Number">1962.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s9">
+<Data ss:Type="Number">1962.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:StyleID="s15">
+<Data ss:Type="String">993</Data></Cell><Cell ss:Index="2" ss:MergeAcross="2" ss:StyleID="s15">
+<Data ss:Type="String">Yours Kimchi Jigae Cup 150g</Data></Cell><Cell ss:Index="5" ss:MergeAcross="1" ss:StyleID="s16">
+<Data ss:Type="String">3</Data></Cell><Cell ss:Index="7" ss:MergeAcross="1" ss:StyleID="s17">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s18">
+<Data ss:Type="Number">462.00</Data></Cell><Cell ss:Index="10" ss:StyleID="s18">
+<Data ss:Type="Number">462.00</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="16.17">
+<Cell ss:Index="1" ss:MergeAcross="7" ss:MergeDown="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="9" ss:StyleID="s13">
+<Data ss:Type="Number">390034.70</Data></Cell><Cell ss:Index="10" ss:StyleID="s13">
+<Data ss:Type="Number">390034.70</Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="50.52">
+<Cell ss:Index="9" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="11"/></Row>
+<Row ss:Height="13.74">
+<Cell ss:Index="1" ss:MergeAcross="2" ss:StyleID="s12">
+<Data ss:Type="String">8/28/2026 3:12:41 PM</Data></Cell><Cell ss:Index="4" ss:MergeAcross="1" ss:StyleID="s14">
+<Data ss:Type="String"></Data></Cell><Cell ss:Index="6" ss:MergeAcross="4" ss:StyleID="s11">
+<Data ss:Type="String">Page 5</Data></Cell><Cell ss:Index="11"/></Row>
+</Table>
+<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+<PageSetup>
+<PageMargins x:Bottom="0.39" x:Left="0.39" x:Right="0.39" x:Top="0.39"/>
+</PageSetup>
+<Print>
+<ValidPrinterInfo/>
+<PaperSizeIndex>9</PaperSizeIndex>
+</Print>
+</WorksheetOptions>
+<PageBreaks xmlns="urn:schemas-microsoft-com:office:excel">
+<RowBreaks>
+<RowBreak>
+<Row>51</Row>
+</RowBreak>
+<RowBreak>
+<Row>100</Row>
+</RowBreak>
+<RowBreak>
+<Row>149</Row>
+</RowBreak>
+<RowBreak>
+<Row>198</Row>
+</RowBreak>
+<RowBreak>
+<Row>244</Row>
+</RowBreak>
+</RowBreaks>
+</PageBreaks>
+</Worksheet>
+</Workbook>

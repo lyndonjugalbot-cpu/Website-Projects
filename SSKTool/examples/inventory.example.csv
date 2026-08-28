@@ -1,0 +1,9 @@
+code,on_hand,on_order,pack_size,moq,unit_cost,supplier,lead_time_days
+183,40,0,10,10,58,Samyang Distributor,14
+279,12,0,10,10,60,Samyang Distributor,14
+37,60,0,10,10,60,Samyang Distributor,14
+685,300,0,24,0,11,Wilkins/Coca-Cola PH,5
+703,20,48,24,0,28,Coca-Cola PH,5
+688,15,0,24,0,24,Coca-Cola PH,5
+427,8,0,6,0,70,Local Kimchi Maker,3
+445,0,0,30,0,15,In-house,1

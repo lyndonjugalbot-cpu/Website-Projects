@@ -1,0 +1,19 @@
+{
+  "forecast_period_days": 30,
+  "lead_time_days": 7,
+  "review_period_days": 30,
+  "safety_stock_days": 10,
+  "growth_factor": 1.0,
+  "seasonality": {
+    "12": 1.30,
+    "1": 0.85
+  },
+  "history_weights": [0.5, 0.3, 0.2],
+  "movement_tiers": { "fast": 20, "medium": 6, "slow": 1 },
+  "non_orderable_patterns": [
+    "cooking charge", "\\bcharge\\b", "chopstick", "^cup only$",
+    "delivery", "plastic bag", "service", "\\bpax\\b"
+  ],
+  "default_pack_size": 1,
+  "currency": "PHP"
+}
