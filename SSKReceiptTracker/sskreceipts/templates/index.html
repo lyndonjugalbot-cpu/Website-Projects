@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block body %}
+<a class="skip-link" href="#main">Skip to dashboard</a>
+
+<div class="app" id="app" data-currency="{{ currency.code }}" data-symbol="{{ currency.symbol }}" data-locale="{{ currency.locale }}">
+
+  <aside class="sidebar">
+    <header class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3.5h14v17l-2.3-1.6-2.35 1.6L12 18.9l-2.35 1.6-2.35-1.6L5 20.5z"/>
+          <path d="M9 8.5h6M9 12.5h6"/>
+        </svg>
+      </span>
+      <span class="brand__text">
+        <strong>SSK Receipt Tracker</strong>
+        <small>{{ store_name }}</small>
+      </span>
+    </header>
+
+    <form class="card form" id="receipt-form" novalidate autocomplete="off">
+      <h2 class="form__title">Add a receipt</h2>
+
+      <div class="field">
+        <label for="f-name">Receipt name</label>
+        <input id="f-name" name="name" type="text" list="name-options" maxlength="120"
+               placeholder="e.g. Fresh Produce Market" required
+               aria-describedby="err-name">
+        <datalist id="name-options"></datalist>
+        <p class="field__error" id="err-name" role="alert"></p>
+        <p class="field__hint">Receipts sharing a name are totalled as one spending area.</p>
+      </div>
+
+      <div class="field">
+        <label for="f-amount">Amount</label>
+        <div class="input-affix">
+          <span class="input-affix__symbol" aria-hidden="true">{{ currency.symbol }}</span>
+          <input id="f-amount" name="amount" type="text" inputmode="decimal"
+                 placeholder="0.00" required aria-describedby="err-amount">
+        </div>
+        <p class="field__error" id="err-amount" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="f-date">Date</label>
+        <input id="f-date" name="date" type="date" required aria-describedby="err-date">
+        <p class="field__error" id="err-date" role="alert"></p>
+      </div>
+
+      <button class="btn btn--primary btn--block" type="submit" id="f-submit">
+        <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add receipt
+      </button>
+    </form>
+
+    <footer class="sidebar__foot">
+      <button class="btn btn--ghost btn--block" type="button" id="theme-toggle" aria-pressed="false">
+        <svg class="btn__icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="btn__icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+        <span id="theme-label">Dark mode</span>
+      </button>
+      <p class="sidebar__version">v{{ version }} &middot; data stays on this machine</p>
+    </footer>
+  </aside>
+
+  <main class="main" id="main">
+
+    <div class="topbar">
+      <div class="topbar__head">
+        <h1>Expenses</h1>
+        <p class="topbar__range" id="range-caption">Loading&hellip;</p>
+      </div>
+
+      <div class="filters" role="group" aria-label="Date range filter">
+        <div class="segmented" id="presets" role="group" aria-label="Quick ranges">
+          <button type="button" class="segmented__btn" data-preset="this-month">This month</button>
+          <button type="button" class="segmented__btn" data-preset="last-month">Last month</button>
+          <button type="button" class="segmented__btn" data-preset="last-90">Last 90 days</button>
+          <button type="button" class="segmented__btn" data-preset="ytd">Year to date</button>
+          <button type="button" class="segmented__btn" data-preset="all">All time</button>
+        </div>
+        <div class="daterange">
+          <label class="sr-only" for="f-start">From</label>
+          <input type="date" id="f-start">
+          <span class="daterange__dash" aria-hidden="true">&ndash;</span>
+          <label class="sr-only" for="f-end">To</label>
+          <input type="date" id="f-end">
+        </div>
+        <a class="btn btn--ghost" id="export-csv" href="/api/export.csv" download>
+          <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/></svg>
+          Export CSV
+        </a>
+      </div>
+      <p class="filters__error" id="range-error" role="alert"></p>
+    </div>
+
+    <section class="kpis" aria-label="Summary for the selected range">
+      <article class="card kpi kpi--hero">
+        <h2 class="kpi__label">Total spend</h2>
+        <p class="kpi__value" id="kpi-total">&mdash;</p>
+        <p class="kpi__meta" id="kpi-total-meta"></p>
+      </article>
+      <article class="card kpi">
+        <h2 class="kpi__label">Receipts</h2>
+        <p class="kpi__value" id="kpi-count">&mdash;</p>
+        <p class="kpi__meta" id="kpi-count-meta"></p>
+      </article>
+      <article class="card kpi">
+        <h2 class="kpi__label">Average receipt</h2>
+        <p class="kpi__value" id="kpi-average">&mdash;</p>
+        <p class="kpi__meta" id="kpi-average-meta"></p>
+      </article>
+      <article class="card kpi">
+        <h2 class="kpi__label">Largest area</h2>
+        <p class="kpi__value kpi__value--text" id="kpi-top">&mdash;</p>
+        <p class="kpi__meta" id="kpi-top-meta"></p>
+      </article>
+    </section>
+
+    <section class="charts">
+      <article class="card chart-card">
+        <header class="card__head">
+          <div>
+            <h2>Spending by area</h2>
+            <p class="card__sub">Which receipt names take the biggest share of the range.</p>
+          </div>
+          <button type="button" class="btn btn--quiet btn--sm" data-table-toggle="areas"
+                  aria-expanded="false" aria-controls="areas-table">Table</button>
+        </header>
+        <div class="chart" id="chart-areas"></div>
+        <div class="table-view" id="areas-table" hidden></div>
+      </article>
+
+      <article class="card chart-card">
+        <header class="card__head">
+          <div>
+            <h2>Spending over time</h2>
+            <p class="card__sub" id="series-sub">How the total is spread across the range.</p>
+          </div>
+          <button type="button" class="btn btn--quiet btn--sm" data-table-toggle="series"
+                  aria-expanded="false" aria-controls="series-table">Table</button>
+        </header>
+        <div class="chart" id="chart-series"></div>
+        <div class="table-view" id="series-table" hidden></div>
+      </article>
+    </section>
+
+    <section class="card receipts-card">
+      <header class="card__head">
+        <div>
+          <h2>Receipts</h2>
+          <p class="card__sub" id="receipts-sub">&nbsp;</p>
+        </div>
+        <div class="search">
+          <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <label class="sr-only" for="f-search">Search receipts</label>
+          <input type="search" id="f-search" placeholder="Search by name">
+        </div>
+      </header>
+
+      <div class="table-wrap">
+        <table class="table" id="receipts-table">
+          <thead>
+            <tr>
+              <th scope="col"><button type="button" class="th-sort" data-sort="date">Date</button></th>
+              <th scope="col"><button type="button" class="th-sort" data-sort="name">Receipt name</button></th>
+              <th scope="col" class="num"><button type="button" class="th-sort" data-sort="amount">Amount</button></th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="receipts-body"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="receipts-empty" hidden></p>
+      <div class="table-more" id="receipts-more" hidden>
+        <button type="button" class="btn btn--ghost btn--sm" id="receipts-more-btn">Show more</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<dialog class="dialog" id="edit-dialog" aria-labelledby="edit-title">
+  <form method="dialog" id="edit-form" novalidate>
+    <h2 id="edit-title">Edit receipt</h2>
+    <div class="field">
+      <label for="e-name">Receipt name</label>
+      <input id="e-name" name="name" type="text" maxlength="120" required aria-describedby="err-e-name">
+      <p class="field__error" id="err-e-name" role="alert"></p>
+    </div>
+    <div class="field">
+      <label for="e-amount">Amount</label>
+      <div class="input-affix">
+        <span class="input-affix__symbol" aria-hidden="true">{{ currency.symbol }}</span>
+        <input id="e-amount" name="amount" type="text" inputmode="decimal" required aria-describedby="err-e-amount">
+      </div>
+      <p class="field__error" id="err-e-amount" role="alert"></p>
+    </div>
+    <div class="field">
+      <label for="e-date">Date</label>
+      <input id="e-date" name="date" type="date" required aria-describedby="err-e-date">
+      <p class="field__error" id="err-e-date" role="alert"></p>
+    </div>
+    <div class="dialog__actions">
+      <button type="button" class="btn btn--ghost" id="edit-cancel">Cancel</button>
+      <button type="submit" class="btn btn--primary" id="edit-save">Save changes</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div class="tooltip" id="tooltip" role="presentation" hidden></div>
+{% endblock %}
