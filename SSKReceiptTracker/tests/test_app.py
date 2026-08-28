@@ -13,7 +13,8 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sskreceipts import create_app, stats                        # noqa: E402
+from sskreceipts import config, create_app, stats                # noqa: E402
+from sskreceipts.storage import Database, is_postgres_url        # noqa: E402
 from sskreceipts.money import MoneyError, format_major, parse_amount  # noqa: E402
 from sskreceipts.validation import FieldError, clean_name, group_key, parse_date  # noqa: E402
 
@@ -104,6 +105,60 @@ class StatsTests(unittest.TestCase):
         self.assertTrue(folded[-1]["is_other"])
         self.assertEqual(folded[-1]["count"], 3)
         self.assertEqual(folded[-1]["total"], 30.0)
+
+
+class StorageTests(unittest.TestCase):
+    def test_postgres_urls_are_recognised(self):
+        for url in ("postgres://h/db", "postgresql://u:p@h:5432/db", "postgresql+psycopg://h/db"):
+            self.assertTrue(is_postgres_url(url), url)
+        for url in ("sqlite:///x.db", "/var/lib/receipts.sqlite3", "", None):
+            self.assertFalse(is_postgres_url(url), url)
+
+    def test_placeholders_are_translated_for_postgres(self):
+        """One copy of every statement; the dialect decides the placeholder."""
+        query = "SELECT * FROM receipts WHERE date >= ? AND date <= ?"
+        self.assertEqual(Database(None, "sqlite")._sql(query), query)
+        self.assertEqual(
+            Database(None, "postgres")._sql(query),
+            "SELECT * FROM receipts WHERE date >= %s AND date <= %s",
+        )
+
+
+class ServerlessGuardTests(unittest.TestCase):
+    """A serverless host with no Postgres silently loses every receipt."""
+
+    def setUp(self):
+        self._saved = {k: os.environ.get(k) for k in
+                       ("VERCEL", "SSK_ALLOW_EPHEMERAL_DB", *config.URL_ENV_VARS)}
+        for key in self._saved:
+            os.environ.pop(key, None)
+
+    def tearDown(self):
+        for key, value in self._saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+    def test_serverless_without_a_database_is_refused(self):
+        os.environ["VERCEL"] = "1"
+        with self.assertRaises(config.ConfigError) as caught:
+            config.build("/tmp/instance")
+        self.assertIn("DATABASE_URL", str(caught.exception))
+
+    def test_serverless_with_a_database_is_fine(self):
+        os.environ["VERCEL"] = "1"
+        os.environ["DATABASE_URL"] = "postgresql://user:pw@example.test/ssk"
+        built = config.build("/tmp/instance")
+        self.assertEqual(built["DATABASE_URL"], "postgresql://user:pw@example.test/ssk")
+
+    def test_override_allows_a_throwaway_demo(self):
+        os.environ["VERCEL"] = "1"
+        os.environ["SSK_ALLOW_EPHEMERAL_DB"] = "1"
+        self.assertIsNone(config.build("/tmp/instance")["DATABASE_URL"])
+
+    def test_local_runs_need_no_database_url(self):
+        self.assertIsNone(config.build("/tmp/instance")["DATABASE_URL"])
 
 
 class ApiTests(unittest.TestCase):

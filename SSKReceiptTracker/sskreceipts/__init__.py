@@ -20,13 +20,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     if test_config:
         app.config.update(test_config)
 
-    os.makedirs(app.instance_path, exist_ok=True)
+    if not app.config.get("DATABASE_URL"):
+        # Only the SQLite backend needs somewhere on disk to live.
+        os.makedirs(app.instance_path, exist_ok=True)
 
     db.register(app)
     app.register_blueprint(api.bp)
-
-    with app.app_context():
-        db.init_db()
 
     @app.get("/")
     def index():
@@ -39,6 +38,15 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     @app.get("/healthz")
     def healthz():
-        return {"ok": True, "version": __version__}
+        """Liveness plus a real round trip to the database."""
+        try:
+            db.date_bounds()
+        except Exception as exc:  # surfaced as a status, never as a stack trace
+            return {"ok": False, "version": __version__, "database": str(exc)}, 503
+        return {
+            "ok": True,
+            "version": __version__,
+            "database": "postgres" if app.config.get("DATABASE_URL") else "sqlite",
+        }
 
     return app
