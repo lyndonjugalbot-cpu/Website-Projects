@@ -68,7 +68,17 @@ def _setup_required(reason: str):
     return application
 
 
-try:
-    app = create_app()
-except ConfigError as exc:
-    app = _setup_required(str(exc))
+def _build_app():
+    """Return the real app, or the setup-needed placeholder if config is absent.
+
+    Kept as a function so ``app`` below is a plain module-level assignment -
+    Vercel's Python runtime scans the AST for a top-level ``app`` and does not
+    look inside a ``try`` block.
+    """
+    try:
+        return create_app()
+    except ConfigError as exc:
+        return _setup_required(str(exc))
+
+
+app = _build_app()
