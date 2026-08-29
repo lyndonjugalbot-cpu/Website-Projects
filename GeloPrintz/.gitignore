@@ -1,2 +1,6 @@
 .vercel
 .env*
+
+# Large source artwork (web-optimised versions live in assets/img/)
+AV *.jpg
+AV *.png
