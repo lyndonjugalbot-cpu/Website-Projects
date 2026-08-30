@@ -26,6 +26,12 @@
     background: var(--bg); color: var(--ink);
   }
   .wrap { max-width: 1180px; margin: 0 auto; }
+  nav.top { display: flex; gap: .5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  nav.top a {
+    font-size: 13px; text-decoration: none; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: .3rem .9rem;
+  }
+  nav.top a.active { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
   header h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
   header p { color: var(--muted); margin: 0 0 1.75rem; }
   .panel {
@@ -117,6 +123,10 @@
 </head>
 <body>
 <div class="wrap">
+  <nav class="top">
+    <a href="index.html" class="active">Order Forecast</a>
+    <a href="spending.html">Spending Recommendation</a>
+  </nav>
   <header>
     <h1>Order Forecast &amp; Supplier Recommendation</h1>
     <p>Upload the POS <em>&ldquo;Sales by Product&rdquo;</em> export. Everything runs in your browser &mdash; nothing is uploaded to a server.</p>

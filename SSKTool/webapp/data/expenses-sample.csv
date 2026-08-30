@@ -1,0 +1,31 @@
+# Seoul Stop Kmart - sample expenses (July actuals + August obligations).
+# Required columns: category, amount.  Dates: YYYY-MM-DD or M/D/YYYY; a "month" column (2026-08) also works.
+# status: unpaid | paid | overdue | partial.  priority (optional) overrides the automatic tier.
+# currency: PHP
+date,category,description,vendor,amount,kind,frequency,due_day,status,penalty,priority
+2026-07-01,Insurance,Fire + theft cover,Pioneer,1500,fixed,monthly,1,paid,,
+2026-07-05,Rent,Store space,Landlord,25000,fixed,monthly,5,paid,,
+2026-07-08,Internet,Store + POS line,PLDT,1800,fixed,monthly,8,paid,,
+2026-07-09,Supplies,"Receipt rolls, bags, cleaning",,1100,variable,monthly,,paid,,
+2026-07-10,Utilities,Electricity,Meralco,7600,variable,monthly,10,paid,,
+2026-07-11,Inventory,Samyang / Buldak restock,Samyang Distributor,48000,variable,monthly,,paid,,
+2026-07-12,Utilities,Water,Metro Water,850,variable,monthly,12,paid,,
+2026-07-13,Inventory,Beverages restock,Coca-Cola PH,26000,variable,monthly,,paid,,
+2026-07-15,Payroll,Staff salaries (3 crew),,33000,fixed,monthly,15,paid,,critical
+2026-07-19,Inventory,Grocery restock (Puregold run),Puregold,58000,variable,monthly,,paid,,
+2026-07-20,Loan,Chiller financing,Bank,6000,fixed,monthly,20,paid,,
+2026-07-26,Inventory,Snacks + noodles restock,Various,38000,variable,monthly,,paid,,
+2026-08-01,Insurance,Fire + theft cover,Pioneer,1500,fixed,monthly,1,unpaid,,
+2026-08-05,Rent,Store space,Landlord,25000,fixed,monthly,5,unpaid,eviction notice after 7 days late,
+2026-08-08,Internet,Store + POS line,PLDT,1800,fixed,monthly,8,unpaid,,
+2026-08-09,Supplies,"Receipt rolls, bags, cleaning",,1200,variable,monthly,,unpaid,,
+2026-08-10,Utilities,Electricity,Meralco,8200,variable,monthly,10,unpaid,10% surcharge + disconnection,
+2026-08-11,Inventory,Samyang / Buldak restock,Samyang Distributor,45000,variable,monthly,,unpaid,,
+2026-08-12,Utilities,Water,Metro Water,900,variable,monthly,12,unpaid,,
+2026-08-12,Inventory,Beverages restock,Coca-Cola PH,25000,variable,monthly,,unpaid,,
+2026-08-15,Payroll,Staff salaries (3 crew),,33000,fixed,monthly,15,unpaid,,critical
+2026-08-19,Inventory,Grocery restock (Puregold run),Puregold,60000,variable,monthly,,unpaid,,
+2026-08-20,Loan,Chiller financing,Bank,6000,fixed,monthly,20,unpaid,penalty interest,
+2026-08-25,Taxes,Percentage tax + barangay permit,BIR,3500,variable,quarterly,25,unpaid,surcharge + interest,
+2026-08-26,Inventory,Snacks + noodles restock,Various,40000,variable,monthly,,unpaid,,
+2026-08-28,Marketing,FB boost + tarpaulin,,2000,one-off,once,,unpaid,,low

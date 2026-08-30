@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSKTool &mdash; Spending Recommendation</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8; --panel: #ffffff; --ink: #1b1f24; --muted: #6b7280;
+    --line: #e2e5e9; --accent: #2563eb; --accent-ink: #fff;
+    --good: #067647; --bad: #b42318; --warn-bg: #fff4e0; --warn-ink: #8a5a00;
+    --row-alt: #fafbfc;
+    --t1: #b42318; --t2: #8a5a00; --t3: #2563eb; --t4: #6b7280;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --panel: #1d2127; --ink: #e6e8eb; --muted: #9aa2ad;
+      --line: #2c333c; --accent: #3b82f6; --good: #34d399; --bad: #f87171;
+      --warn-bg: #3a2c10; --warn-ink: #ffce8a; --row-alt: #20252c;
+      --t1: #f87171; --t2: #ffce8a; --t3: #60a5fa; --t4: #9aa2ad;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1.5rem 4rem;
+    font: 14px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  nav.top { display: flex; gap: .5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  nav.top a {
+    font-size: 13px; text-decoration: none; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: .3rem .9rem;
+  }
+  nav.top a.active { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+  header h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  header p { color: var(--muted); margin: 0 0 1.75rem; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+  }
+  .panel h2 { font-size: 1rem; margin: 0 0 1rem; }
+  .drop {
+    border: 2px dashed var(--line); border-radius: 12px; padding: 2rem 1rem;
+    text-align: center; color: var(--muted); cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .drop.drag { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .drop strong { color: var(--ink); }
+  .filelist { list-style: none; margin: 1rem 0 0; padding: 0; }
+  .filelist li {
+    display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem;
+    border: 1px solid var(--line); border-radius: 8px; margin-bottom: .5rem;
+    background: var(--row-alt); font-size: 13px;
+  }
+  .filelist li .meta { color: var(--muted); }
+  .filelist li button {
+    margin-left: auto; border: 0; background: transparent; color: var(--muted);
+    cursor: pointer; font-size: 16px; line-height: 1;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .9rem 1.25rem;
+  }
+  label.field { display: flex; flex-direction: column; gap: .3rem; font-size: 12px;
+    color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  label.field input, label.field select {
+    font: inherit; padding: .45rem .55rem; border: 1px solid var(--line);
+    border-radius: 7px; background: var(--bg); color: var(--ink);
+    text-transform: none; letter-spacing: 0;
+  }
+  .btnrow { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.25rem; }
+  button.primary {
+    background: var(--accent); color: var(--accent-ink); border: 0;
+    padding: .6rem 1.4rem; border-radius: 8px; font: inherit; font-weight: 600;
+    cursor: pointer;
+  }
+  button.primary:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost {
+    background: transparent; color: var(--accent); border: 1px solid var(--line);
+    padding: .55rem 1rem; border-radius: 8px; font: inherit; cursor: pointer;
+  }
+  .hint { color: var(--muted); font-size: 12px; margin-top: .5rem; }
+  .hint code, .drop code { background: var(--row-alt); padding: 1px 4px; border-radius: 4px; }
+  .error { color: var(--bad); margin-top: .75rem; font-size: 13px; white-space: pre-wrap; }
+  #results { display: none; }
+  .cards { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: .9rem 1.15rem; min-width: 150px;
+  }
+  .card .lbl { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+  .card .big { font-size: 1.45rem; font-weight: 700; }
+  .card .sub { font-size: 12px; color: var(--muted); }
+  .up { color: var(--good); } .down { color: var(--bad); }
+  .narrative {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-left: 3px solid var(--accent); padding: .9rem 1.1rem;
+    border-radius: 6px; margin: 0 0 1.5rem; font-size: 13.5px;
+  }
+  .narrative p { margin: .35rem 0; }
+  .alert {
+    background: var(--warn-bg); color: var(--warn-ink); border-left: 3px solid var(--t2);
+    padding: .9rem 1.1rem; border-radius: 6px; margin: 0 0 1.5rem; font-size: 13.5px;
+  }
+  .alert.hard { background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); border-left-color: var(--bad); }
+  h3.sec { font-size: .95rem; margin: 1.75rem 0 .6rem; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-bottom: .75rem; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin-bottom: .5rem; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--panel); }
+  th, td { padding: .5rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: left; }
+  th { position: sticky; top: 0; background: var(--panel); font-size: 11px;
+    text-transform: uppercase; letter-spacing: .03em; }
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  td.c, th.c { text-align: center; }
+  td.strong { font-weight: 700; }
+  tr.cutline td { border-top: 2px solid var(--bad); }
+  tr.paidrow td { opacity: .55; }
+  .tier { font-size: 11px; font-weight: 700; }
+  .tier.t1 { color: var(--t1); } .tier.t2 { color: var(--t2); }
+  .tier.t3 { color: var(--t3); } .tier.t4 { color: var(--t4); }
+  .act { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); }
+  .act.pay { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
+  .act.defer { color: var(--muted); }
+  .act.partial { color: var(--t2); border-color: color-mix(in srgb, var(--t2) 40%, var(--line)); }
+  .act.short { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+  .act.paid { color: var(--muted); }
+  .reason { color: var(--muted); font-size: 11px; white-space: normal; min-width: 180px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a href="index.html">Order Forecast</a>
+    <a href="spending.html" class="active">Spending Recommendation</a>
+  </nav>
+
+  <header>
+    <h1>Spending Recommendation</h1>
+    <p>Upload the POS sales exports and your monthly expenses. The tool builds a profit
+      trend, forecasts next month, and ranks which bills to pay first when cash is
+      tight. Everything runs in your browser &mdash; nothing is uploaded.</p>
+  </header>
+
+  <div class="panel">
+    <h2>1 &nbsp;&middot;&nbsp; Sales exports &nbsp;<span style="font-weight:400;color:var(--muted)">(for revenue &amp; profit trend &mdash; 1&ndash;6 files, one per month)</span></h2>
+    <div class="drop" id="drop">
+      <p><strong>Drop POS files here</strong> or click to choose</p>
+      <p class="hint">The same <code>.xls</code> (SpreadsheetML) / <code>.csv</code> &ldquo;Sales by Product&rdquo; exports used on the Order Forecast page. Monthly revenue is the sum of the Total column.</p>
+      <input type="file" id="fileInput" accept=".xls,.xml,.csv" multiple hidden>
+    </div>
+    <ul class="filelist" id="fileList"></ul>
+    <p class="hint">Optional but recommended &mdash; without it there is no revenue trend and no automatic estimate of incoming cash.</p>
+  </div>
+
+  <div class="panel">
+    <h2>2 &nbsp;&middot;&nbsp; Expenses &nbsp;<span style="font-weight:400;color:var(--muted)">(required)</span></h2>
+    <div class="drop" id="expDrop" style="padding:1.5rem 1rem">
+      <p><strong>Drop expenses.csv</strong> or click</p>
+      <p class="hint">Columns: <code>date, category, description, vendor, amount, kind, frequency, due_day, status, penalty, priority</code>. Only <code>category</code> and <code>amount</code> are required. A SpreadsheetML <code>.xls</code> with those headings also works.</p>
+      <input type="file" id="expInput" accept=".csv,.xls,.xml" hidden>
+    </div>
+    <ul class="filelist" id="expList"></ul>
+    <div class="error" id="fileError"></div>
+    <div class="btnrow" style="margin-top:.75rem">
+      <button class="ghost" id="tplBtn">Download blank template</button>
+      <span class="hint" style="margin:0">Fill one row per bill/obligation for the month. Save each month and add them all for a real trend.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>3 &nbsp;&middot;&nbsp; Cash &amp; planning window</h2>
+    <div class="grid">
+      <label class="field">Cash on hand
+        <input type="number" id="cfg_cash" value="0" min="0" step="100"></label>
+      <label class="field">Keep a buffer of
+        <input type="number" id="cfg_buffer" value="0" min="0" step="100"></label>
+      <label class="field">Expected inflow this window
+        <input type="number" id="cfg_inflow" placeholder="auto from forecast" min="0" step="100"></label>
+      <label class="field">Planning window
+        <select id="cfg_window">
+          <option value="7">This week (7 days)</option>
+          <option value="14">Next 14 days</option>
+          <option value="restofmonth">Rest of this month</option>
+          <option value="30">This month (30 days)</option>
+          <option value="custom">Custom&hellip;</option>
+        </select></label>
+      <label class="field" id="customWrap" style="display:none">Custom window (days)
+        <input type="number" id="cfg_customdays" value="10" min="1"></label>
+      <label class="field">As of date
+        <input type="date" id="cfg_asof"></label>
+      <label class="field">Currency
+        <input type="text" id="cfg_currency" value="PHP"></label>
+    </div>
+    <div class="btnrow">
+      <button class="primary" id="runBtn" disabled>Analyze &amp; recommend</button>
+      <button class="ghost" id="sampleBtn">Load sample</button>
+      <span class="hint" id="status" style="margin:0"></span>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="cards" id="cards"></div>
+    <div class="alert hard" id="shortfall" style="display:none"></div>
+    <div class="narrative" id="narrative"></div>
+    <div class="alert" id="flags" style="display:none"></div>
+
+    <h3 class="sec">Payment plan &mdash; <span id="planWindow"></span></h3>
+    <div class="toolbar">
+      <span class="hint" style="margin:0" id="planSummary"></span>
+      <span style="flex:1"></span>
+      <button class="ghost" id="dlPlan">Download plan CSV</button>
+      <button class="ghost" id="dlPnl">Download P&amp;L CSV</button>
+    </div>
+    <div class="tablewrap">
+      <table id="planTable">
+        <thead><tr>
+          <th class="c">#</th><th>Category</th><th>Vendor / note</th>
+          <th class="c">Tier</th><th>Due</th><th class="n">Amount</th>
+          <th class="c">Action</th><th class="n">Pay now</th><th class="n">Later</th>
+          <th>Why</th>
+        </tr></thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="cutNote"></p>
+
+    <h3 class="sec">Coming up later this month</h3>
+    <div class="tablewrap" id="comingWrap">
+      <table>
+        <thead><tr><th>Category</th><th>Vendor / note</th><th class="c">Tier</th><th>Due</th><th class="n">Amount</th></tr></thead>
+        <tbody id="comingBody"></tbody>
+      </table>
+    </div>
+
+    <h3 class="sec">Monthly profit &amp; loss</h3>
+    <div class="tablewrap">
+      <table id="pnlTable">
+        <thead><tr>
+          <th>Month</th><th class="n">Revenue</th><th class="n">Expenses</th>
+          <th class="n">Profit</th><th class="n">Margin</th><th class="n">&Delta; Profit MoM</th>
+        </tr></thead>
+        <tbody id="pnlBody"></tbody>
+      </table>
+    </div>
+
+    <h3 class="sec">Expense mix &amp; next-month forecast</h3>
+    <div class="tablewrap">
+      <table id="catTable">
+        <thead><tr>
+          <th>Category</th><th class="c">Tier</th><th class="n">This month</th>
+          <th class="n">Avg / mo</th><th class="n">Trend</th><th class="n">Share</th>
+          <th class="n">Forecast next</th>
+        </tr></thead>
+        <tbody id="catBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    SSKTool &mdash; runs entirely client-side. Priority tiers: <b>1 Critical</b> (rent, payroll,
+    utilities, tax, loan, insurance) &rarr; <b>2 Important</b> (internet, equipment, services)
+    &rarr; <b>3 Deferrable</b> (restock, supplies, marketing) &rarr; <b>4 Discretionary</b>.
+    Urgency and late-penalty flags adjust the order within reach of available cash.
+  </footer>
+</div>
+
+<script src="forecast.js"></script>
+<script src="spending.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const state = { pos: [], exp: null, expName: "", report: null };
+
+  // default as-of = today
+  $("cfg_asof").value = new Date().toISOString().slice(0, 10);
+
+  $("cfg_window").addEventListener("change", () => {
+    $("customWrap").style.display = $("cfg_window").value === "custom" ? "flex" : "none";
+  });
+
+  function wireDrop(dropEl, inputEl, onFiles) {
+    dropEl.addEventListener("click", () => inputEl.click());
+    dropEl.addEventListener("dragover", (e) => { e.preventDefault(); dropEl.classList.add("drag"); });
+    dropEl.addEventListener("dragleave", () => dropEl.classList.remove("drag"));
+    dropEl.addEventListener("drop", (e) => {
+      e.preventDefault(); dropEl.classList.remove("drag");
+      onFiles([...e.dataTransfer.files]);
+    });
+    inputEl.addEventListener("change", () => onFiles([...inputEl.files]));
+  }
+  function readFile(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res({ name: file.name, size: file.size, text: fr.result });
+      fr.onerror = () => rej(new Error("Could not read " + file.name));
+      fr.readAsText(file);
+    });
+  }
+  function fmtBytes(b) { return b < 1024 ? b + " B" : (b / 1024).toFixed(0) + " KB"; }
+
+  wireDrop($("drop"), $("fileInput"), async (list) => {
+    $("fileError").textContent = "";
+    for (const f of list) {
+      if (state.pos.length >= 6) { $("fileError").textContent = "Maximum 6 sales files."; break; }
+      try {
+        const rec = await readFile(f);
+        const parsed = SSK.parseFile(rec.text, rec.name);
+        if (!parsed.rows.length) { $("fileError").textContent = `No product rows in ${f.name}.`; continue; }
+        state.pos.push({ name: rec.name, size: rec.size, parsed });
+      } catch (e) { $("fileError").textContent = e.message; }
+    }
+    $("fileInput").value = "";
+    renderFiles();
+  });
+
+  wireDrop($("expDrop"), $("expInput"), async (list) => {
+    if (!list.length) return;
+    $("fileError").textContent = "";
+    try {
+      const rec = await readFile(list[0]);
+      const parsed = SPEND.parseExpenses(rec.text, rec.name);
+      if (!parsed.rows.length) {
+        $("fileError").textContent = `No expense rows found in ${rec.name}. Need at least 'category' and 'amount' columns.`;
+        state.exp = null; state.expName = "";
+      } else {
+        state.exp = parsed;
+        state.expName = `${rec.name} (${parsed.rows.length} lines${parsed.meta.currency ? ", " + parsed.meta.currency : ""})`;
+        if (parsed.meta.currency) $("cfg_currency").value = parsed.meta.currency;
+      }
+    } catch (e) { state.exp = null; state.expName = ""; $("fileError").textContent = e.message; }
+    $("expInput").value = "";
+    renderFiles();
+  });
+
+  function renderFiles() {
+    const ul = $("fileList");
+    ul.innerHTML = "";
+    state.pos.forEach((f, i) => {
+      const p = f.parsed;
+      const rev = p.rows.reduce((a, r) => a + (r.total || 0), 0);
+      const li = document.createElement("li");
+      li.innerHTML = `<span>📄 <strong>${f.name}</strong></span>
+        <span class="meta">${p.start.toISOString().slice(0, 7)} · ${p.rows.length} products · revenue ${Math.round(rev).toLocaleString()} · ${fmtBytes(f.size)}</span>
+        <button title="remove">×</button>`;
+      li.querySelector("button").onclick = () => { state.pos.splice(i, 1); renderFiles(); };
+      ul.appendChild(li);
+    });
+    const el = $("expList");
+    el.innerHTML = "";
+    if (state.expName) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>🧾 <strong>${state.expName}</strong></span><button title="remove">×</button>`;
+      li.querySelector("button").onclick = () => { state.exp = null; state.expName = ""; renderFiles(); };
+      el.appendChild(li);
+    }
+    $("runBtn").disabled = !state.exp;
+  }
+
+  function readConfig() {
+    const wv = $("cfg_window").value;
+    const cfg = {
+      currency: $("cfg_currency").value.trim() || "PHP",
+      cashOnHand: parseFloat($("cfg_cash").value) || 0,
+      minBuffer: parseFloat($("cfg_buffer").value) || 0,
+      expectedInflow: $("cfg_inflow").value === "" ? null : (parseFloat($("cfg_inflow").value) || 0),
+      asOf: $("cfg_asof").value ? new Date($("cfg_asof").value + "T00:00:00Z") : new Date(),
+      restOfMonth: wv === "restofmonth",
+      windowDays: wv === "custom" ? (parseInt($("cfg_customdays").value, 10) || 10)
+        : (wv === "restofmonth" ? 30 : parseInt(wv, 10)),
+      windowLabel: $("cfg_window").selectedOptions[0].textContent.replace(/\s*\(.*\)/, "").toLowerCase(),
+    };
+    return cfg;
+  }
+
+  $("tplBtn").addEventListener("click", () => download("expenses-template.csv", SPEND.buildTemplate()));
+
+  $("runBtn").addEventListener("click", () => {
+    try {
+      const cfg = readConfig();
+      const periods = state.pos.map((f) => f.parsed);
+      // fresh copy of rows each run (buildReport mutates line objects)
+      const rows = JSON.parse(JSON.stringify(state.exp.rows), (k, v) =>
+        (k === "dueDate" && v) ? new Date(v) : v);
+      state.report = SPEND.buildReport(periods, rows, cfg);
+      render();
+      $("status").textContent = "Done.";
+      $("results").scrollIntoView({ behavior: "smooth" });
+    } catch (e) {
+      $("status").textContent = "";
+      $("fileError").textContent = "Analysis failed: " + e.message;
+      console.error(e);
+    }
+  });
+
+  $("sampleBtn").addEventListener("click", async () => {
+    $("status").textContent = "Loading sample…";
+    try {
+      const [posR, expR] = await Promise.all([
+        fetch("data/Products-Sold-July-2026.xls"),
+        fetch("data/expenses-sample.csv"),
+      ]);
+      if (!posR.ok || !expR.ok) throw new Error("sample files not found next to the app");
+      const posText = await posR.text();
+      state.pos = [{ name: "Products-Sold-July-2026.xls", size: posText.length,
+        parsed: SSK.parseFile(posText, "Products-Sold-July-2026.xls") }];
+      const expText = await expR.text();
+      state.exp = SPEND.parseExpenses(expText, "expenses-sample.csv");
+      state.expName = `expenses-sample.csv (${state.exp.rows.length} lines)`;
+      $("cfg_cash").value = 60000;
+      $("cfg_buffer").value = 10000;
+      $("cfg_asof").value = "2026-08-06";
+      renderFiles();
+      $("status").textContent = "Sample loaded — click Analyze.";
+    } catch (e) {
+      $("status").textContent = "";
+      $("fileError").textContent = "Could not load sample (" + e.message + "). Upload files manually.";
+    }
+  });
+
+  // ---------- render ----------
+  let CUR = "PHP";
+  const M = (n) => CUR + " " + Math.round(n).toLocaleString();
+  const pct = (n) => (n >= 0 ? "+" : "") + n.toFixed(0) + "%";
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function trendSpan(p) {
+    if (p == null || !isFinite(p)) return "";
+    const cls = Math.abs(p) < 3 ? "" : p > 0 ? "up" : "down";
+    return ` <span class="${cls}">${pct(p)}/mo</span>`;
+  }
+
+  function render() {
+    const r = state.report;
+    CUR = r.currency;
+    $("results").style.display = "block";
+
+    const L = r.latest, f = r.forecast, c = r.cash;
+    const runway = r.runwayMonths === Infinity ? "cash-flow +"
+      : (r.runwayWeeks.toFixed(0) + " wk");
+    $("cards").innerHTML = `
+      <div class="card"><div class="lbl">Revenue (last mo)</div>
+        <div class="big">${L.revenue == null ? "—" : M(L.revenue)}</div>
+        <div class="sub">trend${trendSpan(r.revenueTrendPct)}</div></div>
+      <div class="card"><div class="lbl">Expenses (last mo)</div>
+        <div class="big">${L.expense == null ? "—" : M(L.expense)}</div>
+        <div class="sub">trend${trendSpan(r.expenseTrendPct)}</div></div>
+      <div class="card"><div class="lbl">Profit (last mo)</div>
+        <div class="big ${L.profit >= 0 ? "up" : "down"}">${L.profit == null ? "—" : M(L.profit)}</div>
+        <div class="sub">${L.margin == null ? "" : L.margin.toFixed(0) + "% margin"}${trendSpan(r.profitTrendPct)}</div></div>
+      <div class="card"><div class="lbl">Forecast profit (next mo)</div>
+        <div class="big ${f.profit >= 0 ? "up" : "down"}">${M(f.profit)}</div>
+        <div class="sub">on ${M(f.revenue)} revenue</div></div>
+      <div class="card"><div class="lbl">Cash runway</div>
+        <div class="big">${runway}</div>
+        <div class="sub">burn ${M(r.burnMonthly)}/mo</div></div>
+      <div class="card"><div class="lbl">Available this window</div>
+        <div class="big">${M(c.available)}</div>
+        <div class="sub">${M(c.onHand)} cash ${c.expectedInflow >= 0 ? "+ " + M(c.expectedInflow) + (c.inflowAuto ? " est." : "") : ""} − ${M(c.buffer)} buffer</div></div>`;
+
+    if (r.shortfall) {
+      $("shortfall").style.display = "block";
+      $("shortfall").innerHTML = `<strong>Cash shortfall on must-pay bills.</strong>
+        Tier-1 obligations in this window total ${M(r.shortfall.tier1)} but cash + expected inflow is only
+        ${M(r.shortfall.have)} — a gap of <strong>${M(r.shortfall.gap)}</strong>.
+        Negotiate rent/supplier terms, split the restock, or add funds before the due dates.`;
+    } else $("shortfall").style.display = "none";
+
+    $("narrative").innerHTML = r.narrative.map((p) => `<p>${esc(p)}</p>`).join("");
+
+    if (r.flags.length) {
+      $("flags").style.display = "block";
+      $("flags").innerHTML = r.flags.map(esc).join("<br>");
+    } else $("flags").style.display = "none";
+
+    $("planWindow").textContent = `${r.window.asOf} → ${r.window.end} (${r.window.label})`;
+    const pt = r.planTotals;
+    $("planSummary").innerHTML = `Pay now <strong>${M(pt.payNow + pt.partial)}</strong> ·
+      defer <strong>${M(pt.deferred)}</strong> · cash left after ${M(pt.cashLeft)}`;
+
+    const actClass = { "PAY NOW": "pay", "DEFER": "defer", "PARTIAL": "partial", "SHORTFALL": "short", "PAID": "paid" };
+    $("planBody").innerHTML = r.plan.map((p) => `
+      <tr class="${p.cut ? "cutline" : ""} ${p.action === "PAID" ? "paidrow" : ""}">
+        <td class="c">${p.rank}</td>
+        <td>${esc(p.category)}</td>
+        <td>${esc(p.vendor || p.description || "")}</td>
+        <td class="c"><span class="tier t${p.tier}">${p.tier}</span></td>
+        <td>${esc(p.dueLabel)}</td>
+        <td class="n">${M(p.amount)}</td>
+        <td class="c"><span class="act ${actClass[p.action]}">${p.action}</span></td>
+        <td class="n strong">${p.allocated ? M(p.allocated) : "—"}</td>
+        <td class="n">${p.remaining ? M(p.remaining) : "—"}</td>
+        <td class="reason">${esc((p.scoreNotes || []).join(", "))}${p.action === "DEFER" || p.action === "SHORTFALL" || p.action === "PARTIAL" ? ` → ${p.suggestedDate}` : ""}</td>
+      </tr>`).join("") ||
+      `<tr><td colspan="10" class="c" style="padding:1.5rem;color:var(--muted)">No unpaid bills due in this window.</td></tr>`;
+
+    $("cutNote").textContent = r.cutRank
+      ? `The line above the red rule is where available cash runs out — everything below it is deferred to ${r.window.nextInflowDate}.`
+      : "";
+
+    $("comingBody").innerHTML = r.comingUp.map((e) => `
+      <tr><td>${esc(e.category)}</td><td>${esc(e.vendor || e.description || "")}</td>
+        <td class="c"><span class="tier t${e.tier}">${e.tier}</span></td>
+        <td>${esc(e.dueLabel)}</td><td class="n">${M(e.amount)}</td></tr>`).join("");
+    $("comingWrap").style.display = r.comingUp.length ? "block" : "none";
+
+    $("pnlBody").innerHTML = r.months.map((m) => `
+      <tr>
+        <td>${m.label}</td>
+        <td class="n">${m.revenue == null ? "—" : M(m.revenue)}</td>
+        <td class="n">${m.expense == null ? "—" : M(m.expense)}</td>
+        <td class="n ${m.profit >= 0 ? "up" : "down"}">${m.profit == null ? "—" : M(m.profit)}</td>
+        <td class="n">${(m.revenue && m.profit != null) ? (m.profit / m.revenue * 100).toFixed(0) + "%" : "—"}</td>
+        <td class="n">${m.momPct == null ? "—" : pct(m.momPct)}</td>
+      </tr>`).join("") +
+      `<tr><td class="strong">Forecast</td>
+        <td class="n">${M(r.forecast.revenue)}</td>
+        <td class="n">${M(r.forecast.expenseTotal)}</td>
+        <td class="n strong ${r.forecast.profit >= 0 ? "up" : "down"}">${M(r.forecast.profit)}</td>
+        <td class="n">${r.forecast.margin == null ? "—" : r.forecast.margin.toFixed(0) + "%"}</td>
+        <td class="n">—</td></tr>`;
+
+    $("catBody").innerHTML = r.categories.map((cat) => `
+      <tr>
+        <td>${esc(cat.name)}</td>
+        <td class="c"><span class="tier t${cat.tier}">${cat.tier} ${cat.tierLabel}</span></td>
+        <td class="n">${M(cat.thisMonth)}</td>
+        <td class="n">${M(cat.avg)}</td>
+        <td class="n">${cat.trendPct ? pct(cat.trendPct) : "—"}</td>
+        <td class="n">${(cat.share * 100).toFixed(0)}%</td>
+        <td class="n">${M(cat.forecast)}</td>
+      </tr>`).join("");
+  }
+
+  function download(name, text) {
+    const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  $("dlPlan").addEventListener("click", () => {
+    if (state.report) download("payment_plan_" + state.report.window.asOf + ".csv", SPEND.toCSV(state.report, "plan"));
+  });
+  $("dlPnl").addEventListener("click", () => {
+    if (state.report) download("profit_and_loss.csv", SPEND.toCSV(state.report, "pnl"));
+  });
+})();
+</script>
+</body>
+</html>

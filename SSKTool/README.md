@@ -10,6 +10,11 @@ Two front ends, one engine:
 | **Web app** (`webapp/index.html`) | drag-and-drop up to **3** monthly exports + an optional `inventory.csv`, tune the parameters, get an on-screen report and downloadable CSVs. Runs 100% in the browser — no server, no upload. |
 | **CLI** (`python -m ssktool`) | same math, scriptable, writes HTML + CSV files. Pure Python 3.10+ stdlib, no install. |
 
+The web app has a second page, **Spending Recommendation**
+(`webapp/spending.html`), for cash-flow planning — see
+[below](#spending-recommendation-webappspendinghtml). Web-only for now; a
+matching CLI is planned.
+
 ## Web app
 
 ```
@@ -129,6 +134,53 @@ The single biggest upgrade is **more history**: save each month's export and
 pass them all. Second: keep `inventory.csv` current so quantities are *net* of
 stock and the PO cost is real.
 
+## Spending Recommendation (`webapp/spending.html`)
+
+A second web page for the cash side of the business: **what to pay first when
+cash is tight**. Runs in the browser like the forecast page.
+
+1. **Drop 1–6 POS sales exports** (same files as the forecast page). Monthly
+   revenue is the sum of the Total column — used for the profit trend and to
+   estimate incoming cash.
+2. **Drop an expenses file** — a CSV (or SpreadsheetML `.xls`) with one row per
+   bill. Only `category` and `amount` are required:
+
+   ```
+   date,category,description,vendor,amount,kind,frequency,due_day,status,penalty,priority
+   2026-08-05,Rent,Store space,Landlord,25000,fixed,monthly,5,unpaid,eviction after 7 days,
+   2026-08-15,Payroll,Staff salaries,,33000,fixed,monthly,15,unpaid,,critical
+   2026-08-18,Inventory,Samyang restock,Samyang Distributor,45000,variable,monthly,,unpaid,,
+   ```
+
+   `date` accepts `YYYY-MM-DD` or `M/D/YYYY`; a `month` column (`2026-08`) works
+   too. `status` is `unpaid` / `paid` / `overdue` / `partial`. `priority`
+   (`critical|high|medium|low`) overrides the automatic tier. The **Download
+   blank template** button writes a starter file. See
+   `examples/expenses.example.csv`.
+3. **Enter cash on hand, a buffer to keep, and a planning window** (this week,
+   rest of month, …). Leave *expected inflow* blank to auto-estimate it from the
+   revenue forecast.
+4. Read the **payment plan**: every due/overdue bill ranked, with a *pay now /
+   partial / defer* action and a red line where available cash runs out. Plus a
+   monthly P&L table, an expense-mix + next-month forecast, and a plain-English
+   summary. Download the plan and P&L as CSV.
+
+### How the priority order is decided
+
+Each bill gets a score from three things:
+
+| factor | effect |
+|---|---|
+| **Category tier** | `1 Critical` (rent, payroll, utilities, tax, loan, insurance) → `2 Important` (internet, equipment, services) → `3 Deferrable` (restock, supplies, marketing) → `4 Discretionary`. Matched from the category/description text; a `priority` column overrides it. |
+| **Due-date urgency** | overdue > due inside the window > due later this month. |
+| **Late penalty** | a non-empty `penalty` field bumps the score. |
+
+Bills are then sorted by score and cash is allocated greedily down the list.
+Tier-3 goods/marketing lines can be **part-funded** ("order ₱X now, rest after
+the next deposit"); once a bill can't be covered, everything below it defers.
+If must-pay (tier-1) bills exceed cash + expected inflow, the page shows a
+**shortfall** warning with the gap.
+
 ## Layout
 
 ```
@@ -138,4 +190,9 @@ ssktool/
   model.py      forecasting + reorder math (all the knobs live here)
   report.py     CSV + HTML writers
   cli.py        argument handling, console summary
+webapp/
+  index.html    Order Forecast page
+  forecast.js   browser port of model.py
+  spending.html Spending Recommendation page
+  spending.js   cash-flow / bill-priority engine (reuses forecast.js for POS parsing)
 ```
