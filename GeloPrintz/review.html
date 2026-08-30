@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reviews — AV Toys</title>
+<meta name="description" content="Read verified customer reviews of AV Toys custom 3D-printed anime figures, and leave your own — order number, a photo of your item and a 1–5 star rating." />
+<meta name="theme-color" content="#08080a" />
+
+<meta property="og:title" content="Reviews — AV Toys" />
+<meta property="og:description" content="Verified customer reviews of AV Toys custom figures. Leave yours with your order number, a photo and a star rating." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/img/av-toys-banner.jpg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e11212'/%3E%3Ctext x='50' y='70' font-size='52' font-family='Arial,sans-serif' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAV%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="assets/css/styles.css?v=3" />
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<!-- Preloader -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__mark">
+    <span>AV</span>
+    <span class="preloader__amp">TOYS</span>
+  </div>
+  <div class="preloader__bar"><i></i></div>
+</div>
+
+<!-- Grain overlay -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Progress bar -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- Header -->
+<header class="site-header" id="siteHeader">
+  <div class="shell site-header__inner">
+    <a href="index.html#top" class="brand" aria-label="AV Toys home">
+      <img src="assets/img/av-toys-logo.png" alt="AV Toys" width="1400" height="993" />
+    </a>
+
+    <nav class="nav" id="primaryNav" aria-label="Primary">
+      <a href="index.html#work">Work</a>
+      <a href="index.html#process">Process</a>
+      <a href="index.html#studio">Studio</a>
+      <a href="review.html" class="is-active" aria-current="page">Reviews</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="#review-form" class="btn btn--sm btn--red nav__cta">Leave a Review</a>
+    </nav>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="primaryNav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Reviews intro + rating summary -->
+  <section class="section reviews-hero">
+    <div class="shell">
+      <p class="eyebrow reveal">Customer Reviews</p>
+      <h1 class="section__title reveal" style="--d:.1s">What collectors say</h1>
+      <p class="section__intro reveal" style="--d:.2s">
+        Real photos from real orders. Every published review is checked against an
+        order number and the customer's own photo of the piece.
+      </p>
+      <div class="ratebar" id="ratebar" hidden></div>
+    </div>
+  </section>
+
+  <!-- Published + pending reviews -->
+  <section class="section reviews" style="padding-top:0">
+    <div class="shell">
+      <p class="reviews-note" id="pendingNote" hidden>
+        A review marked <b>pending approval</b> is only visible to you on this device until the AV Toys team publishes it.
+      </p>
+      <div class="reviews-grid" id="reviewsList" aria-live="polite">
+        <div class="reviews-empty">No reviews published yet — be the first to leave one below.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Submission form -->
+  <section class="section contact" id="review-form">
+    <div class="shell contact__grid">
+      <div class="contact__intro">
+        <p class="eyebrow reveal">Leave a Review</p>
+        <h2 class="section__title reveal" style="--d:.1s">Rate your order</h2>
+        <p class="reveal" style="--d:.2s">
+          Your <b>order number</b>, a <b>photo of your item</b> and a <b>star rating</b>
+          are required. Add a few words if you like. Submitting opens your email app
+          (or share sheet) so we receive it — we publish it here once it's verified.
+        </p>
+        <ul class="ticks reveal" style="--d:.3s">
+          <li>Find your order number in your order confirmation or DM thread</li>
+          <li>Use a clear, well-lit photo of the actual piece you received</li>
+          <li>Published reviews show your name, rating, photo and the last 4 of the order number</li>
+        </ul>
+      </div>
+
+      <form class="cform reveal" id="reviewForm" style="--d:.2s" novalidate>
+        <fieldset class="rating-field">
+          <span class="field-label">Your rating *</span>
+          <div class="starpick" role="radiogroup" aria-label="Star rating, 1 to 5">
+            <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars" aria-label="5 stars">★</label>
+            <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars" aria-label="4 stars">★</label>
+            <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars" aria-label="3 stars">★</label>
+            <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars" aria-label="2 stars">★</label>
+            <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star" aria-label="1 star">★</label>
+          </div>
+          <p class="field-error" id="errRating"></p>
+        </fieldset>
+
+        <div class="cform__row">
+          <label class="field">
+            <span>Order number *</span>
+            <input type="text" name="order" inputmode="text" autocomplete="off" placeholder="e.g. AV1043" required />
+            <span class="field-error" id="errOrder"></span>
+          </label>
+          <label class="field">
+            <span>Your name *</span>
+            <input type="text" name="name" autocomplete="name" placeholder="Shown on your review" required />
+            <span class="field-error" id="errName"></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <span>Photo of your item *</span>
+          <div class="uploader">
+            <label class="uploader__drop" id="reviewDrop">
+              Tap to take or choose a photo, or drop one here — <b>required</b>
+              <input type="file" id="reviewPhoto" name="photo" accept="image/*" capture="environment" required />
+            </label>
+            <div class="uploader__preview" id="reviewPreview">
+              <img alt="Preview of the photo you selected" />
+              <button type="button" class="uploader__clear" id="reviewPhotoClear" aria-label="Remove photo">&times;</button>
+            </div>
+          </div>
+          <span class="field-error" id="errPhoto"></span>
+        </div>
+
+        <label class="field">
+          <span>Review title (optional)</span>
+          <input type="text" name="title" placeholder="e.g. Incredible detail, arrived safely" />
+        </label>
+
+        <label class="field">
+          <span>Your review (optional)</span>
+          <textarea name="text" rows="4" placeholder="Fit, finish, paint, packaging, turnaround…"></textarea>
+        </label>
+
+        <button type="submit" class="btn btn--red btn--wide" id="reviewSubmit">Submit review</button>
+        <p class="cform__note" id="reviewNote">
+          Opens your email app / share sheet addressed to <b>avtoys26@gmail.com</b>. Attach the photo when prompted.
+        </p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="shell site-footer__inner">
+    <a href="index.html#top" class="brand brand--footer" aria-label="AV Toys home">
+      <img src="assets/img/av-toys-logo.png" alt="AV Toys" width="1400" height="993" />
+    </a>
+    <p class="site-footer__line">Custom 3D-printed &amp; hand-painted anime figures and toys. Bringing characters to life.</p>
+    <div class="site-footer__links">
+      <a href="index.html">Home</a>
+      <a href="review.html">Reviews</a>
+      <a href="mailto:avtoys26@gmail.com">avtoys26@gmail.com</a>
+      <a href="https://instagram.com/avtoys_" target="_blank" rel="noopener">@AVToys_</a>
+      <a href="tel:+821080756551">010-8075-6551</a>
+    </div>
+    <p class="site-footer__fine">© <span id="year">2026</span> AV Toys. All figures shown are fan-made custom commissions; characters belong to their respective owners.</p>
+  </div>
+</footer>
+
+<!-- Review photo lightbox -->
+<div class="lightbox" id="revLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Review photo">
+  <button class="lightbox__close" id="revLbClose" aria-label="Close">&times;</button>
+  <figure class="lightbox__inner">
+    <img id="revLbImg" src="" alt="Customer review photo, enlarged" />
+  </figure>
+</div>
+
+<button class="to-top" id="toTop" aria-label="Back to top">&#8593;</button>
+
+<script src="assets/js/main.js?v=2"></script>
+<script src="assets/js/reviews.js?v=1"></script>
+</body>
+</html>

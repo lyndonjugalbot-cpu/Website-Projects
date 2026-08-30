@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e11212'/%3E%3Ctext x='50' y='70' font-size='52' font-family='Arial,sans-serif' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAV%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="assets/css/styles.css?v=2" />
+<link rel="stylesheet" href="assets/css/styles.css?v=3" />
 <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
@@ -48,6 +48,7 @@
       <a href="#work">Work</a>
       <a href="#process">Process</a>
       <a href="#studio">Studio</a>
+      <a href="review.html">Reviews</a>
       <a href="#contact">Contact</a>
       <a href="#contact" class="btn btn--sm btn--red nav__cta">Request a Quote</a>
     </nav>
@@ -258,6 +259,24 @@
     </div>
   </section>
 
+  <!-- Reviews teaser -->
+  <section class="section reviews" id="reviews">
+    <div class="shell" id="reviewsTeaser">
+      <header class="section__head">
+        <p class="eyebrow reveal">Customer Reviews</p>
+        <h2 class="section__title reveal" style="--d:.1s">Verified &amp; photographed</h2>
+        <p class="section__intro reveal" style="--d:.2s" id="reviewsTeaserSummary">
+          Be the first to review your AV Toys order.
+        </p>
+      </header>
+      <div class="reviews-grid reviews-grid--3" id="reviewsTeaserGrid"></div>
+      <div class="hero__actions reveal" style="--d:.3s;margin-top:34px">
+        <a href="review.html" class="btn btn--red">Read all reviews</a>
+        <a href="review.html#review-form" class="btn btn--ghost">Leave a review</a>
+      </div>
+    </div>
+  </section>
+
   <!-- Contact -->
   <section class="section contact" id="contact">
     <div class="shell contact__grid">
@@ -349,6 +368,7 @@
     </a>
     <p class="site-footer__line">Custom 3D-printed &amp; hand-painted anime figures and toys. Bringing characters to life.</p>
     <div class="site-footer__links">
+      <a href="review.html">Reviews</a>
       <a href="mailto:avtoys26@gmail.com">avtoys26@gmail.com</a>
       <a href="https://instagram.com/avtoys_" target="_blank" rel="noopener">@AVToys_</a>
       <a href="tel:+821080756551">010-8075-6551</a>
@@ -374,5 +394,6 @@
 <button class="to-top" id="toTop" aria-label="Back to top">&#8593;</button>
 
 <script src="assets/js/main.js?v=2"></script>
+<script src="assets/js/reviews.js?v=1"></script>
 </body>
 </html>

@@ -1014,3 +1014,153 @@ a.contact__card:hover {
   .preloader { animation-delay: 0s; }
   .hero__glow, .hero__ring, .hero__scroll i::after { animation: none; }
 }
+
+/* ============================================================
+   Reviews — /review page + homepage teaser
+   ============================================================ */
+.reviews-hero { padding-top: clamp(130px, 18vw, 200px); }
+.reviews-hero .section__intro { margin-top: 14px; }
+
+.ratebar {
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  margin-top: 30px; padding: 22px 26px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--panel);
+}
+.ratebar__score {
+  font-family: var(--serif); font-weight: 600; font-size: 2.8rem; line-height: 1;
+  color: var(--red-bright);
+}
+.ratebar__meta { display: flex; flex-direction: column; gap: 5px; }
+.ratebar__meta span {
+  font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted-2);
+}
+
+.stars { display: inline-flex; gap: 3px; line-height: 1; font-size: 1rem; }
+.stars i { font-style: normal; color: var(--muted-2); }
+.stars i.on { color: var(--red-bright); }
+.stars--lg { font-size: 1.35rem; }
+
+.reviews-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.reviews-grid--3 { grid-template-columns: repeat(3, 1fr); }
+
+.review-card {
+  border: 1px solid var(--line-soft); border-radius: 6px; background: var(--panel);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.review-card__photo {
+  aspect-ratio: 4 / 3; overflow: hidden; background: var(--black); cursor: zoom-in;
+}
+.review-card__photo img {
+  width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease);
+}
+.review-card__photo:hover img { transform: scale(1.05); }
+.review-card__body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; }
+.review-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.review-card__name {
+  font-family: var(--serif); font-weight: 500; font-size: 1.1rem;
+  letter-spacing: .02em; text-transform: uppercase;
+}
+.review-card__date { font-size: .74rem; color: var(--muted-2); white-space: nowrap; }
+.review-card__title { font-weight: 500; color: var(--text); }
+.review-card__text { color: var(--muted); font-size: .95rem; }
+.review-card__foot { margin-top: 2px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.review-card__order { font-size: .72rem; color: var(--muted-2); letter-spacing: .05em; }
+
+.badge {
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 2px; border: 1px solid var(--line); color: var(--red-soft);
+}
+.badge--verified { color: #7ddf9a; border-color: rgba(125, 223, 154, .42); }
+.badge--pending  { color: #e8c96a; border-color: rgba(232, 201, 106, .42); }
+
+.reviews-empty {
+  color: var(--muted); border: 1px dashed var(--line); border-radius: 6px;
+  padding: 44px 30px; text-align: center;
+}
+.reviews-note { margin-top: 14px; font-size: .8rem; color: var(--muted-2); }
+
+/* ---- star picker (submission) ---- */
+.rating-field { border: 0; padding: 0; margin: 0; }
+.rating-field .field-label {
+  display: block; font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.starpick { position: relative; display: inline-flex; flex-direction: row-reverse; gap: 6px; }
+.starpick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.starpick label {
+  font-size: 2rem; line-height: 1; color: var(--muted-2); cursor: pointer;
+  transition: color .15s var(--ease), transform .12s var(--ease);
+}
+.starpick label:hover,
+.starpick label:hover ~ label,
+.starpick input:checked ~ label { color: var(--red-bright); }
+.starpick label:active { transform: scale(1.15); }
+.starpick input:focus-visible + label { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 3px; }
+
+/* ---- photo uploader (submission) ---- */
+.uploader { display: grid; gap: 12px; }
+.uploader__drop {
+  border: 1px dashed var(--line); border-radius: 4px; padding: 24px; text-align: center;
+  color: var(--muted); cursor: pointer; font-size: .9rem;
+  transition: border-color .3s var(--ease), background .3s var(--ease);
+}
+.uploader__drop:hover, .uploader__drop.is-drag {
+  border-color: var(--red); background: rgba(225, 29, 29, .06);
+}
+.uploader__drop b { color: var(--red-bright); font-weight: 500; }
+.uploader__drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.uploader__preview {
+  display: none; position: relative; border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+}
+.uploader__preview.is-shown { display: block; }
+.uploader__preview img { width: 100%; max-height: 280px; object-fit: cover; display: block; }
+.uploader__clear {
+  position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 3px;
+  border: 1px solid var(--line); background: rgba(8, 8, 10, .8); color: var(--text);
+  cursor: pointer; font-size: 18px; line-height: 1;
+}
+
+.field-error { color: var(--red-bright); font-size: .8rem; min-height: 1em; }
+.cform__note.is-err { color: var(--red-bright); }
+.cform__note.is-ok  { color: var(--red-bright); }
+
+@media (max-width: 900px) {
+  .reviews-grid, .reviews-grid--3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .reviews-grid, .reviews-grid--3 { grid-template-columns: 1fr; }
+  .ratebar { gap: 16px; padding: 18px 20px; }
+}
+
+/* hidden rating summary must actually hide (overrides .ratebar display:flex) */
+.ratebar[hidden] { display: none; }
+
+/* disabled / not-yet-valid buttons */
+.btn:disabled,
+.btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.btn:disabled:hover,
+.btn[aria-disabled="true"]:hover { transform: none; box-shadow: 0 10px 30px -12px rgba(225, 29, 29, 0.55); }
+
+/* collapse the primary nav to the slide-in menu earlier, so the mid-width
+   zone (≈720–860px) doesn't cram 5 links + the CTA button */
+@media (max-width: 860px) {
+  .nav {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(320px, 84vw);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 26px;
+    padding: 40px;
+    background: var(--ink);
+    border-left: 1px solid var(--line);
+    transform: translateX(100%);
+    transition: transform .5s var(--ease);
+    z-index: 8500;
+  }
+  .nav.is-open { transform: translateX(0); }
+  .nav > a:not(.btn) { font-size: 15px; }
+  .nav__cta { margin-top: 10px; }
+  .nav-toggle { display: block; z-index: 9000; }
+}
