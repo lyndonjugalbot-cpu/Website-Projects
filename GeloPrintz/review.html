@@ -77,9 +77,6 @@
   <!-- Published + pending reviews -->
   <section class="section reviews" style="padding-top:0">
     <div class="shell">
-      <p class="reviews-note" id="pendingNote" hidden>
-        A review marked <b>pending approval</b> is only visible to you on this device until the AV Toys team publishes it.
-      </p>
       <div class="reviews-grid" id="reviewsList" aria-live="polite">
         <div class="reviews-empty">No reviews published yet — be the first to leave one below.</div>
       </div>
@@ -94,8 +91,8 @@
         <h2 class="section__title reveal" style="--d:.1s">Rate your order</h2>
         <p class="reveal" style="--d:.2s">
           Your <b>order number</b>, a <b>photo of your item</b> and a <b>star rating</b>
-          are required. Add a few words if you like. Submitting opens your email app
-          (or share sheet) so we receive it — we publish it here once it's verified.
+          are required. Add a few words if you like. Reviews are checked by the
+          AV Toys team before they appear on this page.
         </p>
         <ul class="ticks reveal" style="--d:.3s">
           <li>Find your order number in your order confirmation or DM thread</li>
@@ -157,7 +154,7 @@
 
         <button type="submit" class="btn btn--red btn--wide" id="reviewSubmit">Submit review</button>
         <p class="cform__note" id="reviewNote">
-          Opens your email app / share sheet addressed to <b>avtoys26@gmail.com</b>. Attach the photo when prompted.
+          Your review and photo are sent securely to AV Toys and published here once verified.
         </p>
       </form>
     </div>
@@ -191,7 +188,9 @@
 
 <button class="to-top" id="toTop" aria-label="Back to top">&#8593;</button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js?v=1"></script>
 <script src="assets/js/main.js?v=2"></script>
-<script src="assets/js/reviews.js?v=1"></script>
+<script src="assets/js/reviews.js?v=3"></script>
 </body>
 </html>

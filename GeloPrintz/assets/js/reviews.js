@@ -1,45 +1,21 @@
 /* ============================================================
-   AV Toys — customer reviews
-   - Displays published reviews on /review and the homepage teaser
-   - Handles the submission form (order # + photo + star rating required)
-   Loaded on index.html and review.html, after main.js.
+   AV Toys — customer reviews (Supabase-backed)
+   - Displays APPROVED reviews on /review and the homepage teaser
+   - Submits new reviews (order # + photo + 1–5 stars required) to Supabase
+     as "pending"; a photo goes to the "review-photos" storage bucket
+   Loaded on index.html and review.html, after supabase-js + config.js + main.js.
+   Moderation happens on /admin. Schema + policies: supabase/schema.sql
    ============================================================ */
 (function () {
   "use strict";
 
-  /* -----------------------------------------------------------------
-     PUBLISHED REVIEWS  —  this list is what shows publicly.
-     To publish a customer's review: check their order number and the
-     photo they sent, drop their photo into assets/img/reviews/, add an
-     entry below (newest first), then commit + push. It goes live on the
-     next deploy.
-
-       name     – display name, e.g. "Marco D."
-       order    – their order number (shown on the card as the last 4)
-       rating   – whole number, 1 to 5
-       date     – "YYYY-MM-DD"
-       title    – short headline (optional)
-       text     – the review body
-       photo    – path to their photo, e.g. "assets/img/reviews/av1043.jpg"
-       verified – true once you've matched the order number + photo
-     ----------------------------------------------------------------- */
-  var PUBLISHED = [
-    // {
-    //   name: "Marco D.",
-    //   order: "AV1043",
-    //   rating: 5,
-    //   date: "2026-07-14",
-    //   title: "Better than the promo photos",
-    //   text: "The paint blending on the face is unreal and the base survived shipping without a scratch. Packaging was heavy-duty.",
-    //   photo: "assets/img/reviews/av1043.jpg",
-    //   verified: true
-    // }
-  ];
-
-  window.AV_REVIEWS = (window.AV_REVIEWS || []).concat(PUBLISHED);
-
-  var PENDING_KEY = "av_pending_reviews";
+  var cfg = window.AV_CONFIG || {};
+  var sb = (window.supabase && cfg.SUPABASE_URL && cfg.SUPABASE_KEY)
+    ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY)
+    : null;
+  var BUCKET = "review-photos";
   var MAILTO = "avtoys26@gmail.com";
+
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
@@ -51,8 +27,7 @@
   }
   function clampRating(n) {
     n = parseInt(n, 10);
-    if (isNaN(n)) return 0;
-    return Math.max(0, Math.min(5, n));
+    return isNaN(n) ? 0 : Math.max(0, Math.min(5, n));
   }
   function starsHTML(n) {
     n = clampRating(n);
@@ -61,125 +36,117 @@
     return out;
   }
   function maskOrder(o) {
-    o = String(o || "").trim();
-    if (!o) return "";
-    var tail = o.replace(/\s+/g, "").slice(-4);
-    return "Order #…" + esc(tail);
+    o = String(o || "").trim().replace(/\s+/g, "");
+    return o ? "Order #…" + esc(o.slice(-4)) : "";
   }
   function fmtDate(d) {
     var t = Date.parse(d);
-    if (isNaN(t)) return esc(d || "");
-    try {
-      return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-    } catch (e) { return esc(d); }
+    if (isNaN(t)) return "";
+    try { return new Date(t).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+    catch (e) { return ""; }
   }
-  function getPending() {
-    try { return JSON.parse(localStorage.getItem(PENDING_KEY)) || []; }
-    catch (e) { return []; }
+  function photoUrl(path) {
+    if (!sb || !path) return "";
+    try { return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl; }
+    catch (e) { return ""; }
   }
-  function setPending(list) {
-    try { localStorage.setItem(PENDING_KEY, JSON.stringify(list.slice(-5))); }
-    catch (e) { /* quota / disabled — pending just won't persist */ }
+  function averageOf(list) {
+    if (!list.length) return 0;
+    var s = list.reduce(function (a, r) { return a + clampRating(r.rating); }, 0);
+    return Math.round((s / list.length) * 10) / 10;
   }
 
-  /* ---------- card rendering ---------- */
-  function cardHTML(r, opts) {
-    opts = opts || {};
-    var badge = r.pending
-      ? '<span class="badge badge--pending">Pending approval</span>'
-      : (r.verified ? '<span class="badge badge--verified">Verified purchase</span>' : "");
-    var photo = r.photo
-      ? '<div class="review-card__photo" data-full="' + esc(r.photo) + '">' +
-          '<img src="' + esc(r.photo) + '" alt="Customer photo of their AV Toys order" loading="lazy" />' +
+  /* ---------- card ---------- */
+  function cardHTML(r) {
+    var url = photoUrl(r.photo_path);
+    var photo = url
+      ? '<div class="review-card__photo" data-full="' + esc(url) + '">' +
+          '<img src="' + esc(url) + '" alt="Customer photo of their AV Toys order" loading="lazy" />' +
         "</div>"
       : "";
-    var title = r.title ? '<p class="review-card__title">' + esc(r.title) + "</p>" : "";
-    var text = r.text ? '<p class="review-card__text">' + esc(r.text) + "</p>" : "";
     return '' +
       '<article class="review-card">' +
         photo +
         '<div class="review-card__body">' +
           '<div class="review-card__top">' +
             '<span class="review-card__name">' + esc(r.name || "Anonymous") + "</span>" +
-            '<span class="review-card__date">' + fmtDate(r.date) + "</span>" +
+            '<span class="review-card__date">' + fmtDate(r.created_at) + "</span>" +
           "</div>" +
           '<div class="stars" aria-label="' + clampRating(r.rating) + ' out of 5 stars">' + starsHTML(r.rating) + "</div>" +
-          title + text +
+          (r.title ? '<p class="review-card__title">' + esc(r.title) + "</p>" : "") +
+          (r.body ? '<p class="review-card__text">' + esc(r.body) + "</p>" : "") +
           '<div class="review-card__foot">' +
-            badge +
-            (r.order ? '<span class="review-card__order">' + maskOrder(r.order) + "</span>" : "") +
+            '<span class="badge badge--verified">Verified purchase</span>' +
+            (r.order_number ? '<span class="review-card__order">' + maskOrder(r.order_number) + "</span>" : "") +
           "</div>" +
         "</div>" +
       "</article>";
   }
 
-  function averageOf(list) {
-    if (!list.length) return 0;
-    var sum = list.reduce(function (a, r) { return a + clampRating(r.rating); }, 0);
-    return Math.round((sum / list.length) * 10) / 10;
+  /* ---------- load approved reviews ---------- */
+  var _cache = null;
+  function fetchApproved() {
+    if (_cache) return Promise.resolve(_cache);
+    if (!sb) return Promise.resolve([]);
+    return sb.from("reviews")
+      .select("id,created_at,name,order_number,rating,title,body,photo_path")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .then(function (res) {
+        if (res.error) { console.warn("reviews load:", res.error.message); return []; }
+        _cache = res.data || [];
+        return _cache;
+      })
+      .catch(function (e) { console.warn("reviews load:", e); return []; });
   }
 
   /* ---------- homepage teaser ---------- */
   function renderTeaser() {
     var wrap = $("#reviewsTeaser");
     if (!wrap) return;
-    var approved = window.AV_REVIEWS.slice();
     var grid = $("#reviewsTeaserGrid", wrap);
     var summary = $("#reviewsTeaserSummary", wrap);
-
-    if (!approved.length) {
-      if (summary) summary.textContent = "Be the first to review your AV Toys order.";
-      if (grid) grid.innerHTML = "";
-      return;
-    }
-    var avg = averageOf(approved);
-    if (summary) {
-      summary.innerHTML =
-        '<span class="stars stars--lg" aria-hidden="true">' + starsHTML(Math.round(avg)) + "</span> " +
-        "<strong>" + avg.toFixed(1) + "</strong> / 5 from " + approved.length +
-        " verified " + (approved.length === 1 ? "review" : "reviews");
-    }
-    if (grid) grid.innerHTML = approved.slice(0, 3).map(function (r) { return cardHTML(r); }).join("");
+    fetchApproved().then(function (rows) {
+      if (!rows.length) {
+        if (summary) summary.textContent = "Be the first to review your AV Toys order.";
+        if (grid) grid.innerHTML = "";
+        return;
+      }
+      var avg = averageOf(rows);
+      if (summary) {
+        summary.innerHTML =
+          '<span class="stars stars--lg" aria-hidden="true">' + starsHTML(Math.round(avg)) + "</span> " +
+          "<strong>" + avg.toFixed(1) + "</strong> / 5 from " + rows.length +
+          " verified " + (rows.length === 1 ? "review" : "reviews");
+      }
+      if (grid) grid.innerHTML = rows.slice(0, 3).map(cardHTML).join("");
+    });
   }
 
-  /* ---------- /review list ---------- */
+  /* ---------- /review list + rating summary ---------- */
   function renderList() {
     var list = $("#reviewsList");
     if (!list) return;
-    var approved = window.AV_REVIEWS.slice();
-    var pending = getPending();
-
-    var ratebar = $("#ratebar");
-    if (ratebar) {
-      if (approved.length) {
-        var avg = averageOf(approved);
-        ratebar.hidden = false;
-        ratebar.innerHTML =
-          '<span class="ratebar__score">' + avg.toFixed(1) + "</span>" +
-          '<div class="ratebar__meta">' +
-            '<span class="stars stars--lg" aria-hidden="true" style="color:var(--red-bright)">' + starsHTML(Math.round(avg)) + "</span>" +
-            "<span>" + approved.length + " verified " + (approved.length === 1 ? "review" : "reviews") + "</span>" +
-          "</div>";
-      } else {
-        ratebar.hidden = true;
+    fetchApproved().then(function (rows) {
+      var ratebar = $("#ratebar");
+      if (ratebar) {
+        if (rows.length) {
+          var avg = averageOf(rows);
+          ratebar.hidden = false;
+          ratebar.innerHTML =
+            '<span class="ratebar__score">' + avg.toFixed(1) + "</span>" +
+            '<div class="ratebar__meta">' +
+              '<span class="stars stars--lg" aria-hidden="true" style="color:var(--red-bright)">' + starsHTML(Math.round(avg)) + "</span>" +
+              "<span>" + rows.length + " verified " + (rows.length === 1 ? "review" : "reviews") + "</span>" +
+            "</div>";
+        } else {
+          ratebar.hidden = true;
+        }
       }
-    }
-
-    var html = "";
-    if (pending.length) {
-      html += pending.slice().reverse().map(function (r) { return cardHTML(r, { pending: true }); }).join("");
-    }
-    if (approved.length) {
-      html += approved.map(function (r) { return cardHTML(r); }).join("");
-    }
-    if (!html) {
-      html = '<div class="reviews-empty">No reviews published yet — be the first to leave one below.</div>';
-    }
-    list.className = "reviews-grid" + ((approved.length + pending.length) ? "" : "");
-    list.innerHTML = html;
-
-    var pn = $("#pendingNote");
-    if (pn) pn.hidden = !pending.length;
+      list.innerHTML = rows.length
+        ? rows.map(cardHTML).join("")
+        : '<div class="reviews-empty">No reviews published yet — be the first to leave one below.</div>';
+    });
   }
 
   /* ---------- lightbox for review photos ---------- */
@@ -189,7 +156,6 @@
     var img = $("#revLbImg", lb);
     var close = $("#revLbClose", lb);
     var lastFocus = null;
-
     function open(src) {
       lastFocus = document.activeElement;
       img.src = src;
@@ -237,44 +203,41 @@
     var errPhoto = $("#errPhoto", form);
     var errName = $("#errName", form);
 
-    var state = { photoDataUrl: "", photoName: "" };
+    var state = { blob: null, name: "" };
 
     function rating() {
-      var checked = $('input[name="rating"]:checked', form);
-      return checked ? clampRating(checked.value) : 0;
+      var c = $('input[name="rating"]:checked', form);
+      return c ? clampRating(c.value) : 0;
     }
     function valid() {
-      return rating() >= 1 && orderInput.value.trim() !== "" && !!state.photoDataUrl && nameInput.value.trim() !== "";
+      return rating() >= 1 && orderInput.value.trim() && state.blob && nameInput.value.trim();
     }
-    // The submit button stays enabled (so screen readers can reach it and the
-    // on-submit errors can fire); requirements are enforced in the submit handler.
     function refresh() {
       if (submitBtn) submitBtn.setAttribute("aria-disabled", valid() ? "false" : "true");
     }
     function showErrors() {
       errRating.textContent = rating() >= 1 ? "" : "Please pick a star rating.";
       errOrder.textContent = orderInput.value.trim() ? "" : "Order number is required.";
-      errPhoto.textContent = state.photoDataUrl ? "" : "A photo of your item is required.";
+      errPhoto.textContent = state.blob ? "" : "A photo of your item is required.";
       errName.textContent = nameInput.value.trim() ? "" : "Please add your name.";
     }
 
-    // downscale the chosen image so previews / pending storage stay small
-    function compress(file, maxW, quality) {
+    // downscale to a JPEG blob for upload
+    function compress(file) {
       return new Promise(function (resolve) {
         var url = URL.createObjectURL(file);
-        var image = new Image();
-        image.onload = function () {
-          var scale = Math.min(1, maxW / image.width);
-          var canvas = document.createElement("canvas");
-          canvas.width = Math.max(1, Math.round(image.width * scale));
-          canvas.height = Math.max(1, Math.round(image.height * scale));
-          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+        var im = new Image();
+        im.onload = function () {
+          var scale = Math.min(1, 1400 / im.width);
+          var c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(im.width * scale));
+          c.height = Math.max(1, Math.round(im.height * scale));
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
           URL.revokeObjectURL(url);
-          try { resolve(canvas.toDataURL("image/jpeg", quality)); }
-          catch (e) { resolve(""); }
+          c.toBlob(function (b) { resolve(b); }, "image/jpeg", 0.82);
         };
-        image.onerror = function () { URL.revokeObjectURL(url); resolve(""); };
-        image.src = url;
+        im.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+        im.src = url;
       });
     }
 
@@ -283,11 +246,11 @@
         errPhoto.textContent = "That file isn't an image — please choose a photo.";
         return;
       }
-      state.photoName = file.name || "photo.jpg";
-      compress(file, 1200, 0.82).then(function (dataUrl) {
-        state.photoDataUrl = dataUrl || "";
-        if (dataUrl) {
-          previewImg.src = dataUrl;
+      state.name = file.name || "photo.jpg";
+      compress(file).then(function (blob) {
+        state.blob = blob || null;
+        if (blob) {
+          previewImg.src = URL.createObjectURL(blob);
           preview.classList.add("is-shown");
           errPhoto.textContent = "";
         }
@@ -299,7 +262,7 @@
       if (photoInput.files && photoInput.files[0]) handleFile(photoInput.files[0]);
     });
     clearBtn.addEventListener("click", function () {
-      state.photoDataUrl = ""; state.photoName = "";
+      state.blob = null; state.name = "";
       photoInput.value = "";
       previewImg.src = "";
       preview.classList.remove("is-shown");
@@ -314,30 +277,24 @@
     drop.addEventListener("drop", function (e) {
       if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
-
-    form.addEventListener("change", refresh);
     form.addEventListener("input", refresh);
+    form.addEventListener("change", refresh);
     $$('input[name="rating"]', form).forEach(function (r) {
       r.addEventListener("change", function () { errRating.textContent = ""; refresh(); });
     });
     refresh();
 
-    function buildMailto(r) {
+    function mailtoFallback(r) {
       var body = [
-        "New customer review for AV Toys",
-        "",
+        "New customer review for AV Toys", "",
         "Rating: " + r.rating + " / 5",
         "Name: " + r.name,
         "Order number: " + r.order,
-        r.title ? "Title: " + r.title : null,
-        "",
-        "Review:",
-        r.text || "(no written review)",
-        "",
-        '⚠ Photo: "' + state.photoName + '" — please attach this photo to the email before sending.',
-        "It can't be attached automatically from the website."
+        r.title ? "Title: " + r.title : null, "",
+        "Review:", r.text || "(no written review)", "",
+        '⚠ Photo "' + state.name + '" — please attach it to this email before sending.'
       ].filter(function (l) { return l !== null; }).join("\n");
-      return "mailto:" + MAILTO +
+      window.location.href = "mailto:" + MAILTO +
         "?subject=" + encodeURIComponent("New review — " + r.rating + "★ — Order " + r.order) +
         "&body=" + encodeURIComponent(body);
     }
@@ -348,58 +305,58 @@
       if (!valid()) {
         note.textContent = "Please add a star rating, your order number, your name and a photo of your item.";
         note.className = "cform__note is-err";
-        var firstErr = $(".field-error:not(:empty)", form);
-        if (firstErr) firstErr.scrollIntoView({ block: "center", behavior: "smooth" });
+        var fe = $(".field-error:not(:empty)", form);
+        if (fe) fe.scrollIntoView({ block: "center", behavior: "smooth" });
         return;
       }
 
-      var review = {
+      var r = {
         name: nameInput.value.trim(),
         order: orderInput.value.trim(),
         rating: rating(),
-        date: new Date().toISOString().slice(0, 10),
         title: titleInput.value.trim(),
-        text: textInput.value.trim(),
-        photo: state.photoDataUrl,
-        pending: true,
-        submittedAt: Date.now()
+        text: textInput.value.trim()
       };
 
-      // show it to the customer straight away, marked pending
-      var list = getPending();
-      list.push(review);
-      setPending(list);
-      renderList();
+      // No backend reachable → fall back to the old email flow so nothing is lost
+      if (!sb) { mailtoFallback(r); note.textContent = "Opening your email app…"; note.className = "cform__note is-ok"; return; }
 
-      // send it to AV Toys — native share (carries the photo) or email
-      var sent = false;
-      try {
-        var file = photoInput.files && photoInput.files[0];
-        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: "AV Toys review — Order " + review.order,
-            text: review.rating + "/5 from " + review.name +
-                  " (Order " + review.order + ")\n\n" + (review.text || "")
-          }).then(function () { sent = true; }).catch(function () {
-            window.location.href = buildMailto(review);
+      note.textContent = "Sending your review…";
+      note.className = "cform__note";
+      if (submitBtn) submitBtn.setAttribute("aria-disabled", "true");
+
+      var path = "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + ".jpg";
+
+      sb.storage.from(BUCKET).upload(path, state.blob, { contentType: "image/jpeg", upsert: false })
+        .then(function (up) {
+          if (up.error) throw up.error;
+          // NOTE: no .select() here — RLS hides the pending row from the anon key,
+          // and chaining .select() would surface a false error.
+          return sb.from("reviews").insert({
+            name: r.name,
+            order_number: r.order,
+            rating: r.rating,
+            title: r.title || null,
+            body: r.text || null,
+            photo_path: path
           });
-          sent = true;
-        }
-      } catch (err) { /* fall through to mailto */ }
-      if (!sent) window.location.href = buildMailto(review);
-
-      note.innerHTML =
-        "Thanks! Your review is shown below marked <b>pending</b> and has been sent to the AV Toys team. " +
-        "It appears publicly once they verify your order number and photo.";
-      note.className = "cform__note is-ok";
-
-      form.reset();
-      state.photoDataUrl = ""; state.photoName = "";
-      preview.classList.remove("is-shown");
-      previewImg.src = "";
-      refresh();
-      $("#reviewsList").scrollIntoView({ block: "start", behavior: "smooth" });
+        })
+        .then(function (ins) {
+          if (ins.error) throw ins.error;
+          note.innerHTML = "Thanks, " + esc(r.name) + "! Your review has been submitted and will appear here once the AV Toys team verifies your order number and photo.";
+          note.className = "cform__note is-ok";
+          form.reset();
+          state.blob = null; state.name = "";
+          preview.classList.remove("is-shown");
+          previewImg.src = "";
+          refresh();
+        })
+        .catch(function (err) {
+          console.warn("review submit:", err);
+          note.textContent = "Sorry — that didn't send. Please try again, or email " + MAILTO + " with your order number and photo.";
+          note.className = "cform__note is-err";
+          refresh();
+        });
     });
   }
 
@@ -410,9 +367,6 @@
     initLightbox();
     initForm();
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
 })();
