@@ -4,11 +4,10 @@ const $ = (id) => document.getElementById(id);
 
 const els = {
   url: $('url'), gid: $('gid'), csv: $('csv'), file: $('file'), sheet: $('sheet'),
-  firstCol: $('firstCol'), lastCol: $('lastCol'), phoneCol: $('phoneCol'), nameCol: $('nameCol'),
+  firstCol: $('firstCol'), lastCol: $('lastCol'), nameCol: $('nameCol'),
   run: $('run'), status: $('status'),
   results: $('results'), warnings: $('warnings'), stats: $('stats'), detected: $('detected'),
   download: $('download'), copyTsv: $('copyTsv'), copyNote: $('copyNote'),
-  failBox: $('failBox'), failList: $('failList'),
   preview: $('preview'), previewNote: $('previewNote'),
 };
 
@@ -99,7 +98,6 @@ function options() {
   const o = {};
   if (els.firstCol.value.trim()) o.firstCol = els.firstCol.value.trim();
   if (els.lastCol.value.trim()) o.lastCol = els.lastCol.value.trim();
-  if (els.phoneCol.value.trim()) o.phoneCol = els.phoneCol.value.trim();
   if (els.nameCol.value.trim()) o.nameCol = els.nameCol.value.trim();
   return o;
 }
@@ -155,32 +153,16 @@ function render(data) {
   }
 
   // stats
-  const failN = report.phonesFailed.length;
   els.stats.innerHTML = [
     stat(report.totalRows, 'rows'),
     stat(report.namesCombined, 'names combined', 'good'),
-    stat(report.phonesFixed, 'phones fixed', 'good'),
-    stat(report.phonesUnchanged, 'already OK'),
-    stat(failN, 'unparseable', failN ? 'bad' : ''),
   ].join('');
 
   els.detected.innerHTML =
     `Detected &mdash; first name: <b>${esc(report.firstNameColumn || 'none')}</b>, ` +
     `last name: <b>${esc(report.lastNameColumn || 'none')}</b>, ` +
-    `phone: <b>${esc(report.phoneColumn || 'none')}</b>, ` +
-    `combined into: <b>${esc(report.fullNameColumn)}</b>${report.fullNameColumnCreated ? ' (new column)' : ''}.`;
-
-  // failures
-  if (failN) {
-    els.failBox.hidden = false;
-    els.failBox.querySelector('summary').textContent = `${failN} phone value${failN > 1 ? 's' : ''} could not be parsed (left untouched)`;
-    els.failList.innerHTML = report.phonesFailed
-      .slice(0, 200)
-      .map((f) => `<li>row ${f.row}: "${esc(f.value)}"</li>`)
-      .join('');
-  } else {
-    els.failBox.hidden = true;
-  }
+    `combined into: <b>${esc(report.fullNameColumn)}</b>${report.fullNameColumnCreated ? ' (new column)' : ''}. ` +
+    `All other columns are passed through unchanged.`;
 
   // preview table
   const body = rows.slice(1, 1 + PREVIEW_LIMIT);
@@ -188,7 +170,7 @@ function render(data) {
   const tbody = '<tbody>' + body.map((r, i) => {
     const flag = changed[i] || {};
     return '<tr>' + headers.map((_, c) => {
-      const isChg = (c === columns.phoneIdx && flag.phone) || (c === columns.nameIdx && flag.name);
+      const isChg = c === columns.nameIdx && flag.name;
       return `<td class="${isChg ? 'chg' : ''}">${esc(r[c] == null ? '' : r[c])}</td>`;
     }).join('') + '</tr>';
   }).join('') + '</tbody>';

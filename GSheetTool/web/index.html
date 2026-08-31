@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GSheetTool - Contact Sheet Cleaner</title>
-  <meta name="description" content="Combine first/last names and normalise phone numbers to the plain local form 0XXXXXXXXX from a Google Sheet link or CSV." />
+  <meta name="description" content="Combine First Name + Last Name into one Full Name column from a Google Sheet link, CSV, or .xlsx file. Every other column is left untouched." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%A7%B9%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,8 +12,8 @@
   <main class="wrap">
     <header class="head">
       <h1>GSheetTool</h1>
-      <p class="sub">Combine <strong>First&nbsp;+&nbsp;Last</strong> into one name column, and reformat phone numbers to the plain local form
-        <code>0XXXXXXXXX</code>.</p>
+      <p class="sub">Combine <strong>First&nbsp;Name&nbsp;+&nbsp;Last&nbsp;Name</strong> into one
+        <code>Full&nbsp;Name</code> column. Every other column (phone, email, &hellip;) is passed through exactly as-is.</p>
     </header>
 
     <section class="card">
@@ -38,7 +38,7 @@
           <input id="file" type="file"
                  accept=".csv,text/csv,text/plain,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
           <input id="sheet" type="text" placeholder="Worksheet name (.xlsx only, optional - defaults to the first)" hidden />
-          <textarea id="csv" rows="6" placeholder="First Name,Last Name,Phone&#10;John,Jargon,02904343199"></textarea>
+          <textarea id="csv" rows="6" placeholder="First Name,Last Name,Phone&#10;Derek,Keen,02904343199"></textarea>
         </div>
       </details>
 
@@ -49,8 +49,6 @@
             <input id="firstCol" type="text" placeholder="auto" /></label>
           <label class="field"><span class="label">Last-name column</span>
             <input id="lastCol" type="text" placeholder="auto" /></label>
-          <label class="field"><span class="label">Phone column</span>
-            <input id="phoneCol" type="text" placeholder="auto" /></label>
           <label class="field"><span class="label">Combined-name column</span>
             <input id="nameCol" type="text" placeholder="Full Name" /></label>
           <p class="hint span4">Accepts a header name, a column letter (<code>C</code>), or a 1-based number (<code>3</code>).</p>
@@ -76,11 +74,6 @@
         <span id="copyNote" class="status"></span>
       </div>
 
-      <details id="failBox" class="disclosure danger" hidden>
-        <summary></summary>
-        <div class="disclosure-body"><ul id="failList" class="faillist"></ul></div>
-      </details>
-
       <div class="tablewrap">
         <table id="preview" class="preview"></table>
       </div>
@@ -89,7 +82,7 @@
 
     <footer class="foot">
       Runs entirely on your data for this request &mdash; nothing is stored.
-      Phone format is New&nbsp;Zealand specific.
+      Only the name columns are combined; nothing else is altered.
     </footer>
   </main>
 

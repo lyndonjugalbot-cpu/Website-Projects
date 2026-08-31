@@ -1,8 +1,7 @@
-First Name,Last Name,Phone,Email
-John,Jargon,02904343199,john@example.com
-Mary,Anne,2904343199.,mary@example.com
-Ravi,Patel,+642904343199,ravi@example.com
-Sue,Kim,290434319,sue@example.com
-Alex,,029 0434 3199,alex@example.com
-,Nguyen,0064 2904343199,nguyen@example.com
-Pat,Cross,not provided,pat@example.com
+Barcode,Frist Name,Last Name,Email,Phone,LicenseFirstName,LicenseLastName
+A001,Derek,Keen,derek@example.com,02904343199,Derek,Keen
+A002,Mary,Anne,mary@example.com,+642904343199,,
+A003,Ravi,Patel,ravi@example.com,2904343199,Ravi R,Patel
+A004,Sue,Kim,sue@example.com,029 0434 3199,,
+A005,Alex,,alex@example.com,not provided,,
+A006,,Nguyen,nguyen@example.com,0064 2904343199,,

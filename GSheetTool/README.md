@@ -1,26 +1,25 @@
 # GSheetTool
 
-Clean a contact list held in a Google Sheet, a CSV, or an `.xlsx` file:
+Take a contact list held in a Google Sheet, a CSV, or an `.xlsx` file and
+combine each row's **`First Name` + `Last Name`** into one **`Full Name`**
+column (`Derek` + `Keen` → `Derek Keen`).
 
-1. **Combine names** — `First Name` + `Last Name` → one `Full Name` column
-   (`John` + `Jargon` → `John Jargon`).
-2. **Normalise phone numbers** to the plain local form `0XXXXXXXXX`.
+Every other column — phone, email, postcode, anything — is **passed through
+byte-for-byte unchanged**. The tool only writes the combined-name column.
 
-## Phone rules
+## Name-column detection
 
-| Input            | Output         |
-|------------------|----------------|
-| `'02904343199`   | `02904343199`  |
-| `'+642904343199` | `02904343199`  |
-| `'2904343199`    | `02904343199`  |
-| `'0290434319`    | `0290434319`   |
+Columns are found from the header row, case-insensitively. First name matches
+`First Name` / `First` / `FName` / `Given Name` and the very common typo
+`Frist Name`; last name matches `Last Name` / `Last` / `LName` / `Surname` /
+`Family Name`. Compound headers such as `LicenseFirstName` are **not** matched
+(that would grab the wrong column) — pass an override if you actually want one.
 
-How it works: drop a leading text-forcing apostrophe, strip every non-digit,
-then drop the leading `+64` / `0064` / `64` country code and any extra trunk
-zeros, and finally put a single `0` back on the front. No spaces, brackets or
-`+` in the output. Blank cells are left blank; anything with no recognisable
-number is **left untouched and listed in the report** so you can fix it by
-hand. Re-running is safe — a value already in the target format is not changed.
+If detection is wrong or the sheet has no headers, force it: web app *Advanced*
+fields, `--first-col` / `--last-col` on the CLI, or the `CONFIG` block in the
+Apps Script. Each accepts a header name, a column letter (`C`), or a 1-based
+number (`3`). The combined name goes to a new `Full Name` column unless one
+already exists (or you point `--name-col` / *Combined-name column* elsewhere).
 
 ## Which piece to use
 
@@ -47,7 +46,7 @@ is stored — each request cleans and returns.
 
 Static page + one serverless function (`web/api/clean.js`) that fetches the
 sheet server-side (avoids browser CORS) and runs `web/lib/clean.js` — the same
-rules as the Python and Apps Script versions.
+name-combining rule as the Python and Apps Script versions.
 
 Deploy / redeploy (Vercel project `gsheettool`, root dir `web/`):
 
@@ -60,7 +59,7 @@ cd web && vercel deploy --prod
 1. In the sheet: **Extensions → Apps Script**.
 2. Replace the contents with `apps-script/Code.gs`, **Save**, reload the sheet.
 3. New **GSheet Tool** menu → **Preview (no changes)** to check the detected
-   columns and counts → **Fix names + phone numbers** to apply.
+   columns and counts → **Combine names** to apply.
 
 Columns are auto-detected from the header row. No headers? Set the `CONFIG`
 values at the top of the script to column letters (`'A'`) or 1-based numbers
@@ -92,17 +91,16 @@ python python/gsheet_tool.py --xlsx contacts.xlsx --out cleaned.csv
 
 # force which columns to use (name / letter / 1-based number all accepted)
 python python/gsheet_tool.py --csv contacts.csv \
-  --first-col "First Name" --last-col "Surname" --phone-col C --out cleaned.csv
+  --first-col "Frist Name" --last-col "Surname" --out cleaned.csv
 
-# write back into the sheet
+# write the combined names back into the sheet
 python python/gsheet_tool.py --url "<link>" \
   --write --service-account service.json
 ```
 
-An analysis report prints to **stderr** (rows scanned, columns detected, phones
-fixed / already-OK / unparseable, first few transformed rows). Add
-`--report json` for a machine-readable version. The cleaned CSV goes to
-`--out`, or stdout if omitted.
+An analysis report prints to **stderr** (rows scanned, name columns detected,
+names combined, first few results). Add `--report json` for a machine-readable
+version. The cleaned CSV goes to `--out`, or stdout if omitted.
 
 ## Tests
 
@@ -110,10 +108,9 @@ fixed / already-OK / unparseable, first few transformed rows). Add
 cd python && python -m unittest -v
 ```
 
-Covers all four brief scenarios plus spaced/dashed/`0064`/idempotent cases, the
-name-combining edge cases, and the `.xlsx` reader (shared / inline strings,
-bare numbers, date serials, sparse rows, sheet selection).
-`python/sample_contacts.csv` is a ready demo input.
+Covers the name-combining edge cases (blank parts, whitespace) and the `.xlsx`
+reader (shared / inline strings, bare numbers, date serials, sparse rows, sheet
+selection). `python/sample_contacts.csv` is a ready demo input.
 
 ## Notes / limits
 
@@ -121,9 +118,9 @@ bare numbers, date serials, sparse rows, sheet selection).
   – Viewer"** or **Published to the web**. A private sheet returns an HTML login
   page; the tool detects this and tells you to switch to Apps Script or a
   service account.
-- The phone rule is New Zealand specific, matching the brief (local `0…` form).
-  Other country numbers will be reshaped by the same digit rules and may not be
-  meaningful — check the "unparseable" list and spot-check the output.
+- Only the name columns are touched. Phone, email and every other column are
+  written out exactly as they came in (no reformatting, no apostrophe stripping,
+  no number coercion).
 - The combined-name column is **appended** (Python) or created if missing
   (Apps Script); existing columns are not deleted. Use `--name-col "First Name"`
   to overwrite an existing column instead.

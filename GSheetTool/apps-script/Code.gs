@@ -1,26 +1,20 @@
 /**
  * GSheetTool - Apps Script edition
  * =================================
- * Cleans a contact sheet directly inside Google Sheets:
- *   1. Combines the first-name and last-name columns into one "Full Name" column.
- *   2. Normalises the phone column to the plain local form "0XXXXXXXXX"
- *      (leading zero, no spaces; "+64" / "0064" / "64" and a leading
- *      apostrophe are stripped).
+ * Combines each row's first-name and last-name columns into one "Full Name"
+ * column, directly inside Google Sheets. Every other column is left untouched.
  *
- * Handled phone shapes:
- *   02904343199    -> 02904343199
- *   2904343199.    -> 02904343199
- *   +642904343199  -> 02904343199
- *   290434319      -> 0290434319
+ *   Frist Name: Derek   Last Name: Keen   ->   Full Name: Derek Keen
  *
  * Install
  * -------
  *   Extensions > Apps Script  ->  paste this file  ->  Save  ->  reload the sheet.
- *   A "GSheet Tool" menu appears. Run "Preview" first, then "Fix names + phones".
+ *   A "GSheet Tool" menu appears. Run "Preview" first, then "Combine names".
  *
- * The columns are auto-detected from the header row. If your sheet has no
- * headers (e.g. plain "Column 1" / "Column 2"), set the CONFIG values below to
- * column letters ("A") or 1-based numbers ("1").
+ * The name columns are auto-detected from the header row (first name also
+ * matches the common typo "Frist Name"). If your sheet has no headers, or
+ * detection picks the wrong column, set the CONFIG values below to a header
+ * name, a column letter ("A"), or a 1-based number ("1").
  *
  * Have an .xlsx file instead? Either open it in Google Sheets (File -> Open, or
  * "Save as Google Sheets") and run this, or use the web app / Python CLI, which
@@ -31,15 +25,22 @@ var CONFIG = {
   headerRow: 1,          // row number that holds the column titles
   firstNameHeader: '',   // '' = auto-detect; or a header name / 'A' / '1'
   lastNameHeader: '',
-  phoneHeader: '',
   fullNameHeader: 'Full Name', // combined-name column; created if missing
 };
 
-var COUNTRY_CODE = '64';
-
-var FIRST_PATTERNS = [/^first[\s_]*name$/i, /^f[\s_]*name$/i, /^given[\s_]*name$/i, /first\s*name/i, /^first$/i, /^fname$/i];
-var LAST_PATTERNS  = [/^last[\s_]*name$/i, /^l[\s_]*name$/i, /^surname$/i, /^family[\s_]*name$/i, /last\s*name/i, /^last$/i, /^lname$/i];
-var PHONE_PATTERNS = [/phone/i, /mobile/i, /\bcell\b/i, /contact.*(number|no\b)/i, /^number$/i, /telephone/i, /\btel\b/i, /msisdn/i];
+// Exact spellings first (incl. "frist", the most common typo of "first"), then
+// short forms, then a word-boundaried loose match - the boundary stops compound
+// headers like "LicenseFirstName" from being picked up.
+var FIRST_PATTERNS = [
+  /^first[\s_]*name$/i, /^frist[\s_]*name$/i, /^fname$/i, /^f[\s_]*name$/i,
+  /^given[\s_]*name$/i, /^first$/i,
+  /\b(?:first|frist)[\s_]*name\b/i
+];
+var LAST_PATTERNS  = [
+  /^last[\s_]*name$/i, /^lname$/i, /^l[\s_]*name$/i, /^surname$/i,
+  /^family[\s_]*name$/i, /^last$/i,
+  /\blast[\s_]*name\b/i
+];
 var NAME_TARGET_PATTERNS = [/^full[\s_]*name$/i, /^name$/i, /^full$/i, /^customer[\s_]*name$/i, /^contact[\s_]*name$/i];
 
 /* ---------------------------------------------------------------------- */
@@ -50,47 +51,12 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('GSheet Tool')
     .addItem('Preview (no changes)', 'previewActiveSheet')
-    .addItem('Fix names + phone numbers', 'fixActiveSheet')
+    .addItem('Combine names', 'fixActiveSheet')
     .addToUi();
 }
 
 function previewActiveSheet() { run_(true); }
 function fixActiveSheet() { run_(false); }
-
-/* ---------------------------------------------------------------------- */
-/* Phone normalisation                                                    */
-/* ---------------------------------------------------------------------- */
-
-function toNational_(raw) {
-  var text = String(raw == null ? '' : raw).trim().replace(/^'+/, '').trim();
-  if (!text) return null;
-
-  var digits = text.replace(/\D+/g, '');
-  if (!digits) return null;
-
-  var international = text.charAt(0) === '+' || digits.indexOf('00') === 0;
-
-  if (international) {
-    digits = digits.replace(/^0+/, '');
-    if (digits.indexOf(COUNTRY_CODE) === 0) digits = digits.slice(COUNTRY_CODE.length);
-    if (digits.charAt(0) === '0') digits = digits.slice(1);
-  } else if (digits.indexOf(COUNTRY_CODE) === 0 && digits.length >= 10) {
-    digits = digits.slice(COUNTRY_CODE.length);
-    if (digits.charAt(0) === '0') digits = digits.slice(1);
-  } else if (digits.charAt(0) === '0') {
-    digits = digits.slice(1);
-  }
-
-  if (digits.length < 4) return null;
-  return digits;
-}
-
-/** Returns "0" + national digits, or null if the value holds no usable number. */
-function normalisePhone_(raw) {
-  var national = toNational_(raw);
-  if (national == null) return null;
-  return '0' + national;
-}
 
 /* ---------------------------------------------------------------------- */
 /* Column resolution                                                      */
@@ -146,7 +112,6 @@ function run_(previewOnly) {
 
   var firstIdx = resolveColumn_(headers, CONFIG.firstNameHeader, FIRST_PATTERNS);
   var lastIdx  = resolveColumn_(headers, CONFIG.lastNameHeader, LAST_PATTERNS);
-  var phoneIdx = resolveColumn_(headers, CONFIG.phoneHeader, PHONE_PATTERNS);
 
   var nameIdx = resolveColumn_(headers, CONFIG.fullNameHeader, NAME_TARGET_PATTERNS);
   var createdNameCol = false;
@@ -157,7 +122,7 @@ function run_(previewOnly) {
   }
 
   var width = Math.max(headers.length, values[headerIndex].length);
-  var report = { rows: 0, names: 0, fixed: 0, ok: 0, failed: [] };
+  var report = { rows: 0, names: 0 };
 
   for (var r = CONFIG.headerRow; r < values.length; r++) {
     var row = values[r];
@@ -173,21 +138,6 @@ function run_(previewOnly) {
       if (full) {
         if (String(row[nameIdx] == null ? '' : row[nameIdx]).trim() !== full) report.names++;
         row[nameIdx] = full;
-      }
-    }
-
-    if (phoneIdx !== -1) {
-      var current = String(row[phoneIdx] == null ? '' : row[phoneIdx]).trim();
-      if (current) {
-        var fixed = normalisePhone_(row[phoneIdx]);
-        if (fixed == null) {
-          report.failed.push('Row ' + (r + 1) + ': "' + current + '"');
-        } else if (fixed !== current) {
-          row[phoneIdx] = fixed;
-          report.fixed++;
-        } else {
-          report.ok++;
-        }
       }
     }
 
@@ -208,14 +158,11 @@ function run_(previewOnly) {
     'Data rows:          ' + report.rows,
     'First-name column:  ' + (firstIdx === -1 ? 'NOT FOUND' : headers[firstIdx]),
     'Last-name column:   ' + (lastIdx === -1 ? 'NOT FOUND' : headers[lastIdx]),
-    'Phone column:       ' + (phoneIdx === -1 ? 'NOT FOUND' : headers[phoneIdx]),
     'Full-name column:   ' + headers[nameIdx] + (createdNameCol ? ' (created)' : ''),
     '',
     'Names combined:     ' + report.names,
-    'Phones fixed:       ' + report.fixed,
-    'Phones already OK:  ' + report.ok,
-    'Phones unparseable: ' + report.failed.length
-  ].concat(report.failed.slice(0, 30)).join('\n');
+    '(all other columns were left unchanged)'
+  ].join('\n');
 
   ui.alert('GSheet Tool', summary, ui.ButtonSet.OK);
 }

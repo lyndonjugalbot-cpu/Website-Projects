@@ -6,7 +6,7 @@
  *   - csv     : raw CSV text (used instead of url)
  *   - xlsx    : base64-encoded .xlsx file bytes (used instead of url / csv)
  *   - sheet   : worksheet name to read from the .xlsx (default: the first)
- *   - options : { firstCol, lastCol, phoneCol, nameCol }  (name / letter / number)
+ *   - options : { firstCol, lastCol, nameCol }  (name / letter / number)
  *
  * Returns: { headers, rows, changed, columns, report }  or  { error }
  */

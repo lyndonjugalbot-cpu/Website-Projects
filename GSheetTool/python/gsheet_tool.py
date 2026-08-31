@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""GSheetTool - read a Google Sheet (or CSV), combine first/last name into a
-single "Full Name" column, and normalise phone numbers to the plain local
-form ``0XXXXXXXXX`` (leading zero, no spaces; a leading apostrophe and any
-``+64`` / ``0064`` / ``64`` country code are stripped).
+"""GSheetTool - read a Google Sheet, CSV, or .xlsx and combine each contact's
+first and last name into a single "Full Name" column. Every other column
+(phone, email, ...) is passed through exactly as it is.
 
 Read a link-shared Google Sheet and write a cleaned CSV
 --------------------------------------------------------
@@ -23,8 +22,8 @@ Clean a local CSV or .xlsx
 
 (.xlsx input is read-only - the cleaned data always comes back as CSV.)
 
-Write the fixes back into the sheet
------------------------------------
+Write the combined names back into the sheet
+--------------------------------------------
     python gsheet_tool.py --url "<link>" --write --service-account service.json
 
 (requires ``pip install -r requirements.txt`` and a service account that has
@@ -46,24 +45,25 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from phone_rules import combine_name, try_normalise_phone
+from name_rules import combine_name
 from xlsx_reader import XlsxError, read_xlsx
 
 # --------------------------------------------------------------------------- #
 # Column detection
 # --------------------------------------------------------------------------- #
 
+# Exact spellings first (incl. "frist", the most common transposition typo of
+# "first"), then short forms, then a word-boundaried loose match last - the
+# boundary stops compound headers like "LicenseFirstName" from being picked up.
 FIRST_NAME_PATTERNS = [
-    r"^first[\s_]*name$", r"^f[\s_]*name$", r"^given[\s_]*name$",
-    r"first\s*name", r"^first$", r"^fname$",
+    r"^first[\s_]*name$", r"^frist[\s_]*name$", r"^fname$", r"^f[\s_]*name$",
+    r"^given[\s_]*name$", r"^first$",
+    r"\b(?:first|frist)[\s_]*name\b",
 ]
 LAST_NAME_PATTERNS = [
-    r"^last[\s_]*name$", r"^l[\s_]*name$", r"^surname$", r"^family[\s_]*name$",
-    r"last\s*name", r"^last$", r"^lname$",
-]
-PHONE_PATTERNS = [
-    r"phone", r"mobile", r"\bcell\b", r"contact.*(number|no\b)",
-    r"^number$", r"telephone", r"\btel\b", r"msisdn",
+    r"^last[\s_]*name$", r"^lname$", r"^l[\s_]*name$", r"^surname$",
+    r"^family[\s_]*name$", r"^last$",
+    r"\blast[\s_]*name\b",
 ]
 NAME_TARGET_PATTERNS = [
     r"^full[\s_]*name$", r"^name$", r"^full$",
@@ -165,13 +165,9 @@ class Report:
     total_rows: int = 0
     first_name_column: Optional[str] = None
     last_name_column: Optional[str] = None
-    phone_column: Optional[str] = None
     full_name_column: Optional[str] = None
     full_name_column_created: bool = False
     names_combined: int = 0
-    phones_fixed: int = 0
-    phones_unchanged: int = 0
-    phones_failed: List[str] = field(default_factory=list)
     samples: List[dict] = field(default_factory=list)
 
     def as_text(self) -> str:
@@ -186,19 +182,12 @@ class Report:
             f"Data rows         : {self.total_rows}",
             f"First-name column : {self.first_name_column or 'NOT FOUND'}",
             f"Last-name column  : {self.last_name_column or 'NOT FOUND'}",
-            f"Phone column      : {self.phone_column or 'NOT FOUND'}",
             f"Full-name column  : {self.full_name_column}"
             + (" (created)" if self.full_name_column_created else ""),
             "-" * 40,
             f"Names combined    : {self.names_combined}",
-            f"Phones fixed      : {self.phones_fixed}",
-            f"Phones already OK : {self.phones_unchanged}",
-            f"Phones unparseable: {len(self.phones_failed)}",
+            "(all other columns passed through unchanged)",
         ]
-        for item in self.phones_failed[:25]:
-            lines.append(f"    ! {item}")
-        if len(self.phones_failed) > 25:
-            lines.append(f"    ... and {len(self.phones_failed) - 25} more")
         if self.samples:
             lines.append("-" * 40)
             lines.append("First transformed rows:")
@@ -221,10 +210,6 @@ def transform(rows: List[List[str]], args: argparse.Namespace) -> tuple[List[Lis
     last_idx = (
         resolve_column(args.last_col, headers)
         if args.last_col else detect_column(headers, LAST_NAME_PATTERNS)
-    )
-    phone_idx = (
-        resolve_column(args.phone_col, headers)
-        if args.phone_col else detect_column(headers, PHONE_PATTERNS)
     )
 
     # Resolve / create the combined-name column.
@@ -249,7 +234,6 @@ def transform(rows: List[List[str]], args: argparse.Namespace) -> tuple[List[Lis
 
     report.first_name_column = headers[first_idx] if first_idx is not None else None
     report.last_name_column = headers[last_idx] if last_idx is not None else None
-    report.phone_column = headers[phone_idx] if phone_idx is not None else None
     report.full_name_column = headers[name_idx]
     report.full_name_column_created = name_created
 
@@ -257,11 +241,6 @@ def transform(rows: List[List[str]], args: argparse.Namespace) -> tuple[List[Lis
         print(
             "warning: could not identify both name columns - names will not be "
             "combined. Pass --first-col / --last-col.",
-            file=sys.stderr,
-        )
-    if phone_idx is None:
-        print(
-            "warning: could not identify a phone column - pass --phone-col.",
             file=sys.stderr,
         )
 
@@ -277,23 +256,11 @@ def transform(rows: List[List[str]], args: argparse.Namespace) -> tuple[List[Lis
                     report.names_combined += 1
                 row[name_idx] = full
 
-        if phone_idx is not None:
-            value = "" if row[phone_idx] is None else str(row[phone_idx])
-            fixed, status = try_normalise_phone(value)
-            if status == "fixed":
-                row[phone_idx] = fixed
-                report.phones_fixed += 1
-            elif status == "unchanged":
-                report.phones_unchanged += 1
-            elif status == "failed":
-                report.phones_failed.append(f"row {line_no}: {value!r}")
-
-        if len(report.samples) < 5 and (first_idx is not None or phone_idx is not None):
+        if len(report.samples) < 5 and first_idx is not None and last_idx is not None:
             report.samples.append(
                 {
                     "row": line_no,
                     "name": row[name_idx] if name_idx < len(row) else "",
-                    "phone": row[phone_idx] if phone_idx is not None else "",
                 }
             )
         out_rows.append(row)
@@ -377,7 +344,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--first-col", help="override first-name column "
                                             "(name, letter, or 1-based number)")
     parser.add_argument("--last-col", help="override last-name column")
-    parser.add_argument("--phone-col", help="override phone column")
     parser.add_argument("--name-col", help="target column for the combined name "
                                            "(default: create 'Full Name')")
 
