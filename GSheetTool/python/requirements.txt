@@ -1,0 +1,7 @@
+# Base tool (reading a link-shared sheet, cleaning a local CSV) needs nothing
+# beyond the Python standard library.
+#
+# The packages below are ONLY required for `--write` (pushing the cleaned data
+# back into a Google Sheet with a service account):
+gspread>=6.0.0
+google-auth>=2.28.0
