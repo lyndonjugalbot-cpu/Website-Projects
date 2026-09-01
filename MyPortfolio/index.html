@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lyndon Jugalbot — Web &amp; Software Portfolio</title>
+  <meta name="description" content="Portfolio of Lyndon Jugalbot: full-stack web apps, e-commerce, marketplaces, marketing sites, and internal tools — built solo, often with AI in the loop, always shipped." />
+  <meta name="author" content="Lyndon Jugalbot" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Lyndon Jugalbot — Web &amp; Software Portfolio" />
+  <meta property="og:description" content="Full-stack web apps, e-commerce, marketplaces, marketing sites, and internal tools — built solo, often AI-assisted, always shipped." />
+  <meta name="theme-color" content="#0c0c0d" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f5b642'/%3E%3Ctext x='16' y='22' font-family='Space Grotesk,Arial,sans-serif' font-size='15' font-weight='700' text-anchor='middle' fill='%231a1305'%3ELJ%3C/text%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/styles.css?v=6" />
+</head>
+<body>
+  <a class="skip-link" href="#work">Skip to work</a>
+
+  <header class="site-header" id="top">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="Lyndon Jugalbot — home">
+        <span class="brand__mark" aria-hidden="true">LJ</span>
+        <span class="brand__name">Lyndon Jugalbot</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <button class="nav__toggle" aria-expanded="false" aria-controls="nav-menu">
+          <span class="nav__toggle-bar" aria-hidden="true"></span>
+          <span class="sr-only">Menu</span>
+        </button>
+        <ul class="nav__menu" id="nav-menu">
+          <li><a href="#work">Work</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#stack">Stack</a></li>
+          <li><a href="#background">Background</a></li>
+          <li><a class="nav__cta" href="#contact">Get in touch</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero__text">
+        <p class="hero__eyebrow reveal">Full-stack developer · Solo builder · Auckland, NZ</p>
+        <h1 class="hero__title reveal" id="hero-title">
+          I design and ship <span class="accent">websites and software</span> —
+          often with AI in the loop, always taken to production.
+        </h1>
+        <p class="hero__lead reveal">
+          From relational marketplaces with payments and payouts to a corner
+          barbershop&rsquo;s one-pager, I take projects end to end: data model,
+          backend, UI, deploy, and handover. Below are real builds — client work
+          and my own tools — every one shipped and live.
+        </p>
+        <div class="hero__actions reveal">
+          <a class="btn btn--primary" href="#work">View the work</a>
+          <a class="btn btn--ghost" href="#contact">Start a project</a>
+        </div>
+      </div>
+
+      <figure class="hero__portrait reveal">
+        <img src="assets/img/portrait.jpg?v=1" width="1000" height="1333"
+             alt="Lyndon Jugalbot on the Auckland waterfront at sunset, Sky Tower behind." />
+      </figure>
+
+      <dl class="stats reveal" aria-label="At a glance">
+        <div class="stats__item">
+          <dt>Shipped projects</dt>
+          <dd data-count="8">8</dd>
+        </div>
+        <div class="stats__item">
+          <dt>Live deployments</dt>
+          <dd data-count="8">8</dd>
+        </div>
+        <div class="stats__item">
+          <dt>Stacks in play</dt>
+          <dd data-count="6">6</dd>
+        </div>
+        <div class="stats__item">
+          <dt>Built solo</dt>
+          <dd>100<span class="stats__unit">%</span></dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="work wrap" id="work" aria-labelledby="work-title">
+      <div class="section-head reveal">
+        <h2 id="work-title">Selected work</h2>
+        <p>Client projects and personal tools, newest and largest first.</p>
+      </div>
+
+      <div class="filters reveal" role="group" aria-label="Filter projects by type">
+        <button class="chip is-active" data-filter="all" aria-pressed="true">All</button>
+        <button class="chip" data-filter="app" aria-pressed="false">Full-stack apps</button>
+        <button class="chip" data-filter="site" aria-pressed="false">Marketing sites</button>
+        <button class="chip" data-filter="tool" aria-pressed="false">Tools &amp; data</button>
+      </div>
+
+      <ul class="grid" id="project-grid">
+        <!-- cards injected by assets/js/main.js -->
+      </ul>
+
+      <noscript>
+        <p class="noscript-note">
+          This portfolio renders its project list with JavaScript. With it
+          disabled, reach me at
+          <a href="mailto:lyndon.jugalbot@gmail.com">lyndon.jugalbot@gmail.com</a>
+          for a full project rundown.
+        </p>
+      </noscript>
+    </section>
+
+    <section class="about wrap" id="about" aria-labelledby="about-title">
+      <div class="section-head reveal">
+        <h2 id="about-title">How I work</h2>
+      </div>
+      <div class="about__grid">
+        <div class="about__body">
+          <p class="about__lead reveal">
+            I&rsquo;m a full-stack developer who ships complete products alone —
+            spec, schema, backend, frontend, deploy, and a written handover the
+            owner can act on. Recent work spans New Zealand and the Philippines:
+            a TCG marketplace, a Korean grocery storefront with an in-store POS,
+            a real-time budget tracker with native mobile wrappers, and a set of
+            static sites for local businesses.
+          </p>
+          <ul class="about__points reveal">
+            <li>
+              <strong>AI-assisted, not AI-abandoned.</strong> I use coding agents
+              to move faster, then read every line, keep parallel implementations
+              in sync, and own the result.
+            </li>
+            <li>
+              <strong>Production is the deliverable.</strong> Every project has a
+              deploy story — Vercel, Convex, Postgres, Supabase — plus caching,
+              auth, and env config sorted, not left as a TODO.
+            </li>
+            <li>
+              <strong>Handover matters.</strong> READMEs, schema files, and
+              ownership-transfer notes so a client isn&rsquo;t locked to me.
+            </li>
+          </ul>
+        </div>
+        <figure class="about__figure reveal">
+          <img src="assets/img/magazine.jpg?v=1" width="880" height="1173"
+               alt="Magazine-cover portrait of Lyndon Jugalbot, &lsquo;Auckland — Urban Explorer&rsquo;." />
+          <figcaption>Based in Onehunga, Auckland &mdash; working with clients across NZ and anywhere in the world.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="stack wrap" id="stack" aria-labelledby="stack-title">
+      <div class="section-head reveal">
+        <h2 id="stack-title">Stack</h2>
+        <p>What I reach for, grouped by where it sits.</p>
+      </div>
+      <div class="stack__grid">
+        <div class="stack__col reveal">
+          <h3>Frontend</h3>
+          <ul>
+            <li>React 18 / 19</li>
+            <li>Next.js 14 / 15 (App Router)</li>
+            <li>TypeScript</li>
+            <li>Tailwind CSS v4</li>
+            <li>Vanilla JS + semantic HTML/CSS</li>
+            <li>Recharts, Framer Motion</li>
+          </ul>
+        </div>
+        <div class="stack__col reveal">
+          <h3>Backend &amp; data</h3>
+          <ul>
+            <li>Prisma + PostgreSQL</li>
+            <li>Convex (real-time)</li>
+            <li>Supabase (Postgres, Auth, Storage)</li>
+            <li>Flask / Python 3</li>
+            <li>NextAuth — Credentials &amp; OAuth</li>
+            <li>Stripe Connect, PayMongo</li>
+          </ul>
+        </div>
+        <div class="stack__col reveal">
+          <h3>Delivery</h3>
+          <ul>
+            <li>Vercel (static, SSR, Python fns)</li>
+            <li>Capacitor — iOS &amp; Android</li>
+            <li>Resend transactional email</li>
+            <li>S3 / R2 presigned uploads</li>
+            <li>Cache-control &amp; asset versioning</li>
+            <li>Claude Code in the loop</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="path wrap" id="background" aria-labelledby="background-title">
+      <div class="section-head reveal">
+        <h2 id="background-title">Background</h2>
+        <p>
+          Five years as a Software Developer at Accenture, an ICT degree from the
+          University of San Carlos, and a Master of Software Engineering in
+          progress at Yoobee Colleges.
+        </p>
+      </div>
+      <ul class="path__grid">
+        <li class="path__item reveal">
+          <span class="path__logo"><img src="assets/img/accenture.png?v=1" alt="Accenture" loading="lazy" /></span>
+          <h3>Accenture</h3>
+          <p class="path__role">Software Developer</p>
+          <p class="path__note">5 years building and shipping enterprise software</p>
+        </li>
+        <li class="path__item reveal">
+          <span class="path__logo"><img src="assets/img/usc.png?v=1" alt="University of San Carlos" loading="lazy" /></span>
+          <h3>University of San Carlos</h3>
+          <p class="path__role">BS Information &amp; Communications Technology</p>
+          <p class="path__note">Graduate &mdash; Cebu, Philippines</p>
+        </li>
+        <li class="path__item reveal">
+          <span class="path__logo path__logo--invert"><img src="assets/img/yoobee.png?v=1" alt="Yoobee Colleges" loading="lazy" /></span>
+          <h3>Yoobee Colleges</h3>
+          <p class="path__role">Master of Software Engineering</p>
+          <p class="path__note">Currently studying &mdash; New Zealand</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="contact wrap" id="contact" aria-labelledby="contact-title">
+      <div class="contact__card reveal">
+        <h2 id="contact-title">Have something to build?</h2>
+        <p>
+          Client sites, internal tools, or a rescue on a stalled project — send
+          a short brief and I&rsquo;ll reply with scope and a rough timeline.
+        </p>
+        <div class="contact__actions">
+          <a class="btn btn--primary"
+             href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=lyndon.jugalbot@gmail.com&amp;su=Project%20enquiry"
+             target="_blank" rel="noopener">Email me in Gmail</a>
+          <a class="btn btn--ghost" href="https://github.com/lyndonjugalbot-cpu" target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <p class="contact__email">
+          <a href="mailto:lyndon.jugalbot@gmail.com">lyndon.jugalbot@gmail.com</a>
+          <button type="button" class="contact__copy" data-copy="lyndon.jugalbot@gmail.com">Copy</button>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span>&copy; <span id="year">2026</span> Lyndon Jugalbot</span>
+      <a href="mailto:lyndon.jugalbot@gmail.com" class="footer__email">lyndon.jugalbot@gmail.com</a>
+      <a href="#top" class="footer__top">Back to top &uarr;</a>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js?v=6" defer></script>
+</body>
+</html>

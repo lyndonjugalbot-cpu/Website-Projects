@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebAppTimer - Time Tracker</title>
+  <meta name="description" content="A lightweight browser time tracker: start/stop a timer per task, log manual entries, and see daily, weekly, and per-project totals. Data stays in your browser." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%E2%8F%B1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <h1>WebAppTimer</h1>
+      <p class="sub">Start a timer per task, or log time by hand. Totals roll up by day, week, and project.
+        Everything is stored in <strong>this browser</strong> &mdash; no account, no server.</p>
+    </header>
+
+    <!-- Running / start timer -->
+    <section class="card timer" id="timerCard">
+      <div class="timer-row">
+        <label class="field grow">
+          <span class="label">What are you working on?</span>
+          <input id="taskName" type="text" autocomplete="off" placeholder="e.g. Client landing page" />
+        </label>
+        <label class="field">
+          <span class="label">Project <span class="muted">(optional)</span></span>
+          <input id="projectName" type="text" autocomplete="off" list="projectList" placeholder="e.g. Acme Co" />
+          <datalist id="projectList"></datalist>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="startBtn" type="button" class="btn primary">Start timer</button>
+        <div id="running" class="running" hidden>
+          <span class="dot" aria-hidden="true"></span>
+          <span class="clock" id="clock">00:00:00</span>
+          <span class="running-task" id="runningTask"></span>
+          <button id="pauseBtn" type="button" class="btn pause">Pause</button>
+          <button id="stopBtn" type="button" class="btn stop">Stop &amp; save</button>
+          <button id="discardBtn" type="button" class="btn ghost">Discard</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="stats" id="stats">
+      <div class="stat"><b id="statToday">0h 00m</b><span>Today</span></div>
+      <div class="stat"><b id="statWeek">0h 00m</b><span>This week</span></div>
+      <div class="stat"><b id="statEntries">0</b><span>Entries</span></div>
+      <div class="stat"><b id="statDays">0</b><span>Days tracked</span></div>
+    </section>
+
+    <!-- Manual entry -->
+    <section class="card">
+      <details class="disclosure" id="manualBox">
+        <summary>Add a time entry by hand</summary>
+        <div class="disclosure-body">
+          <div class="grid-manual">
+            <label class="field"><span class="label">Task</span>
+              <input id="mTask" type="text" autocomplete="off" placeholder="What you did" /></label>
+            <label class="field"><span class="label">Project</span>
+              <input id="mProject" type="text" autocomplete="off" list="projectList" placeholder="Optional" /></label>
+            <label class="field"><span class="label">Date</span>
+              <input id="mDate" type="date" /></label>
+            <label class="field"><span class="label">Start</span>
+              <input id="mStart" type="time" /></label>
+            <label class="field"><span class="label">End</span>
+              <input id="mEnd" type="time" /></label>
+            <label class="field"><span class="label">or Duration <span class="muted">(e.g. 1h 30m)</span></span>
+              <input id="mDur" type="text" autocomplete="off" placeholder="1h 30m" /></label>
+          </div>
+          <div class="actions">
+            <button id="addManual" type="button" class="btn primary">Add entry</button>
+            <span id="manualMsg" class="status" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- Entries -->
+    <section class="card">
+      <div class="list-head">
+        <h2>Log</h2>
+        <div class="range" role="tablist" aria-label="Summary range">
+          <button class="chip is-on" data-range="today" type="button">Today</button>
+          <button class="chip" data-range="week" type="button">This week</button>
+          <button class="chip" data-range="all" type="button">All time</button>
+        </div>
+      </div>
+
+      <p class="range-total" id="rangeTotal"></p>
+      <div id="breakdown" class="breakdown"></div>
+
+      <div id="log" class="log"></div>
+      <p id="empty" class="empty" hidden>No entries yet. Start a timer above, or add one by hand.</p>
+    </section>
+
+    <!-- Data -->
+    <section class="card">
+      <div class="actions data-actions">
+        <button id="exportBtn" type="button" class="btn">Export CSV</button>
+        <label class="btn file-btn">Import CSV<input id="importFile" type="file" accept=".csv,text/csv" hidden /></label>
+        <button id="clearBtn" type="button" class="btn danger-btn">Clear all data</button>
+        <span id="dataMsg" class="status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <p class="foot">WebAppTimer &mdash; a static app. Your log lives in <code>localStorage</code> on this device only.
+      Export a CSV backup regularly.</p>
+  </main>
+
+  <!-- Edit dialog -->
+  <dialog id="editDialog" class="edit-dialog">
+    <form method="dialog" id="editForm">
+      <h3>Edit entry</h3>
+      <div class="grid-manual">
+        <label class="field"><span class="label">Task</span>
+          <input id="eTask" type="text" autocomplete="off" required /></label>
+        <label class="field"><span class="label">Project</span>
+          <input id="eProject" type="text" autocomplete="off" list="projectList" /></label>
+        <label class="field"><span class="label">Date</span>
+          <input id="eDate" type="date" required /></label>
+        <label class="field"><span class="label">Start</span>
+          <input id="eStart" type="time" required /></label>
+        <label class="field"><span class="label">End</span>
+          <input id="eEnd" type="time" required /></label>
+      </div>
+      <p id="editMsg" class="status err"></p>
+      <div class="actions">
+        <button value="cancel" type="submit" class="btn ghost">Cancel</button>
+        <button value="save" type="submit" class="btn primary" id="editSave">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

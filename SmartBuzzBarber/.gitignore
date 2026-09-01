@@ -1,0 +1,5 @@
+# Source screenshots — kept locally, not needed to run or deploy the site
+originals/
+.DS_Store
+.vercel
+.env*

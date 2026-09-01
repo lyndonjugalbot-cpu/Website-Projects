@@ -1,0 +1,4 @@
+originals/
+.vercel
+.DS_Store
+.env*
