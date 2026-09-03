@@ -1,5 +1,5 @@
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { BarChart3, Info, ListChecks, NotebookPen, PiggyBank as PiggyBankIcon, Settings, TrendingUp } from "lucide-react";
+import { BarChart3, Info, Landmark, ListChecks, NotebookPen, PiggyBank as PiggyBankIcon, Settings, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BudgetCard } from "./components/BudgetCard";
 import { BudgetSettings } from "./components/BudgetSettings";
@@ -14,6 +14,8 @@ import { Modal } from "./components/Modal";
 import { MonthlyReport } from "./components/MonthlyReport";
 import { Notes } from "./components/Notes";
 import { ReportControls } from "./components/ReportControls";
+import { Savings } from "./components/Savings";
+import { SavingsForm } from "./components/SavingsForm";
 import { SavingsGoalCard } from "./components/SavingsGoalCard";
 import { WeeklyReport } from "./components/WeeklyReport";
 import { SignInForm } from "./components/auth/SignInForm";
@@ -23,16 +25,18 @@ import { FinanceProvider, useFinance } from "./context/FinanceContext";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useReportRange } from "./hooks/useReportRange";
 import { useSyncNoteReminders } from "./hooks/useSyncNoteReminders";
-import type { Expense, ExpenseInput, Note, NoteInput } from "./types";
+import type { Expense, ExpenseInput, Note, NoteInput, SavingsEntry, SavingsEntryInput } from "./types";
+import { formatNZD } from "./utils/currency";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
 import { cancelNoteReminder, scheduleNoteReminder } from "./utils/notifications";
 
-type TabId = "report" | "expenses" | "budget" | "forecast" | "notes" | "data";
+type TabId = "report" | "expenses" | "budget" | "savings" | "forecast" | "notes" | "data";
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
   { id: "report", label: "Report", icon: BarChart3 },
   { id: "expenses", label: "Expenses", icon: ListChecks },
   { id: "budget", label: "Budget", icon: PiggyBankIcon },
+  { id: "savings", label: "Savings", icon: Landmark },
   { id: "forecast", label: "Forecast", icon: TrendingUp },
   { id: "notes", label: "Notes", icon: NotebookPen },
   { id: "data", label: "Data", icon: Settings },
@@ -52,6 +56,10 @@ function AppContent() {
     importExpenses,
     clearAllData,
     setBudgets,
+    savingsEntries,
+    addSavingsEntry,
+    updateSavingsEntry,
+    deleteSavingsEntry,
     addRecurringExpense,
     updateRecurringExpense,
     toggleRecurringExpenseActive,
@@ -70,6 +78,10 @@ function AppContent() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isSavingsFormOpen, setIsSavingsFormOpen] = useState(false);
+  const [savingsFormDirection, setSavingsFormDirection] = useState<"deposit" | "withdrawal">("deposit");
+  const [editingSavingsEntry, setEditingSavingsEntry] = useState<SavingsEntry | null>(null);
+  const [deletingSavingsEntry, setDeletingSavingsEntry] = useState<SavingsEntry | null>(null);
   const [isNoteFormOpen, setIsNoteFormOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
@@ -101,6 +113,28 @@ function AppContent() {
       addExpense(input);
     }
     closeForm();
+  };
+
+  const openAddSavings = (direction: "deposit" | "withdrawal") => {
+    setEditingSavingsEntry(null);
+    setSavingsFormDirection(direction);
+    setIsSavingsFormOpen(true);
+  };
+  const openEditSavings = (entry: SavingsEntry) => {
+    setEditingSavingsEntry(entry);
+    setIsSavingsFormOpen(true);
+  };
+  const closeSavingsForm = () => {
+    setIsSavingsFormOpen(false);
+    setEditingSavingsEntry(null);
+  };
+  const handleSubmitSavings = (input: SavingsEntryInput) => {
+    if (editingSavingsEntry) {
+      updateSavingsEntry(editingSavingsEntry.id, input);
+    } else {
+      addSavingsEntry(input);
+    }
+    closeSavingsForm();
   };
 
   const openAddNoteForm = () => {
@@ -262,6 +296,20 @@ function AppContent() {
             </div>
           )}
 
+          {activeTab === "savings" && (
+            <Savings
+              savingsEntries={savingsEntries}
+              expenses={expenses}
+              budgets={budgets}
+              view={reportRange.view}
+              onAddDeposit={() => openAddSavings("deposit")}
+              onAddWithdrawal={() => openAddSavings("withdrawal")}
+              onEditEntry={openEditSavings}
+              onDeleteEntry={setDeletingSavingsEntry}
+              onConfigureSettings={() => setIsBudgetModalOpen(true)}
+            />
+          )}
+
           {activeTab === "forecast" && (
             <Forecast
               expenses={expenses}
@@ -317,6 +365,37 @@ function AppContent() {
           setDeletingExpense(null);
         }}
         onCancel={() => setDeletingExpense(null)}
+      />
+
+      <Modal
+        isOpen={isSavingsFormOpen}
+        onClose={closeSavingsForm}
+        title={editingSavingsEntry ? "Edit savings entry" : savingsFormDirection === "deposit" ? "Add to savings" : "Record withdrawal"}
+      >
+        <SavingsForm
+          initialEntry={editingSavingsEntry ?? undefined}
+          defaultDirection={savingsFormDirection}
+          onSubmit={handleSubmitSavings}
+          onCancel={closeSavingsForm}
+        />
+      </Modal>
+
+      <ConfirmationDialog
+        isOpen={deletingSavingsEntry !== null}
+        title="Delete savings entry?"
+        message={
+          deletingSavingsEntry
+            ? `Are you sure you want to delete this ${
+                deletingSavingsEntry.amount < 0 ? "withdrawal" : "deposit"
+              } of ${formatNZD(Math.abs(deletingSavingsEntry.amount))}? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (deletingSavingsEntry) deleteSavingsEntry(deletingSavingsEntry.id);
+          setDeletingSavingsEntry(null);
+        }}
+        onCancel={() => setDeletingSavingsEntry(null)}
       />
 
       <Modal isOpen={isNoteFormOpen} onClose={closeNoteForm} title={editingNote ? "Edit note" : "Add note"}>

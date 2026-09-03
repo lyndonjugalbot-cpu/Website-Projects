@@ -47,6 +47,23 @@ export default defineSchema({
     active: v.boolean(),
   }).index("by_user", ["userId"]),
 
+  savingsEntries: defineTable({
+    userId: v.id("users"),
+    /** Positive = money put into savings, negative = money taken out. */
+    amount: v.number(),
+    date: v.string(), // ISO "yyyy-MM-dd"
+    note: v.string(),
+    /** How the entry got here: a hand-recorded deposit/withdrawal, or an auto goal contribution. */
+    source: v.union(
+      v.literal("manual"),
+      v.literal("auto-weekly"),
+      v.literal("auto-monthly"),
+    ),
+    createdAt: v.string(), // ISO datetime
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_date", ["userId", "date"]),
+
   meta: defineTable({
     userId: v.id("users"),
     sampleSeeded: v.boolean(),

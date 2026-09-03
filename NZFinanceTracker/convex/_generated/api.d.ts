@@ -16,6 +16,7 @@ import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
 import type * as recurringExpenses from "../recurringExpenses.js";
+import type * as savings from "../savings.js";
 import type * as scheduleFromText from "../scheduleFromText.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   notes: typeof notes;
   recurringExpenses: typeof recurringExpenses;
+  savings: typeof savings;
   scheduleFromText: typeof scheduleFromText;
 }>;
 

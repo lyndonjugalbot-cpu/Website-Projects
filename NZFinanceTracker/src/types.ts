@@ -34,6 +34,22 @@ export interface Budgets {
   income: Income | null;
 }
 
+export type SavingsSource = "manual" | "auto-weekly" | "auto-monthly";
+
+/** One movement in or out of savings (backed by the `savingsEntries` table). */
+export interface SavingsEntry {
+  id: string;
+  /** Positive = money added to savings, negative = money withdrawn. */
+  amount: number;
+  /** ISO date string, e.g. "2026-08-19" */
+  date: string;
+  note: string;
+  source: SavingsSource;
+  createdAt: string;
+}
+
+export type SavingsEntryInput = Omit<SavingsEntry, "id" | "source" | "createdAt">;
+
 export interface RecurringExpense {
   id: string;
   description: string;

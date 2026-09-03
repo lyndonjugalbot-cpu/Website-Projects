@@ -10,4 +10,11 @@ crons.interval(
   {},
 );
 
+crons.interval(
+  "accrue scheduled savings contributions",
+  { hours: 12 },
+  internal.savings.accrueScheduled,
+  {},
+);
+
 export default crons;

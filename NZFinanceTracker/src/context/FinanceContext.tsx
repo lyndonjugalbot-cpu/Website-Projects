@@ -2,12 +2,23 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { Budgets, Expense, ExpenseInput, Note, NoteInput, RecurringExpense, RecurringExpenseInput } from "../types";
+import type {
+  Budgets,
+  Expense,
+  ExpenseInput,
+  Note,
+  NoteInput,
+  RecurringExpense,
+  RecurringExpenseInput,
+  SavingsEntry,
+  SavingsEntryInput,
+} from "../types";
 
 interface FinanceContextValue {
   expenses: Expense[];
   budgets: Budgets;
   recurringExpenses: RecurringExpense[];
+  savingsEntries: SavingsEntry[];
   notes: Note[];
   isLoading: boolean;
   addExpense: (input: ExpenseInput) => void;
@@ -16,6 +27,9 @@ interface FinanceContextValue {
   importExpenses: (imported: Expense[]) => Promise<number>;
   clearAllData: () => void;
   setBudgets: (budgets: Budgets) => void;
+  addSavingsEntry: (input: SavingsEntryInput) => void;
+  updateSavingsEntry: (id: string, input: SavingsEntryInput) => void;
+  deleteSavingsEntry: (id: string) => void;
   addRecurringExpense: (input: RecurringExpenseInput) => void;
   updateRecurringExpense: (id: string, input: RecurringExpenseInput) => void;
   toggleRecurringExpenseActive: (id: string, active: boolean) => void;
@@ -34,6 +48,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const expenseDocs = useQuery(api.expenses.list);
   const budgetsDoc = useQuery(api.budgets.get);
   const recurringExpenseDocs = useQuery(api.recurringExpenses.list);
+  const savingsEntryDocs = useQuery(api.savings.list);
   const noteDocs = useQuery(api.notes.list);
 
   const addExpenseMutation = useMutation(api.expenses.add);
@@ -43,6 +58,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const clearAllMutation = useMutation(api.expenses.clearAll);
   const seedSampleMutation = useMutation(api.expenses.seedSampleIfEmpty);
   const setBudgetsMutation = useMutation(api.budgets.set);
+  const addSavingsEntryMutation = useMutation(api.savings.add);
+  const updateSavingsEntryMutation = useMutation(api.savings.update);
+  const removeSavingsEntryMutation = useMutation(api.savings.remove);
   const addRecurringMutation = useMutation(api.recurringExpenses.add);
   const updateRecurringMutation = useMutation(api.recurringExpenses.update);
   const toggleRecurringActiveMutation = useMutation(api.recurringExpenses.toggleActive);
@@ -90,6 +108,19 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     [recurringExpenseDocs],
   );
 
+  const savingsEntries = useMemo<SavingsEntry[]>(
+    () =>
+      (savingsEntryDocs ?? []).map((doc) => ({
+        id: doc._id,
+        amount: doc.amount,
+        date: doc.date,
+        note: doc.note,
+        source: doc.source,
+        createdAt: doc.createdAt,
+      })),
+    [savingsEntryDocs],
+  );
+
   const notes = useMemo<Note[]>(
     () =>
       (noteDocs ?? []).map((doc) => ({
@@ -125,11 +156,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       expenses,
       budgets,
       recurringExpenses,
+      savingsEntries,
       notes,
       isLoading:
         expenseDocs === undefined ||
         budgetsDoc === undefined ||
         recurringExpenseDocs === undefined ||
+        savingsEntryDocs === undefined ||
         noteDocs === undefined,
       addExpense: (input) => {
         void addExpenseMutation(input);
@@ -156,6 +189,15 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       },
       setBudgets: (next) => {
         void setBudgetsMutation(next);
+      },
+      addSavingsEntry: (input) => {
+        void addSavingsEntryMutation(input);
+      },
+      updateSavingsEntry: (id, input) => {
+        void updateSavingsEntryMutation({ id: id as Id<"savingsEntries">, ...input });
+      },
+      deleteSavingsEntry: (id) => {
+        void removeSavingsEntryMutation({ id: id as Id<"savingsEntries"> });
       },
       addRecurringExpense: (input) => {
         void addRecurringMutation(input);
@@ -194,10 +236,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       expenses,
       budgets,
       recurringExpenses,
+      savingsEntries,
       notes,
       expenseDocs,
       budgetsDoc,
       recurringExpenseDocs,
+      savingsEntryDocs,
       noteDocs,
       addExpenseMutation,
       updateExpenseMutation,
@@ -205,6 +249,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       importManyMutation,
       clearAllMutation,
       setBudgetsMutation,
+      addSavingsEntryMutation,
+      updateSavingsEntryMutation,
+      removeSavingsEntryMutation,
       addRecurringMutation,
       updateRecurringMutation,
       toggleRecurringActiveMutation,

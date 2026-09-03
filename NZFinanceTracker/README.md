@@ -116,7 +116,8 @@ convex/
   expenses.ts                list/add/update/remove/importMany/clearAll/
                               seedSampleIfEmpty queries & mutations, retention cutoff
   budgets.ts                 get/set queries & mutations (single shared budgets doc)
-  crons.ts                   Scheduled job: purges expenses past the retention window
+  savings.ts                 list/add/update/remove savings entries + accrueScheduled job
+  crons.ts                   Scheduled jobs: purge expired expenses, accrue savings goals
   constants.ts                DATA_RETENTION_MONTHS, EXPENSE_CATEGORIES (server-side copy)
 src/
   App.tsx                    Top-level layout, tabs, and modal wiring
@@ -140,10 +141,12 @@ src/
     ExpenseForm.tsx, ExpenseList.tsx, ExpenseItem.tsx
     ReportControls.tsx, WeeklyReport.tsx, MonthlyReport.tsx, ReportPieces.tsx
     BudgetCard.tsx, BudgetSettings.tsx, DataManagement.tsx
+    SavingsGoalCard.tsx, Savings.tsx, SavingsForm.tsx, SavingsEntryList.tsx
     EmptyState.tsx, ConfirmationDialog.tsx, Modal.tsx
     charts/
       SpendingTrendChart.tsx, CategoryDonutChart.tsx
       CategoryBarChart.tsx, BudgetProgressChart.tsx
+      SavingsProgressChart.tsx, SavingsHistoryChart.tsx
 ```
 
 ## Data model (Convex tables)
@@ -168,7 +171,30 @@ src/
   `isSample` is only `true` on the expenses seeded on first launch, and is
   cleared the moment an expense is edited.
 
-- **`budgets`** — a single shared document: `{ weekly: number | null, monthly: number | null }`.
+- **`budgets`** — one document per user: `weekly` / `monthly` spending budgets,
+  `savingsWeekly` / `savingsMonthly` savings goals carved out of them, a
+  `startingBalance`, and an optional recurring `income` block (all nullable).
+
+- **`savingsEntries`** — one document per movement in or out of savings,
+  indexed by `date`:
+
+  ```json
+  {
+    "_id": "convex-generated-id",
+    "amount": 120.0,
+    "date": "2026-08-25",
+    "note": "Side hustle - weekend gig",
+    "source": "manual",
+    "createdAt": "2026-08-25T09:00:00.000Z"
+  }
+  ```
+
+  `amount` is signed: positive is money added to savings, negative is a
+  withdrawal. `source` is `"manual"` for hand-recorded entries, or
+  `"auto-weekly"` / `"auto-monthly"` for contributions the `accrueScheduled`
+  cron drops in each period from the savings goal. Unlike `expenses`, savings
+  entries are **not** subject to the three-month retention window — the
+  "savings over time" history is meant to be long-lived.
 
 - **`meta`** — a single shared document: `{ sampleSeeded: boolean }`, so the
   sample data is only ever inserted once across all devices, not once per
@@ -235,6 +261,32 @@ devices and is retained for a maximum of three months.
   Last month / Custom range) is re-inferred to match whenever possible.
 - Every date range is clamped to `[retention cutoff, today]`, so a selected
   report period can never exceed the three months of available data.
+
+## Savings tracking
+
+The **Savings** tab tracks money actually set aside over time, separately from
+the per-period savings-goal progress shown on the Budget tab.
+
+- **Add to savings / Withdraw** — records a signed `savingsEntries` document.
+  Use it for one-off top-ups (a side-hustle payment, a tax refund) or for
+  dipping into savings. Every entry is editable and deletable.
+- **Automatic goal contributions** — a Convex cron
+  (`savings.accrueScheduled`, every 12 hours) adds one `auto-weekly` entry per
+  Monday and one `auto-monthly` entry per 1st for each user whose budget
+  carries a savings goal, so the balance keeps climbing without manual entry.
+  It's idempotent (one entry per period) and backfills at most the last
+  3 weeks / 1 month, so setting a goal doesn't retroactively invent months of
+  savings. Auto entries carry an "Auto" badge and can still be adjusted.
+- **Savings over time chart** (`buildSavingsTimeline` in `src/utils/savings.ts`)
+  plots two cumulative series over a bounded trailing window (last 26 weeks or
+  12 months, following the report view):
+  - **Recorded balance** — the running sum of every savings entry.
+  - **Budget-based savings** — for each past period, `computeRealizedSavings`
+    (`min(goal, budget − actual spend)`) accumulated. Shows how much of the
+    goal your under-spending has actually covered. Only drawn when a matching
+    budget *and* savings goal are set.
+- **`clearAll`** also wipes `savingsEntries` along with expenses, budgets, and
+  recurring expenses.
 
 ## Sample data
 
