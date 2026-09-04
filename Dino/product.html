@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product — DinoMart</title>
+  <meta name="description" content="Product details, specs, shipping and reviews at DinoMart.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="pdp" data-pdp hidden>
+          <div class="pdp__media" data-pdp-media></div>
+          <div>
+            <div class="pdp__crumbs" data-pdp-crumbs></div>
+            <div class="pdp__brand" data-pdp-brand></div>
+            <h1 data-pdp-name></h1>
+            <span class="pcard__rating" data-pdp-rating></span>
+            <div class="pdp__price" data-pdp-price></div>
+            <p class="muted" data-pdp-blurb></p>
+            <div class="stock-pill" data-pdp-stock></div>
+
+            <div class="pdp__row">
+              <div class="qty">
+                <button data-dec aria-label="Decrease quantity">−</button>
+                <input data-qty value="1" inputmode="numeric" aria-label="Quantity">
+                <button data-inc aria-label="Increase quantity">+</button>
+              </div>
+              <button class="btn btn--fire" data-add-cart>Add to cart</button>
+              <button class="btn btn--ghost" data-fav-btn aria-pressed="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.5 5c2.1 0 3.6 1.2 4.5 2.6C10.9 6.2 12.4 5 14.5 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z"/></svg>
+                <span data-fav-label>Save</span>
+              </button>
+            </div>
+
+            <div class="pdp__meta">
+              <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg> Ships in 1–2 business days · tracked</div>
+              <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg> Genuine, officially licensed &mdash; authenticity guaranteed</div>
+              <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9M3 5v4h4"/></svg> Free 30-day returns on unopened items</div>
+              <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5-7-11a7 7 0 0 1 14 0c0 6-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> A portion of this order funds community relief partners</div>
+            </div>
+
+            <div class="pdp__tabs">
+              <div class="pdp__tablist" role="tablist">
+                <button role="tab" aria-selected="true" data-tab="desc">Description</button>
+                <button role="tab" aria-selected="false" data-tab="ship">Shipping &amp; returns</button>
+                <button role="tab" aria-selected="false" data-tab="rev">Reviews</button>
+              </div>
+              <div class="pdp__panel" data-panel="desc"></div>
+              <div class="pdp__panel" data-panel="ship" hidden>
+                <p>In-stock orders leave our warehouse within <strong>1–2 business days</strong>. You'll receive tracking by email as soon as the label is generated. Standard delivery is 3–7 business days within the US; international delivery to 27+ countries typically arrives in 7–18 business days with duties calculated at checkout where available.</p>
+                <p>Unopened items may be returned within <strong>30 days</strong> for a full refund. Items damaged in transit are replaced free of charge &mdash; email a photo to <a href="mailto:sales@dinofam.io">sales@dinofam.io</a> and we'll sort it fast.</p>
+              </div>
+              <div class="pdp__panel" data-panel="rev" hidden></div>
+            </div>
+          </div>
+        </div>
+
+        <div data-pdp-missing hidden class="empty">
+          <div class="glyph">🦴</div>
+          <h3>That fossil isn't in our records</h3>
+          <p>The product you're looking for may have been moved or sold out.</p>
+          <a class="btn btn--jungle btn--sm" href="shop.html">Back to the shop</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--bg-2);border-block:1px solid var(--line)" data-related-wrap hidden>
+      <div class="wrap">
+        <div class="section-head" data-reveal><span class="eyebrow">Pairs well with</span><h2>You might also like</h2></div>
+        <div class="product-grid" data-related></div>
+      </div>
+    </section>
+
+    <section class="section" data-recent-wrap hidden>
+      <div class="wrap">
+        <div class="section-head" data-reveal><span class="eyebrow">Jump back in</span><h2>Recently viewed</h2></div>
+        <div class="product-grid" data-recent></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/data.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+  <script src="js/product.js?v=2"></script>
+</body>
+</html>

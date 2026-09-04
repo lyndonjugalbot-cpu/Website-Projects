@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop All — DinoMart</title>
+  <meta name="description" content="Browse 524 collectibles across Marvel, DC, Funko Pop!, Magic: The Gathering, Transformers, Dinosaurs and DinoFam shwag. Filter by category, price and availability.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <span class="eyebrow">The full warehouse</span>
+        <h1 data-shop-title>Shop All</h1>
+        <p data-shop-sub>Every figure, booster, plush and thread under one roof.</p>
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="shop">
+          <!-- FILTERS -->
+          <aside class="filters" id="filters" aria-label="Filters">
+            <button class="btn btn--ghost btn--sm btn--block mobile-filter-btn" data-close-filters style="margin-bottom:14px">Done</button>
+
+            <h3>Category</h3>
+            <div class="fgroup" data-f-cat></div>
+
+            <h3>Sub-category</h3>
+            <div class="fgroup" data-f-sub></div>
+
+            <h3>Brand</h3>
+            <div class="fgroup" data-f-brand></div>
+
+            <h3>Availability</h3>
+            <div class="fgroup">
+              <label class="check"><input type="checkbox" data-f-avail value="in"> In stock <span class="n" data-n-in></span></label>
+              <label class="check"><input type="checkbox" data-f-avail value="out"> Waitlist <span class="n" data-n-out></span></label>
+            </div>
+
+            <h3>Price (<span data-cur-code>USD</span>)</h3>
+            <div class="price-range">
+              <input type="number" inputmode="numeric" placeholder="Min" data-f-min aria-label="Minimum price">
+              <span class="muted">–</span>
+              <input type="number" inputmode="numeric" placeholder="Max" data-f-max aria-label="Maximum price">
+            </div>
+
+            <button class="btn btn--ghost btn--sm btn--block" data-clear-filters style="margin-top:18px">Clear all filters</button>
+          </aside>
+
+          <!-- RESULTS -->
+          <div>
+            <div class="shop-toolbar">
+              <div class="shop-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" data-search placeholder="Search this shop…" aria-label="Search products">
+              </div>
+              <button class="btn btn--ghost btn--sm mobile-filter-btn" data-open-filters>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg> Filters
+              </button>
+              <select class="mini-select" data-sort aria-label="Sort by">
+                <option value="best">Best selling</option>
+                <option value="new">Date · new to old</option>
+                <option value="old">Date · old to new</option>
+                <option value="price-asc">Price · low to high</option>
+                <option value="price-desc">Price · high to low</option>
+                <option value="az">Title · A–Z</option>
+                <option value="za">Title · Z–A</option>
+              </select>
+              <span class="count" data-count-label>—</span>
+            </div>
+
+            <div class="chips" data-chips></div>
+            <div class="product-grid" data-results></div>
+            <div data-empty hidden class="empty">
+              <div class="glyph">🦴</div>
+              <h3>Nothing matches that dig</h3>
+              <p>Try widening your filters or clearing the search.</p>
+              <button class="btn btn--jungle btn--sm" data-clear-filters>Clear filters</button>
+            </div>
+
+            <div class="center" style="margin-top:40px" data-more-wrap hidden>
+              <button class="btn btn--ghost" data-more>Load more</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/data.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+  <script src="js/shop.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cart &amp; Checkout — DinoMart</title>
+  <meta name="description" content="Review your cart and check out securely at DinoMart.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <span class="eyebrow">Almost yours</span>
+        <h1>Cart &amp; checkout</h1>
+        <p>Free shipping over <span data-usd="75">$75</span>. Secure, encrypted checkout.</p>
+      </div>
+    </section>
+
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="split" style="align-items:start;grid-template-columns:1.4fr .9fr">
+          <!-- LEFT: items + checkout form -->
+          <div>
+            <div data-cart-full></div>
+
+            <form class="card" data-checkout hidden style="margin-top:24px">
+              <h2 style="font-size:1.3rem">Checkout</h2>
+              <p class="muted" style="font-size:.85rem;margin-top:-.4em">This is a demo store — no real payment is taken.</p>
+              <div class="stack" style="gap:12px">
+                <div class="field"><label>Email</label><input class="f-input" type="email" name="email" required></div>
+                <div class="split" style="grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="field"><label>First name</label><input class="f-input" name="fname" required></div>
+                  <div class="field"><label>Last name</label><input class="f-input" name="lname" required></div>
+                </div>
+                <div class="field"><label>Address</label><input class="f-input" name="addr" required></div>
+                <div class="split" style="grid-template-columns:1fr 1fr 1fr;gap:12px">
+                  <div class="field"><label>City</label><input class="f-input" name="city" required></div>
+                  <div class="field"><label>ZIP / Postcode</label><input class="f-input" name="zip" required></div>
+                  <div class="field"><label>Country</label><input class="f-input" name="country" value="United States" required></div>
+                </div>
+                <div class="field"><label>Card number</label><input class="f-input" inputmode="numeric" placeholder="4242 4242 4242 4242" name="card" required></div>
+                <div class="split" style="grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="field"><label>Expiry</label><input class="f-input" placeholder="MM / YY" name="exp" required></div>
+                  <div class="field"><label>CVC</label><input class="f-input" inputmode="numeric" placeholder="123" name="cvc" required></div>
+                </div>
+              </div>
+              <button class="btn btn--fire btn--block" type="submit" style="margin-top:16px">Pay <span data-pay-total>—</span></button>
+            </form>
+
+            <div class="card" data-confirmation hidden style="margin-top:24px;text-align:center">
+              <div style="font-size:3rem">🦖</div>
+              <h2 style="font-size:1.4rem">Order confirmed!</h2>
+              <p class="muted">Thanks for feeding the pack. A confirmation email is on its way with tracking to follow in 1–2 business days.</p>
+              <p><strong>Order</strong> <span data-order-id></span></p>
+              <a class="btn btn--jungle" href="shop.html">Keep shopping</a>
+            </div>
+          </div>
+
+          <!-- RIGHT: summary -->
+          <aside class="card" data-summary style="position:sticky;top:100px">
+            <h3 style="font-size:1rem;letter-spacing:.02em">Order summary</h3>
+            <div class="drawer__ship" data-ship style="padding-inline:0;border:0"></div>
+            <div class="stack" style="gap:10px;font-size:.92rem;margin:14px 0">
+              <div style="display:flex;justify-content:space-between"><span class="muted">Subtotal</span><span data-sum-sub>—</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="muted">Shipping</span><span data-sum-ship>—</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="muted">Estimated tax</span><span data-sum-tax>—</span></div>
+              <div data-sum-disc-row hidden style="display:flex;justify-content:space-between;color:var(--jungle-soft)"><span>Discount (DINOFAM10)</span><span data-sum-disc>—</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin:12px 0">
+              <input class="f-input" data-promo placeholder="Promo code" aria-label="Promo code">
+              <button class="btn btn--ghost btn--sm" data-apply-promo>Apply</button>
+            </div>
+            <p class="muted" style="font-size:.74rem;margin:0 0 12px">Try <strong>DINOFAM10</strong> for 10% off.</p>
+            <hr class="divider">
+            <div style="display:flex;justify-content:space-between;font-family:var(--display);font-weight:700;font-size:1.15rem;margin:14px 0">
+              <span>Total</span><span data-sum-total>—</span>
+            </div>
+            <button class="btn btn--fire btn--block" data-goto-checkout>Continue to checkout</button>
+            <p class="muted" style="font-size:.74rem;text-align:center;margin:12px 0 0">🔒 Encrypted &amp; secure · demo only</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-cart-recommend-wrap hidden style="background:var(--bg-2);border-block:1px solid var(--line)">
+      <div class="wrap">
+        <div class="section-head" data-reveal><span class="eyebrow">Add to the haul</span><h2>Fills a box nicely</h2></div>
+        <div class="product-grid" data-cart-recommend></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/data.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+  <script src="js/cart.js?v=2"></script>
+</body>
+</html>
