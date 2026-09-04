@@ -1,0 +1,18 @@
+# Secrets
+.env
+
+# Bot state and logs
+bot_state.json
+bot_state.json.tmp
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Vercel (web/)
+.vercel/

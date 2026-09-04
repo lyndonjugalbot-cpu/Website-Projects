@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TradingBot &mdash; Paper Trading Test</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <h1>TradingBot <span class="muted">/ paper trading test</span></h1>
+        <p class="subtitle">EMA crossover strategy, simulated with fake money against live Binance prices.</p>
+      </div>
+      <div class="safety-note" role="note">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5v4.2M8 11.2v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>Simulated only. No real orders are ever placed. No API key required or accepted.</span>
+      </div>
+    </header>
+
+    <section class="card" id="config-card">
+      <h2>Session setup</h2>
+      <div class="config-grid">
+        <label>Symbol
+          <select id="cfg-symbol">
+            <option value="BTC/USDT">BTC/USDT</option>
+            <option value="ETH/USDT">ETH/USDT</option>
+            <option value="SOL/USDT">SOL/USDT</option>
+            <option value="BNB/USDT">BNB/USDT</option>
+            <option value="XRP/USDT">XRP/USDT</option>
+          </select>
+        </label>
+        <label>Timeframe
+          <select id="cfg-timeframe">
+            <option value="1m">1 minute</option>
+            <option value="5m" selected>5 minutes</option>
+            <option value="15m">15 minutes</option>
+            <option value="1h">1 hour</option>
+            <option value="4h">4 hours</option>
+          </select>
+        </label>
+        <label>Fast EMA
+          <input id="cfg-fast" type="number" min="1" step="1" value="20" />
+        </label>
+        <label>Slow EMA
+          <input id="cfg-slow" type="number" min="2" step="1" value="50" />
+        </label>
+        <label>Stop-loss %
+          <input id="cfg-stoploss" type="number" min="0.1" step="0.1" value="5" />
+        </label>
+        <label>Quote per trade
+          <input id="cfg-quote" type="number" min="1" step="1" value="100" />
+        </label>
+        <label>Starting balance
+          <input id="cfg-balance" type="number" min="1" step="1" value="1000" />
+        </label>
+        <label>Daily loss limit
+          <input id="cfg-dailyloss" type="number" min="1" step="1" value="50" />
+        </label>
+        <label>Fee % per side
+          <input id="cfg-fee" type="number" min="0" step="0.01" value="0.1" />
+        </label>
+        <label>Slippage %
+          <input id="cfg-slippage" type="number" min="0" step="0.01" value="0.05" />
+        </label>
+        <label>Poll every (sec)
+          <input id="cfg-interval" type="number" min="5" max="300" step="1" value="15" />
+        </label>
+      </div>
+      <div class="config-actions">
+        <button id="btn-start" class="btn btn-primary">Start</button>
+        <button id="btn-stop" class="btn" disabled>Stop</button>
+        <button id="btn-reset" class="btn btn-ghost">Reset session</button>
+        <span id="run-status" class="run-status">Not running</span>
+      </div>
+    </section>
+
+    <div id="halt-banner" class="halt-banner" hidden></div>
+
+    <section class="stat-grid">
+      <div class="stat-tile">
+        <span class="stat-label">Equity</span>
+        <span class="stat-value" id="stat-equity">&mdash;</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Total return</span>
+        <span class="stat-value" id="stat-return">&mdash;</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Buy &amp; hold (same window)</span>
+        <span class="stat-value" id="stat-buyhold">&mdash;</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Current price</span>
+        <span class="stat-value" id="stat-price">&mdash;</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Position</span>
+        <span class="stat-value" id="stat-position">Flat</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-label">Trades / win rate</span>
+        <span class="stat-value" id="stat-trades">0 / &mdash;</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Equity over this session</h2>
+        <span class="muted" id="chart-hint">Starts trading with 1,000 in simulated balance &mdash; dashed line marks the starting balance.</span>
+      </div>
+      <div class="chart-wrap" id="chart-wrap">
+        <div class="chart-empty" id="chart-empty">Chart will appear once the session starts polling.</div>
+        <svg id="equity-chart" viewBox="0 0 800 260" preserveAspectRatio="none" hidden></svg>
+        <div class="chart-tooltip" id="chart-tooltip" hidden></div>
+      </div>
+    </section>
+
+    <section class="two-col">
+      <div class="card">
+        <h2>Trade history</h2>
+        <div class="table-wrap">
+          <table id="trades-table">
+            <thead>
+              <tr>
+                <th>Entry time</th>
+                <th>Exit time</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>P/L</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="trades-body">
+              <tr class="empty-row"><td colspan="6">No trades yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Live log</h2>
+        <div class="log-wrap" id="log-wrap">
+          <p class="empty-row">Nothing logged yet &mdash; click Start.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <p>Same EMA-crossover logic as the CLI bot's strategy.py, replayed here with a stateless serverless
+      poll instead of a long-running loop &mdash; see the project README for how the two relate.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
