@@ -152,15 +152,39 @@ deployment refuses to start rather than fall back to a shared default.
 ## Deploying
 
 `vercel.json` and `api/index.py` are set up for Vercel with `@vercel/python`.
-Two environment variables are needed before it will hold real data:
 
-1. **Storage → Create Database → Neon (Postgres)**, connected to the project —
+This repository holds several projects, so the first setting matters most:
+
+1. **Import the repo** at [vercel.com/new](https://vercel.com/new).
+2. **Set Root Directory to `HRV_Coaching_Metric_Tracker`.** Without this Vercel
+   builds the repository root, finds no `vercel.json`, and deploys nothing
+   usable. It is under *Configure Project → Root Directory → Edit*, and can be
+   changed later under *Settings → General*.
+3. **Storage → Create Database → Neon (Postgres)**, connected to the project —
    that sets `DATABASE_URL`. Tables create themselves on the first request.
-2. **Settings → Environment Variables → `HRV_SECRET_KEY`**, a long random value:
-   `python -c "import secrets; print(secrets.token_hex(32))"`.
+4. **Settings → Environment Variables → `HRV_SECRET_KEY`**, a long random value:
+   `python -c "import secrets; print(secrets.token_hex(32))"`. Set it for all
+   three environments (Production, Preview, Development).
+5. **Redeploy** so the function picks both up.
 
-Miss either and the deployment serves a page explaining which one, instead of an
-opaque 500.
+Miss the database or the key and the deployment serves a page explaining which
+one is missing, instead of an opaque 500 — so a half-configured deploy tells you
+what it needs rather than failing silently.
+
+Once connected, every push to the production branch redeploys automatically, and
+other branches get preview URLs.
+
+To deploy from a terminal instead, from inside this directory:
+
+```bash
+npx vercel --cwd HRV_Coaching_Metric_Tracker        # preview
+npx vercel --cwd HRV_Coaching_Metric_Tracker --prod # production
+```
+
+`vercel login` opens a browser; on a headless machine use
+`VERCEL_TOKEN=… npx vercel …` with a token from
+*Account Settings → Tokens* instead. The Postgres database still has to be
+created in the dashboard.
 
 One caveat specific to serverless hosts: **many cap the request body at ~4.5 MB**,
 below this app's own 25 MB limit, so large recordings will be rejected by the
