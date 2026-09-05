@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Not available{% endblock %}
+{% block body_class %}centred{% endblock %}
+{% block body %}
+<main class="card card--narrow">
+  <h1 class="h1">That part is for team leaders</h1>
+  <p class="muted">
+    You are signed in as {{ user.full_name }} ({{ user.employee_id }}), an employee
+    account. Employee accounts can view their own coaching logs and metrics.
+  </p>
+  <a class="btn btn--primary" href="{{ url_for('dashboard') }}">Back to my dashboard</a>
+</main>
+{% endblock %}

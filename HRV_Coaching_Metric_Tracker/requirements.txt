@@ -1,0 +1,5 @@
+Flask>=3.0
+
+# Only needed where DATABASE_URL points at Postgres - that is, any serverless
+# deployment. Local SQLite runs do not import it.
+psycopg[binary]>=3.1

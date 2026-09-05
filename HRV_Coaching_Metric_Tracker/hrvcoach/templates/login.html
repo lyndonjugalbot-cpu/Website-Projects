@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block body_class %}centred{% endblock %}
+{% block body %}
+<main class="card card--narrow login">
+  <div class="login__mark" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
+         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 18V9M10 18V5M16 18v-6M20.5 7.5 16 12l-3-3-4.5 4.5"/>
+    </svg>
+  </div>
+  <h1 class="h1">{{ org_name }} coaching tracker</h1>
+  <p class="muted">Sign in with your employee ID.</p>
+
+  {% if error %}
+    <p class="alert alert--error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('auth.login_submit') }}" class="stack">
+    <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+    <label class="field">
+      <span class="field__label">Employee ID</span>
+      <input class="input" name="employee_id" value="{{ employee_id or '' }}"
+             autocomplete="username" autocapitalize="characters" spellcheck="false"
+             required autofocus placeholder="EMP-101">
+    </label>
+    <label class="field">
+      <span class="field__label">Password</span>
+      <input class="input" name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="btn btn--primary btn--block" type="submit">Sign in</button>
+  </form>
+
+  {% if demo %}
+    <details class="demo">
+      <summary>Demo accounts</summary>
+      <p class="muted">This install was seeded with sample data. Password for all: <code>coach1234</code></p>
+      <ul class="demo__list">
+        <li><code>TL-001</code> — Team Leader / Admin (full access)</li>
+        <li><code>EMP-101</code> — Employee (own logs &amp; metrics only)</li>
+        <li><code>EMP-103</code> — Employee with a falling CSAT trend</li>
+      </ul>
+    </details>
+  {% endif %}
+</main>
+{% endblock %}
