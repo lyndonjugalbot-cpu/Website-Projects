@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Coaching Tracker{% endblock %} · {{ org_name }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script>
+    /* Applied before first paint so a dark-mode user never sees a light flash. */
+    try {
+      var saved = localStorage.getItem('hrv-theme');
+      if (saved) document.documentElement.dataset.theme = saved;
+    } catch (e) { /* private mode - the OS preference still applies */ }
+  </script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}{% endblock %}
+</body>
+</html>
