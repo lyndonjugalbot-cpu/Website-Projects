@@ -1,5 +1,5 @@
-import { useQuery } from "convex/react";
-import { UserPlus, Users } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { Trash2, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -8,8 +8,16 @@ import { EmployeeDetail } from "./EmployeeDetail";
 
 export function AdminApp() {
   const employees = useQuery(api.users.listEmployees);
+  const deleteEmployee = useMutation(api.admin.deleteEmployee);
   const [selectedId, setSelectedId] = useState<Id<"users"> | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  function handleDelete(emp: { _id: Id<"users">; name?: string }) {
+    if (!confirm(`Delete ${emp.name ?? "this employee"}? This removes their login, coaching logs and metrics.`)) {
+      return;
+    }
+    void deleteEmployee({ employeeId: emp._id });
+  }
 
   if (selectedId) {
     return <EmployeeDetail employeeId={selectedId} onBack={() => setSelectedId(null)} />;
@@ -38,10 +46,10 @@ export function AdminApp() {
       ) : (
         <ul className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
           {employees.map((emp) => (
-            <li key={emp._id}>
+            <li key={emp._id} className="flex items-center">
               <button
                 onClick={() => setSelectedId(emp._id)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="flex flex-1 items-center justify-between px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 <div>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{emp.name}</p>
@@ -50,6 +58,13 @@ export function AdminApp() {
                   </p>
                 </div>
                 <span className="text-xs text-brand-600 dark:text-brand-400">View →</span>
+              </button>
+              <button
+                onClick={() => handleDelete(emp)}
+                className="px-3 text-slate-400 transition hover:text-red-600 dark:hover:text-red-400"
+                aria-label={`Delete ${emp.name}`}
+              >
+                <Trash2 size={16} />
               </button>
             </li>
           ))}
