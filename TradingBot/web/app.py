@@ -212,9 +212,9 @@ def poll():
     body = request.get_json(force=True, silent=True) or {}
 
     symbol = str(body.get("symbol", "BTC/USDT"))
-    timeframe = str(body.get("timeframe", "1h"))
-    fast_ema = int(body.get("fast_ema", 20))
-    slow_ema = int(body.get("slow_ema", 50))
+    timeframe = str(body.get("timeframe", "1m"))
+    fast_ema = int(body.get("fast_ema", 9))
+    slow_ema = int(body.get("slow_ema", 21))
     stop_loss_pct = float(body.get("stop_loss_pct", 0.05))
     quote_amount = float(body.get("quote_amount_per_trade", 100.0))
     fee_pct = float(body.get("fee_pct", 0.001))

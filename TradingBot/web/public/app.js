@@ -432,21 +432,34 @@
       const row = document.createElement("div");
       row.className = "log-entry";
 
+      const main = document.createElement("div");
+      main.className = "log-main";
+
       const time = document.createElement("span");
       time.className = "log-time";
       time.textContent = fmtTime(log.timestamp);
-      row.appendChild(time);
+      main.appendChild(time);
 
       const chip = document.createElement("span");
       const signalClass = ["buy", "sell", "error"].includes(log.signal) ? log.signal : "hold";
       chip.className = "log-chip " + signalClass;
       chip.textContent = signalClass;
-      row.appendChild(chip);
+      main.appendChild(chip);
 
       const msg = document.createElement("span");
       msg.className = "log-message";
       msg.textContent = log.message || "";
-      row.appendChild(msg);
+      main.appendChild(msg);
+
+      row.appendChild(main);
+
+      if (log.ema_fast !== null && log.ema_fast !== undefined && log.ema_slow !== null && log.ema_slow !== undefined) {
+        const gap = document.createElement("div");
+        gap.className = "log-gap";
+        const diff = log.ema_fast - log.ema_slow;
+        gap.textContent = `fast ${log.ema_fast.toFixed(2)} · slow ${log.ema_slow.toFixed(2)} · Δ ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`;
+        row.appendChild(gap);
+      }
 
       els.logWrap.appendChild(row);
     });

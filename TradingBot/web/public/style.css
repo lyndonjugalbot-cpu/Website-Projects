@@ -123,6 +123,12 @@ body {
 
 /* Config form */
 
+.config-hint {
+  margin: -8px 0 16px;
+  font-size: 12.5px;
+  max-width: 720px;
+}
+
 .config-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -381,11 +387,19 @@ td.critical {
 
 .log-entry {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   font-size: 12px;
   padding: 6px 8px;
   border-radius: 6px;
   background: var(--surface-2);
+}
+
+.log-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .log-time {
@@ -412,6 +426,12 @@ td.critical {
 
 .log-message {
   color: var(--text-secondary);
+}
+
+.log-gap {
+  color: var(--text-muted);
+  padding-left: 60px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Footer */

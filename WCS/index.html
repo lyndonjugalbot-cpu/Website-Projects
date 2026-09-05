@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOTS Creative Studio — Hand-Drawn Art &amp; Packaging Design</title>
+<meta name="description" content="WOTS Creative Studio is a hand-drawn illustration and packaging design studio — original character art, mythology series, and shelf-ready product packaging. No AI, ever.">
+<link rel="icon" href="img/logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a href="#top" class="brand">
+      <img src="img/logo.png" alt="WOTS logo">
+      <span class="brand-text">
+        <span class="name">WOTS</span>
+        <span class="sub">Creative Studio</span>
+      </span>
+    </a>
+    <nav class="nav-links">
+      <a href="#art">Art</a>
+      <a href="#packaging">Packaging</a>
+      <a href="#process">Process</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#contact" class="btn btn-ghost btn-sm">Start a Project</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#art">Art</a>
+  <a href="#packaging">Packaging</a>
+  <a href="#process">Process</a>
+  <a href="#contact">Contact</a>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="wrap hero-content">
+    <div class="hero-kicker"><span class="dot"></span> Hand-Drawn Illustration &amp; Packaging Design</div>
+    <h1 class="display">Real hands.<br>Real ink.<br><em>No AI.</em></h1>
+    <p class="lead">WOTS Creative Studio builds original characters, mythology-grade illustration, and shelf-ready product packaging — every line sketched, inked, and colored by a real artist.</p>
+    <div class="hero-actions">
+      <a href="#art" class="btn btn-primary">View the Work</a>
+      <a href="#contact" class="btn btn-ghost">Commission a Piece</a>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<div class="marquee">
+  <div class="marquee-track" id="marqueeTrack">
+    <span><b>100% Hand-Drawn</b></span>
+    <span><b>Zero AI</b></span>
+    <span>Character &amp; Mascot Art</span>
+    <span>Packaging &amp; Label Design</span>
+    <span>Mythology Series</span>
+    <span>Commissions Open</span>
+  </div>
+</div>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+  <div class="wrap stats-grid">
+    <div class="stat reveal"><div class="num">0%</div><div class="label">AI Generated</div></div>
+    <div class="stat reveal"><div class="num">28+</div><div class="label">Original Illustrations Shown</div></div>
+    <div class="stat reveal"><div class="num">11</div><div class="label">Packaging Designs, Shelf-Ready</div></div>
+    <div class="stat reveal"><div class="num">100%</div><div class="label">Hand-Inked &amp; Colored</div></div>
+  </div>
+</section>
+
+<!-- ================= ART GALLERY ================= -->
+<section class="section" id="art">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">The Art</div>
+      <h2 class="display">Illustration built<br>frame by frame.</h2>
+      <p>Mythology, characters, and full scenes — every piece starts as a pencil sketch before a single digital brushstroke touches it.</p>
+    </div>
+
+    <div class="filters reveal">
+      <button class="filter-btn active" data-filter="all">All Work</button>
+      <button class="filter-btn" data-filter="mythology">Mythology Series</button>
+      <button class="filter-btn" data-filter="characters">Characters &amp; Mascots</button>
+      <button class="filter-btn" data-filter="scenes">Scenes &amp; Concept Art</button>
+    </div>
+
+    <div class="masonry" id="masonry">
+
+      <div class="g-item reveal" data-cat="mythology" data-img="img/art-ares.webp" data-tag="Mythology Series" data-title="Aries — God of War">
+        <img src="img/art-ares.webp" alt="Aries — God of War, hand-drawn mythology illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Mythology Series</div><h4>Aries — God of War</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="mythology" data-img="img/art-skyherald.webp" data-tag="Mythology Series" data-title="Capricorn — The Herald">
+        <img src="img/art-skyherald.webp" alt="Capricorn — The Herald, hand-drawn mythology illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Mythology Series</div><h4>Capricorn — The Herald</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="mythology" data-img="img/art-gemini.webp" data-tag="Mythology Series" data-title="Gemini — The Mirror Twins">
+        <img src="img/art-gemini.webp" alt="Gemini — The Mirror Twins, hand-drawn mythology illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Mythology Series</div><h4>Gemini — The Mirror Twins</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-lofi.webp" data-tag="Characters &amp; Mascots" data-title="Lofi Nights">
+        <img src="img/art-lofi.webp" alt="Lofi Nights, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Lofi Nights</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-darkfable.webp" data-tag="Scenes &amp; Concept Art" data-title="Dark Fable">
+        <img src="img/art-darkfable.webp" alt="Dark Fable, hand-drawn concept art poster" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Dark Fable</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="mythology" data-img="img/art-pisces.webp" data-tag="Mythology Series" data-title="Pisces — Tidewalker">
+        <img src="img/art-pisces.webp" alt="Pisces — Tidewalker, hand-drawn mythology illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Mythology Series</div><h4>Pisces — Tidewalker</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-royal-swing.webp" data-tag="Characters &amp; Mascots" data-title="The Royal Swing">
+        <img src="img/art-royal-swing.webp" alt="The Royal Swing, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>The Royal Swing</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-nightride.webp" data-tag="Scenes &amp; Concept Art" data-title="Night Ride">
+        <img src="img/art-nightride.webp" alt="Night Ride, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Night Ride</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-storm-conjurer.webp" data-tag="Characters &amp; Mascots" data-title="Storm Conjurer">
+        <img src="img/art-storm-conjurer.webp" alt="Storm Conjurer, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Storm Conjurer</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="mythology" data-img="img/art-taurus.webp" data-tag="Mythology Series" data-title="Taurus — The Union">
+        <img src="img/art-taurus.webp" alt="Taurus — The Union, hand-drawn mythology illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Mythology Series</div><h4>Taurus — The Union</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-feast.webp" data-tag="Scenes &amp; Concept Art" data-title="The Feast">
+        <img src="img/art-feast.webp" alt="The Feast, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>The Feast</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-whodey.webp" data-tag="Characters &amp; Mascots" data-title="Who Dey">
+        <img src="img/art-whodey.webp" alt="Who Dey, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Who Dey</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-heir.webp" data-tag="Scenes &amp; Concept Art" data-title="The Heir">
+        <img src="img/art-heir.webp" alt="The Heir, hand-drawn portrait illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>The Heir</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-micdrop.webp" data-tag="Characters &amp; Mascots" data-title="Mic Drop">
+        <img src="img/art-micdrop.webp" alt="Mic Drop, hand-drawn mascot illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Mic Drop</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-silentwatch.webp" data-tag="Scenes &amp; Concept Art" data-title="Silent Watch">
+        <img src="img/art-silentwatch.webp" alt="Silent Watch, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Silent Watch</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-alley.webp" data-tag="Characters &amp; Mascots" data-title="Back Alley Cool">
+        <img src="img/art-alley.webp" alt="Back Alley Cool, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Back Alley Cool</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-reckoning.webp" data-tag="Scenes &amp; Concept Art" data-title="The Reckoning">
+        <img src="img/art-reckoning.webp" alt="The Reckoning, hand-drawn concept art" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>The Reckoning</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-pokerclub.webp" data-tag="Characters &amp; Mascots" data-title="Toonz Poker Club">
+        <img src="img/art-pokerclub.webp" alt="Toonz Poker Club, hand-drawn mascot illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Toonz Poker Club</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-fruitycomic.webp" data-tag="Scenes &amp; Concept Art" data-title="Fruity and the Kingmaker">
+        <img src="img/art-fruitycomic.webp" alt="Fruity and the Kingmaker, hand-drawn comic page illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Fruity and the Kingmaker</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-sugarrush.webp" data-tag="Scenes &amp; Concept Art" data-title="Sugar Rush">
+        <img src="img/art-sugarrush.webp" alt="Sugar Rush, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Sugar Rush</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-courtsidehalo.webp" data-tag="Characters &amp; Mascots" data-title="Courtside Halo">
+        <img src="img/art-courtsidehalo.webp" alt="Courtside Halo, hand-drawn mascot illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Courtside Halo</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-blackcapcrew.webp" data-tag="Scenes &amp; Concept Art" data-title="Black Cap Crew">
+        <img src="img/art-blackcapcrew.webp" alt="Black Cap Crew, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Black Cap Crew</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-valentines.webp" data-tag="Characters &amp; Mascots" data-title="Bubblegum Valentine">
+        <img src="img/art-valentines.webp" alt="Bubblegum Valentine, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Bubblegum Valentine</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-neonalley.webp" data-tag="Scenes &amp; Concept Art" data-title="Neon Alley">
+        <img src="img/art-neonalley.webp" alt="Neon Alley, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Neon Alley</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-wildfirearcher.webp" data-tag="Characters &amp; Mascots" data-title="Wildfire Archer">
+        <img src="img/art-wildfirearcher.webp" alt="Wildfire Archer, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Wildfire Archer</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-redlord.webp" data-tag="Characters &amp; Mascots" data-title="The Red Lord">
+        <img src="img/art-redlord.webp" alt="The Red Lord, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>The Red Lord</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="scenes" data-img="img/art-poolsidekings.webp" data-tag="Scenes &amp; Concept Art" data-title="Poolside Kings">
+        <img src="img/art-poolsidekings.webp" alt="Poolside Kings, hand-drawn concept scene illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Scenes &amp; Concept Art</div><h4>Poolside Kings</h4></div>
+      </div>
+
+      <div class="g-item reveal" data-cat="characters" data-img="img/art-bullswarready.webp" data-tag="Characters &amp; Mascots" data-title="Bulls — War Ready">
+        <img src="img/art-bullswarready.webp" alt="Bulls, War Ready, hand-drawn character illustration" loading="lazy">
+        <div class="g-caption"><div class="tag">Characters &amp; Mascots</div><h4>Bulls — War Ready</h4></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= PACKAGING ================= -->
+<section class="section" id="packaging" style="background:var(--bg-soft); border-top:1px solid var(--border-soft); border-bottom:1px solid var(--border-soft);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Packaging &amp; Product Design</div>
+      <h2 class="display">From character<br>to shelf.</h2>
+      <p>Front-of-pack illustration, flavor callouts, compliance icons, and full label layout — built to print, not just to look pretty on screen.</p>
+    </div>
+
+    <div class="pkg-block reveal">
+      <div class="pkg-block-head">
+        <h3>Bubblegum Kids — Character Candy Line</h3>
+        <span>8 SKUs · Full front-of-pack design</span>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg-card" data-img="img/pkg-milkshake.webp" data-tag="Bubblegum Kids" data-title="Archie's Milkshake">
+          <div class="pkg-thumb"><img src="img/pkg-milkshake.webp" alt="Archie's Milkshake bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Archie's Milkshake</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-slushie.webp" data-tag="Bubblegum Kids" data-title="Slush Puppie Slushie">
+          <div class="pkg-thumb"><img src="img/pkg-slushie.webp" alt="Slush Puppie Slushie bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Slush Puppie Slushie</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-popeye.webp" data-tag="Bubblegum Kids" data-title="Popeye Spinach">
+          <div class="pkg-thumb"><img src="img/pkg-popeye.webp" alt="Popeye Spinach bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Popeye Spinach</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-strawberryfield.webp" data-tag="Bubblegum Kids" data-title="Daisy's Strawberry Field">
+          <div class="pkg-thumb"><img src="img/pkg-strawberryfield.webp" alt="Daisy's Strawberry Field bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Daisy's Strawberry Field</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-frozenbanana.webp" data-tag="Bubblegum Kids" data-title="Hannah's Frozen Banana">
+          <div class="pkg-thumb"><img src="img/pkg-frozenbanana.webp" alt="Hannah's Frozen Banana bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Hannah's Frozen Banana</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-angelcake.webp" data-tag="Bubblegum Kids" data-title="Ruby's Angel Surprise Cake">
+          <div class="pkg-thumb"><img src="img/pkg-angelcake.webp" alt="Ruby's Angel Surprise Cake bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Ruby's Angel Surprise Cake</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-wormcake.webp" data-tag="Bubblegum Kids" data-title="Max's Worm Cake">
+          <div class="pkg-thumb"><img src="img/pkg-wormcake.webp" alt="Max's Worm Cake bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Max's Worm Cake</h4><p>Bubblegum Kids</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-icee.webp" data-tag="Bubblegum Kids" data-title="ICEE Blue Raspberry">
+          <div class="pkg-thumb"><img src="img/pkg-icee.webp" alt="ICEE Blue Raspberry bubble gum package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>ICEE Blue Raspberry</h4><p>Bubblegum Kids</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pkg-block reveal">
+      <div class="pkg-block-head">
+        <h3>Jumbo Gummy — Liquid-Filled Fruit Line</h3>
+        <span>3 SKUs · Mascot + label design</span>
+      </div>
+      <div class="pkg-grid small">
+        <div class="pkg-card" data-img="img/pkg-gummygrape.webp" data-tag="Jumbo Gummy" data-title="Jumbo Gummy Grape">
+          <div class="pkg-thumb"><img src="img/pkg-gummygrape.webp" alt="Jumbo Gummy Grape candy package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Jumbo Gummy Grape</h4><p>Jumbo Gummy</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-gummywatermelon.webp" data-tag="Jumbo Gummy" data-title="Jumbo Gummy Watermelon">
+          <div class="pkg-thumb"><img src="img/pkg-gummywatermelon.webp" alt="Jumbo Gummy Watermelon candy package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Jumbo Gummy Watermelon</h4><p>Jumbo Gummy</p></div>
+        </div>
+        <div class="pkg-card" data-img="img/pkg-gummystrawberry.webp" data-tag="Jumbo Gummy" data-title="Jumbo Gummy Strawberry">
+          <div class="pkg-thumb"><img src="img/pkg-gummystrawberry.webp" alt="Jumbo Gummy Strawberry candy package design" loading="lazy"></div>
+          <div class="pkg-info"><h4>Jumbo Gummy Strawberry</h4><p>Jumbo Gummy</p></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="pkg-note reveal">Concept &amp; portfolio packaging design — mascot illustration and label layout created by WOTS Creative Studio to demonstrate character-to-shelf design capability.</p>
+  </div>
+</section>
+
+<!-- ================= PROCESS ================= -->
+<section class="section process" id="process">
+  <div class="wrap process-grid">
+    <div class="process-media reveal">
+      <img src="img/art-alley.webp" alt="WOTS Creative Studio illustration process">
+      <button class="play-intro" id="playIntro" aria-label="Play studio intro video">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
+    <div class="reveal">
+      <div class="eyebrow">The Process</div>
+      <h2 class="display">No AI.<br>Just skill.</h2>
+      <p style="color:var(--text-dim); font-size:1.05rem; max-width:52ch;">Every character starts as a pencil sketch. WOTS Creative Studio is built on traditional illustration fundamentals — hand-drawn linework, digital inking, and color rendered layer by layer. If a brief could be solved by typing a prompt, this isn't that studio. This is for brands and stories that deserve a real artist's hand.</p>
+
+      <div class="process-steps">
+        <div class="step">
+          <div class="n">1</div>
+          <div><h5>Sketch</h5><p>Rough pencils to lock composition, pose, and story before anything else.</p></div>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <div><h5>Ink</h5><p>Clean linework built by hand — every edge intentional, every character consistent.</p></div>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <div><h5>Color &amp; Light</h5><p>Full rendering pass: color, shading, and atmosphere to bring the piece to life.</p></div>
+        </div>
+        <div class="step">
+          <div class="n">4</div>
+          <div><h5>Deliver</h5><p>Print-ready files for packaging, or high-res art for prints, merch, and brand use.</p></div>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" id="playIntroBtn">Watch Studio Intro</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="section-head center reveal" style="margin-left:auto;margin-right:auto;">
+      <div class="eyebrow">What We Do</div>
+      <h2 class="display">Built for brands<br>and characters alike.</h2>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/></svg></div>
+        <h4>Character &amp; Mascot Illustration</h4>
+        <p>Original characters designed from the ground up — consistent, expressive, and ready to carry a brand.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+        <h4>Packaging &amp; Label Design</h4>
+        <p>Front-of-pack art, flavor callouts, and layout that's built print-ready — not just pretty on screen.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l6-14 4 8 3-5 3 11z"/></svg></div>
+        <h4>Concept Art &amp; Posters</h4>
+        <p>Scene-driven illustration for stories, games, and worldbuilding — mood, lighting, and drama in every frame.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg></div>
+        <h4>Brand-Ready Art</h4>
+        <p>Deliverables prepped for production — print, merch, packaging, or digital — no clean-up required on your end.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section class="section contact" id="contact">
+  <div class="wrap contact-grid">
+    <div class="reveal">
+      <div class="eyebrow">Get In Touch</div>
+      <h2 class="display">Let's draw<br>something.</h2>
+      <p class="lead">Got a character in your head, a product that needs packaging, or a story that needs art? Tell us about it — real artists reply.</p>
+      <a class="contact-email" href="mailto:lyndon.jugalbot@gmail.com">lyndon.jugalbot@gmail.com</a>
+    </div>
+
+    <form class="form reveal" id="contactForm">
+      <div class="form-row">
+        <div class="field">
+          <label for="cf-name">Name</label>
+          <input type="text" id="cf-name" name="name" required placeholder="Your name">
+        </div>
+        <div class="field">
+          <label for="cf-email">Email</label>
+          <input type="email" id="cf-email" name="email" required placeholder="you@example.com">
+        </div>
+      </div>
+      <div class="field">
+        <label for="cf-type">Project Type</label>
+        <select id="cf-type" name="type">
+          <option>Character / Mascot Illustration</option>
+          <option>Packaging / Label Design</option>
+          <option>Concept Art / Poster</option>
+          <option>Something Else</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cf-message">Project Details</label>
+        <textarea id="cf-message" name="message" required placeholder="Tell us about your project, timeline, and budget range."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send Inquiry</button>
+      <p class="form-note">This opens your email app with the details pre-filled — nothing is sent from this page directly.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap footer-row">
+    <a href="#top" class="footer-brand">
+      <img src="img/logo.png" alt="WOTS logo">
+      <span>WOTS CREATIVE STUDIO</span>
+    </a>
+    <p class="copy">&copy; <span id="year"></span> WOTS Creative Studio. Hand-drawn, always.</p>
+    <div class="footer-links">
+      <a href="#art">Art</a>
+      <a href="#packaging">Packaging</a>
+      <a href="mailto:lyndon.jugalbot@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= LIGHTBOX ================= -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="lightbox-nav prev" id="lbPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <div class="lightbox-inner">
+    <img id="lbImg" src="" alt="">
+    <div class="lightbox-cap">
+      <div class="tag" id="lbTag"></div>
+      <h4 id="lbTitle"></h4>
+    </div>
+  </div>
+  <button class="lightbox-nav next" id="lbNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+</div>
+
+<!-- ================= VIDEO MODAL ================= -->
+<div class="video-modal" id="videoModal">
+  <button class="lightbox-close" id="vmClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <video id="introVideo" src="assets/Intro.mp4" controls playsinline></video>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
