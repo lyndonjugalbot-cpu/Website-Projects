@@ -75,11 +75,19 @@ class PaperBroker(_BaseBroker):
             self.state.paper_quote_balance = self.config.runtime.paper_starting_balance_quote
         return self.state.paper_quote_balance
 
-    def enter(self, symbol: str, current_price: float) -> Position:
+    def enter(
+        self,
+        symbol: str,
+        current_price: float,
+        stop_loss_price: float | None = None,
+        quote_amount: float | None = None,
+    ) -> Position:
         if self.state.position is not None:
             raise RuntimeError("enter() called while a position is already open")
 
-        quote_amount = self.config.risk.quote_amount_per_trade
+        # Caller (main.py) may pass a pre-computed size and stop from
+        # risk.py; otherwise fall back to the flat config values.
+        quote_amount = self.config.risk.quote_amount_per_trade if quote_amount is None else quote_amount
         balance = self.get_quote_balance()
         if quote_amount > balance:
             raise InsufficientBalanceError(
@@ -95,13 +103,19 @@ class PaperBroker(_BaseBroker):
         self.state.paper_quote_balance = balance - quote_amount
         self.state.paper_base_balance += base_amount
 
+        stop_px = (
+            fill_price * (1 - self.config.risk.stop_loss_pct)
+            if stop_loss_price is None
+            else stop_loss_price
+        )
         position = Position(
             symbol=symbol,
             entry_price=fill_price,
             entry_time=utcnow_iso(),
             base_amount=base_amount,
             quote_spent=quote_amount,
-            stop_loss_price=fill_price * (1 - self.config.risk.stop_loss_pct),
+            stop_loss_price=stop_px,
+            highest_price=fill_price,
         )
         self.state.position = position
         self._save()
@@ -162,11 +176,17 @@ class LiveBroker(_BaseBroker):
         _, quote = _split_symbol(self.config.exchange.symbol)
         return self.exchange.fetch_balance(quote)
 
-    def enter(self, symbol: str, current_price: float) -> Position:
+    def enter(
+        self,
+        symbol: str,
+        current_price: float,
+        stop_loss_price: float | None = None,
+        quote_amount: float | None = None,
+    ) -> Position:
         if self.state.position is not None:
             raise RuntimeError("enter() called while a position is already open")
 
-        quote_amount = self.config.risk.quote_amount_per_trade
+        quote_amount = self.config.risk.quote_amount_per_trade if quote_amount is None else quote_amount
         raw_amount = quote_amount / current_price
         amount = self.exchange.amount_to_precision(symbol, raw_amount)
         self.exchange.validate_order(symbol, amount, current_price)
@@ -177,13 +197,19 @@ class LiveBroker(_BaseBroker):
         filled_amount = self._filled_amount(order, fallback=amount)
         quote_spent = self._quote_notional(order, fallback=fill_price * filled_amount)
 
+        stop_px = (
+            fill_price * (1 - self.config.risk.stop_loss_pct)
+            if stop_loss_price is None
+            else stop_loss_price
+        )
         position = Position(
             symbol=symbol,
             entry_price=fill_price,
             entry_time=utcnow_iso(),
             base_amount=filled_amount,
             quote_spent=quote_spent,
-            stop_loss_price=fill_price * (1 - self.config.risk.stop_loss_pct),
+            stop_loss_price=stop_px,
+            highest_price=fill_price,
         )
         self.state.position = position
         self._save()

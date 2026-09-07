@@ -28,7 +28,8 @@ import pandas as pd
 
 from config import config
 from exchange import Exchange
-from strategy import generate_signal
+from risk import initial_stop_price, position_quote, trailed_stop_price
+from strategy import compute_atr, generate_signal
 
 WARMUP_BUFFER = 1  # need slow_period + 1 candles before the first signal is meaningful
 
@@ -120,24 +121,44 @@ def run_backtest(
     fee_pct: float,
     slippage_pct: float,
     starting_equity: float,
+    trend_period: int | None = None,
+    atr_period: int = 14,
+    atr_stop_mult: float = 1.5,
+    atr_trail_mult: float = 2.0,
+    risk_per_trade_pct: float = 0.0,
+    max_position_pct_equity: float = 1.0,
 ) -> BacktestResult:
-    min_len = slow_period + WARMUP_BUFFER
+    # Start once the slowest indicator in play (trend EMA or ATR) has
+    # history to work with, so the equity curve doesn't open with a long
+    # dead stretch.
+    min_len = max(slow_period, trend_period or 0, atr_period + 1) + WARMUP_BUFFER
     if len(candles) <= min_len:
         empty = pd.Series(dtype=float)
         return BacktestResult([], empty, starting_equity, starting_equity)
 
+    atr_by_row = compute_atr(candles, atr_period)
+
     cash = starting_equity
-    position: dict | None = None  # entry_price, entry_time, base_amount, quote_spent, stop_loss_price
+    position: dict | None = None  # entry_price, entry_time, base_amount, quote_spent, stop_loss_price, highest_price
     trades: list[BacktestTrade] = []
     equity_points: list[tuple[pd.Timestamp, float]] = []
 
     for i in range(min_len, len(candles)):
         row = candles.iloc[i]
         price = float(row["close"])
+        high = float(row["high"])
         low = float(row["low"])
         ts = row["timestamp"]
+        atr = atr_by_row[i]
 
-        # --- Hard stop-loss, checked intra-candle via the low, before the signal. ---
+        # --- Trail the stop up on the candle's high before checking it. ---
+        if position is not None:
+            position["highest_price"] = max(position["highest_price"], high)
+            position["stop_loss_price"] = trailed_stop_price(
+                position["stop_loss_price"], position["highest_price"], atr, atr_trail_mult
+            )
+
+        # --- Stop-loss, checked intra-candle via the low, before the signal. ---
         if position is not None and low <= position["stop_loss_price"]:
             fill_price = position["stop_loss_price"] * (1 - slippage_pct)
             gross = position["base_amount"] * fill_price
@@ -145,6 +166,7 @@ def run_backtest(
             proceeds = gross - fee
             pnl = proceeds - position["quote_spent"]
             cash += proceeds
+            reason = "trailing_stop" if position["stop_loss_price"] > position["entry_price"] else "stop_loss"
             trades.append(
                 BacktestTrade(
                     entry_time=position["entry_time"],
@@ -153,18 +175,21 @@ def run_backtest(
                     exit_price=fill_price,
                     pnl_quote=pnl,
                     pnl_pct=pnl / position["quote_spent"] * 100,
-                    reason="stop_loss",
+                    reason=reason,
                 )
             )
             position = None
 
         window = candles.iloc[: i + 1]
-        signal = generate_signal(window, fast_period, slow_period)
+        signal = generate_signal(window, fast_period, slow_period, trend_period)
 
         if signal == "buy" and position is None:
-            spend = min(quote_amount, cash)
+            fill_price = price * (1 + slippage_pct)
+            stop_px = initial_stop_price(fill_price, atr, atr_stop_mult, stop_loss_pct)
+            spend = position_quote(
+                cash, fill_price, stop_px, risk_per_trade_pct, quote_amount, cash, max_position_pct_equity
+            )
             if spend > 0:
-                fill_price = price * (1 + slippage_pct)
                 fee = spend * fee_pct
                 bought = (spend - fee) / fill_price
                 cash -= spend
@@ -173,7 +198,8 @@ def run_backtest(
                     "entry_time": ts,
                     "base_amount": bought,
                     "quote_spent": spend,
-                    "stop_loss_price": fill_price * (1 - stop_loss_pct),
+                    "stop_loss_price": stop_px,
+                    "highest_price": fill_price,
                 }
         elif signal == "sell" and position is not None:
             fill_price = price * (1 - slippage_pct)
@@ -243,10 +269,20 @@ def print_report(
     slow: int,
     fee_pct: float,
     slippage_pct: float,
+    trend: int | None = None,
+    atr_stop_mult: float | None = None,
+    atr_trail_mult: float | None = None,
+    risk_pct: float | None = None,
 ) -> None:
     print("=" * 60)
-    print(f"Backtest: {symbol} {timeframe}  EMA {fast}/{slow}")
+    trend_desc = f"  trend EMA {trend}" if trend else "  trend filter off"
+    print(f"Backtest: {symbol} {timeframe}  EMA {fast}/{slow}{trend_desc}")
     print(f"Fees: {fee_pct * 100:.3f}% per side   Slippage: {slippage_pct * 100:.3f}%")
+    if atr_stop_mult is not None:
+        stop_desc = f"{atr_stop_mult}x ATR" if atr_stop_mult else "fixed %"
+        trail_desc = f"{atr_trail_mult}x ATR" if atr_trail_mult else "off"
+        sizing = f"{risk_pct * 100:.2f}% equity/trade" if risk_pct else "fixed size"
+        print(f"Stop: {stop_desc}   Trailing: {trail_desc}   Sizing: {sizing}")
     print("-" * 60)
     print(f"Starting equity:     {result.starting_equity:,.2f}")
     print(f"Ending equity:       {result.ending_equity:,.2f}")
@@ -269,6 +305,12 @@ def run_sweep(
     fee_pct: float,
     slippage_pct: float,
     starting_equity: float,
+    trend_period: int | None = None,
+    atr_period: int = 14,
+    atr_stop_mult: float = 1.5,
+    atr_trail_mult: float = 2.0,
+    risk_per_trade_pct: float = 0.0,
+    max_position_pct_equity: float = 1.0,
 ) -> pd.DataFrame:
     """
     Try every (fast, slow) combination and tabulate results.
@@ -292,7 +334,9 @@ def run_sweep(
             if fast >= slow:
                 continue
             result = run_backtest(
-                candles, fast, slow, quote_amount, stop_loss_pct, fee_pct, slippage_pct, starting_equity
+                candles, fast, slow, quote_amount, stop_loss_pct, fee_pct, slippage_pct,
+                starting_equity, trend_period, atr_period, atr_stop_mult, atr_trail_mult,
+                risk_per_trade_pct, max_position_pct_equity,
             )
             rows.append(
                 {
@@ -314,8 +358,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--days", type=int, default=180, help="How many days of history to fetch")
     parser.add_argument("--fast", type=int, default=config.strategy.fast_ema)
     parser.add_argument("--slow", type=int, default=config.strategy.slow_ema)
+    parser.add_argument(
+        "--trend", type=int, default=config.strategy.trend_ema,
+        help="Trend-filter EMA period: only buy when price is above it. 0 disables the filter.",
+    )
     parser.add_argument("--quote-amount", type=float, default=config.risk.quote_amount_per_trade)
-    parser.add_argument("--stop-loss-pct", type=float, default=config.risk.stop_loss_pct)
+    parser.add_argument("--stop-loss-pct", type=float, default=config.risk.stop_loss_pct,
+                        help="Stop distance / hard risk cap as a fraction below entry (0.05 = 5%%)")
+    parser.add_argument("--atr-period", type=int, default=config.risk.atr_period)
+    parser.add_argument("--atr-stop-mult", type=float, default=config.risk.atr_stop_mult,
+                        help="Initial stop = this many ATRs below entry. 0 = use --stop-loss-pct.")
+    parser.add_argument("--atr-trail-mult", type=float, default=config.risk.atr_trail_mult,
+                        help="Trail the stop this many ATRs below the high-water mark. 0 = no trailing.")
+    parser.add_argument("--risk-pct", type=float, default=config.risk.risk_per_trade_pct,
+                        help="Fraction of equity risked per trade (0.01 = 1%%). 0 = flat --quote-amount.")
     parser.add_argument("--starting-equity", type=float, default=1000.0)
     parser.add_argument("--fee-pct", type=float, default=config.risk.fee_pct)
     parser.add_argument("--slippage-pct", type=float, default=config.risk.slippage_pct)
@@ -328,6 +384,7 @@ def main() -> None:
     args = parse_args()
     fee_pct = 0.0 if args.no_fees else args.fee_pct
     slippage_pct = 0.0 if args.no_fees else args.slippage_pct
+    trend_period = args.trend or None
 
     exchange = Exchange(config)
     since_ms = exchange.client.milliseconds() - args.days * 24 * 60 * 60 * 1000
@@ -340,7 +397,9 @@ def main() -> None:
         slow_range = [40, 50, 60, 80, 100]
         table = run_sweep(
             candles, fast_range, slow_range, args.quote_amount, args.stop_loss_pct,
-            fee_pct, slippage_pct, args.starting_equity,
+            fee_pct, slippage_pct, args.starting_equity, trend_period,
+            args.atr_period, args.atr_stop_mult, args.atr_trail_mult, args.risk_pct,
+            config.risk.max_position_pct_equity,
         )
         print("\nParameter sweep results (see run_sweep()'s docstring re: overfitting):")
         print(table.to_string(index=False))
@@ -348,10 +407,15 @@ def main() -> None:
 
     result = run_backtest(
         candles, args.fast, args.slow, args.quote_amount, args.stop_loss_pct,
-        fee_pct, slippage_pct, args.starting_equity,
+        fee_pct, slippage_pct, args.starting_equity, trend_period,
+        args.atr_period, args.atr_stop_mult, args.atr_trail_mult, args.risk_pct,
+        config.risk.max_position_pct_equity,
     )
     buy_hold_pct = buy_and_hold_return_pct(candles)
-    print_report(result, buy_hold_pct, args.symbol, args.timeframe, args.fast, args.slow, fee_pct, slippage_pct)
+    print_report(
+        result, buy_hold_pct, args.symbol, args.timeframe, args.fast, args.slow,
+        fee_pct, slippage_pct, trend_period, args.atr_stop_mult, args.atr_trail_mult, args.risk_pct,
+    )
 
 
 if __name__ == "__main__":

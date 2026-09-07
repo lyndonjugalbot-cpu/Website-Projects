@@ -23,7 +23,14 @@ from broker import InsufficientBalanceError, LiveBroker, PaperBroker
 from config import config
 from exchange import Exchange, OrderValidationError
 from state import load_state, save_state, utcnow_date_str
-from strategy import drop_unclosed_candle, generate_signal, latest_ema_values
+from risk import initial_stop_price, position_quote, trailed_stop_price
+from strategy import (
+    drop_unclosed_candle,
+    generate_signal,
+    latest_atr,
+    latest_ema_values,
+    latest_trend_ema,
+)
 
 logger = logging.getLogger("tradingbot")
 
@@ -140,8 +147,17 @@ def check_daily_reset(state) -> None:
         logger.info("New UTC trading day -- daily loss limit halt lifted.")
 
 
-def enforce_daily_loss_limit(state) -> None:
+def enforce_daily_loss_limit(state, current_equity: float) -> None:
+    """
+    Halt for the rest of the UTC day once today's realised losses cross
+    the flat quote cap OR daily_loss_limit_pct of current equity,
+    whichever is tighter. current_equity is passed in (not stored) so the
+    percentage cap tracks the account as it actually stands.
+    """
     limit = config.risk.daily_loss_limit_quote
+    pct = config.risk.daily_loss_limit_pct
+    if pct > 0 and current_equity > 0:
+        limit = min(limit, current_equity * pct)
     if state.daily_realized_loss >= limit and not state.trading_halted:
         state.trading_halted = True
         state.halt_reason = "daily_loss_limit"
@@ -161,18 +177,34 @@ def poll_once(exchange: Exchange, broker, state, paper: bool) -> None:
 
     current_price = exchange.fetch_current_price(symbol)
     position = broker.get_open_position()
+    atr = latest_atr(closed_candles, config.risk.atr_period)
 
-    # --- Hard stop-loss: checked every poll, independent of candle closes. ---
-    if position is not None and current_price <= position.stop_loss_price:
-        logger.warning(
-            "STOP-LOSS triggered: price %.8f <= stop %.8f (entry %.8f). Exiting.",
-            current_price, position.stop_loss_price, position.entry_price,
+    # --- Trailing stop + hard stop-loss: checked every poll, independent
+    #     of candle closes. ---
+    if position is not None:
+        position.highest_price = max(position.highest_price or position.entry_price, current_price)
+        trailed = trailed_stop_price(
+            position.stop_loss_price, position.highest_price, atr, config.risk.atr_trail_mult
         )
-        trade = broker.exit(current_price, reason="stop_loss")
-        logger.info("Exited via stop-loss: pnl=%.4f %s", trade.pnl_quote, symbol.split("/")[1])
-        enforce_daily_loss_limit(state)
-        save_state(state, config.runtime.state_file)
-        position = None
+        if trailed > position.stop_loss_price:
+            logger.info(
+                "Trailing stop raised: %.8f -> %.8f (high %.8f, ATR %.8f)",
+                position.stop_loss_price, trailed, position.highest_price, atr or 0.0,
+            )
+            position.stop_loss_price = trailed
+            save_state(state, config.runtime.state_file)
+
+        if current_price <= position.stop_loss_price:
+            reason = "trailing_stop" if position.stop_loss_price > position.entry_price else "stop_loss"
+            logger.warning(
+                "STOP triggered (%s): price %.8f <= stop %.8f (entry %.8f). Exiting.",
+                reason, current_price, position.stop_loss_price, position.entry_price,
+            )
+            trade = broker.exit(current_price, reason=reason)
+            logger.info("Exited via %s: pnl=%.4f %s", reason, trade.pnl_quote, symbol.split("/")[1])
+            enforce_daily_loss_limit(state, broker.get_quote_balance())
+            save_state(state, config.runtime.state_file)
+            position = None
 
     if len(closed_candles) == 0:
         logger.warning("Not enough candle data yet (0 closed candles) -- skipping signal evaluation this poll.")
@@ -185,13 +217,18 @@ def poll_once(exchange: Exchange, broker, state, paper: bool) -> None:
         logger.debug("Last closed candle (%s) already processed -- no new signal this poll.", last_closed_ts)
         return
 
-    signal = generate_signal(closed_candles, config.strategy.fast_ema, config.strategy.slow_ema)
+    signal = generate_signal(
+        closed_candles, config.strategy.fast_ema, config.strategy.slow_ema, config.strategy.trend_ema
+    )
     ema_fast, ema_slow = latest_ema_values(closed_candles, config.strategy.fast_ema, config.strategy.slow_ema)
+    trend_ema = latest_trend_ema(closed_candles, config.strategy.trend_ema)
     close_price = float(closed_candles["close"].iloc[-1])
 
     logger.info(
-        "New closed candle: close=%.8f ema_fast=%.8f ema_slow=%.8f signal=%s position_open=%s",
-        close_price, ema_fast, ema_slow, signal, position is not None,
+        "New closed candle: close=%.8f ema_fast=%.8f ema_slow=%.8f trend_ema=%s signal=%s position_open=%s",
+        close_price, ema_fast, ema_slow,
+        f"{trend_ema:.8f}" if trend_ema is not None else "n/a",
+        signal, position is not None,
     )
 
     state.last_processed_candle_ts = last_closed_ts
@@ -202,11 +239,25 @@ def poll_once(exchange: Exchange, broker, state, paper: bool) -> None:
         return
 
     if signal == "buy" and position is None:
+        stop_px = initial_stop_price(
+            current_price, atr, config.risk.atr_stop_mult, config.risk.stop_loss_pct
+        )
+        equity = broker.get_quote_balance()  # flat here, so equity == quote balance
+        size = position_quote(
+            equity, current_price, stop_px,
+            config.risk.risk_per_trade_pct, config.risk.quote_amount_per_trade,
+            equity, config.risk.max_position_pct_equity,
+        )
+        if size <= 0:
+            logger.error("Buy signal, but computed position size is %.2f (equity %.2f) -- skipping.", size, equity)
+            save_state(state, config.runtime.state_file)
+            return
         try:
-            new_position = broker.enter(symbol, current_price)
+            new_position = broker.enter(symbol, current_price, stop_loss_price=stop_px, quote_amount=size)
             logger.info(
-                "ENTERED long: %.8f %s at %.8f (stop-loss %.8f)",
-                new_position.base_amount, symbol.split("/")[0], new_position.entry_price, new_position.stop_loss_price,
+                "ENTERED long: %.8f %s at %.8f (stop %.8f, spent %.2f, ATR %.8f)",
+                new_position.base_amount, symbol.split("/")[0], new_position.entry_price,
+                new_position.stop_loss_price, new_position.quote_spent, atr or 0.0,
             )
         except InsufficientBalanceError as exc:
             logger.error("Cannot enter position: %s", exc)
@@ -215,7 +266,7 @@ def poll_once(exchange: Exchange, broker, state, paper: bool) -> None:
     elif signal == "sell" and position is not None:
         trade = broker.exit(current_price, reason="signal")
         logger.info("EXITED via signal: pnl=%.4f %s", trade.pnl_quote, symbol.split("/")[1])
-        enforce_daily_loss_limit(state)
+        enforce_daily_loss_limit(state, broker.get_quote_balance())
 
     save_state(state, config.runtime.state_file)
 

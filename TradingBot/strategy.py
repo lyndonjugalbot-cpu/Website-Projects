@@ -37,15 +37,55 @@ def compute_emas(df: pd.DataFrame, fast_period: int, slow_period: int) -> pd.Dat
     return out
 
 
-def generate_signal(df: pd.DataFrame, fast_period: int, slow_period: int) -> str:
+def _in_uptrend(df: pd.DataFrame, trend_period: int) -> bool:
     """
-    Decide "buy", "sell", or "hold" from the most recent EMA crossover.
+    True if the last close sits above the trend EMA.
+
+    Returns False when there isn't enough history to compute a meaningful
+    trend EMA yet -- callers treat "can't tell" as "don't enter", which is
+    the conservative choice for a filter whose whole job is to keep us out
+    of bad entries.
+    """
+    if len(df) < trend_period:
+        return False
+    trend_ema = df["close"].ewm(span=trend_period, adjust=False).mean().iloc[-1]
+    return float(df["close"].iloc[-1]) > float(trend_ema)
+
+
+def latest_trend_ema(df: pd.DataFrame, trend_period: int) -> float | None:
+    """Trend EMA for the most recent closed candle, or None if history is too short. For logging only."""
+    if not trend_period or len(df) < trend_period:
+        return None
+    return float(df["close"].ewm(span=trend_period, adjust=False).mean().iloc[-1])
+
+
+def generate_signal(
+    df: pd.DataFrame,
+    fast_period: int,
+    slow_period: int,
+    trend_period: int | None = None,
+) -> str:
+    """
+    Decide "buy", "sell", or "hold" from the most recent EMA crossover,
+    optionally gated by a longer-term trend filter.
 
     df must contain only CLOSED candles (run it through
     drop_unclosed_candle first) sorted oldest-to-newest. "buy" means fast
     EMA crossed above slow EMA on the last closed candle; "sell" means it
     crossed below. No cross on the last candle -> "hold", regardless of
     where the EMAs currently sit relative to each other.
+
+    If trend_period is set (and non-zero), a "buy" cross is only returned
+    when the last close is above the trend EMA -- a coarse "are we in an
+    uptrend at all?" regime gate. This is the single biggest thing that
+    stops a bare crossover from bleeding money: without it the strategy
+    buys every counter-trend bounce during a downtrend, takes the fee hit,
+    and gets stopped or sold back out a few candles later. "sell" crosses
+    are NEVER filtered -- an exit signal must always be free to close a
+    position. trend_period=None or 0 (the default) disables the filter and
+    reproduces the plain-crossover behaviour exactly. When the filter is
+    on but df is shorter than trend_period, "buy" is suppressed: we can't
+    confirm the regime, so we don't enter.
 
     This function does not know whether a position is currently open --
     that's the caller's job (main.py / backtest.py), since strategy.py
@@ -65,6 +105,8 @@ def generate_signal(df: pd.DataFrame, fast_period: int, slow_period: int) -> str
     crossed_down = prev_fast >= prev_slow and curr_fast < curr_slow
 
     if crossed_up:
+        if trend_period and not _in_uptrend(df, trend_period):
+            return "hold"
         return "buy"
     if crossed_down:
         return "sell"
@@ -80,3 +122,52 @@ def latest_ema_values(df: pd.DataFrame, fast_period: int, slow_period: int) -> t
     """
     with_emas = compute_emas(df, fast_period, slow_period)
     return float(with_emas["ema_fast"].iloc[-1]), float(with_emas["ema_slow"].iloc[-1])
+
+
+def _true_ranges(df: pd.DataFrame) -> list[float]:
+    """
+    True range per candle: max(high-low, |high-prev_close|, |low-prev_close|).
+
+    The first element is just high-low (no previous close exists yet) and
+    is intentionally excluded from the ATR seed below.
+    """
+    high = df["high"].astype(float).tolist()
+    low = df["low"].astype(float).tolist()
+    close = df["close"].astype(float).tolist()
+    trs = [high[0] - low[0]]
+    for i in range(1, len(df)):
+        trs.append(
+            max(high[i] - low[i], abs(high[i] - close[i - 1]), abs(low[i] - close[i - 1]))
+        )
+    return trs
+
+
+def compute_atr(df: pd.DataFrame, period: int) -> list[float | None]:
+    """
+    Wilder's Average True Range, one value per row (None until it's
+    defined, i.e. for the first `period` rows).
+
+    Seed = simple mean of the first `period` true ranges that had a
+    previous close to measure against; thereafter the Wilder recursion
+    ATR_t = (ATR_{t-1} * (period - 1) + TR_t) / period. Kept as an
+    explicit loop (not df.ewm) so web/app.py's dependency-free copy can
+    reproduce it byte-for-byte.
+    """
+    n = len(df)
+    if period <= 0 or n < period + 1:
+        return [None] * n
+
+    trs = _true_ranges(df)
+    out: list[float | None] = [None] * n
+    atr = sum(trs[1 : period + 1]) / period
+    out[period] = atr
+    for i in range(period + 1, n):
+        atr = (atr * (period - 1) + trs[i]) / period
+        out[i] = atr
+    return out
+
+
+def latest_atr(df: pd.DataFrame, period: int) -> float | None:
+    """ATR for the most recent closed candle, or None if history is too short. For stops/sizing."""
+    values = compute_atr(df, period)
+    return values[-1] if values and values[-1] is not None else None

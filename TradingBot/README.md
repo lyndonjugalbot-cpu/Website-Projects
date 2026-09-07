@@ -1,7 +1,9 @@
 # TradingBot
 
-A Binance spot trading bot: EMA crossover strategy, long-only, no leverage,
-paper trading by default. Built around ccxt so the exchange is a one-line
+A Binance spot trading bot: EMA crossover strategy with an optional
+long-EMA trend filter on entries, ATR-based stops with an optional
+trailing stop, optional risk-based position sizing, long-only, no
+leverage, paper trading by default. Built around ccxt so the exchange is a one-line
 swap, and around a strict split between pure strategy logic and I/O so the
 strategy can be unit-tested and backtested without touching a network.
 
@@ -9,7 +11,10 @@ strategy can be unit-tested and backtested without touching a network.
 
 ```
 config.py       All tunable parameters, plus env var loading for secrets.
-strategy.py     Pure functions: candles in, "buy"/"sell"/"hold" out. No I/O.
+strategy.py     Pure functions: candles in, "buy"/"sell"/"hold" + indicators
+                (EMA, ATR) out. No I/O.
+risk.py         Pure functions: position size and stop price from ATR, equity,
+                and the risk config. No candles, no I/O.
 exchange.py     ccxt wrapper: candles, prices, balances, orders, precision/limits.
 broker.py       PaperBroker and LiveBroker -- identical interface, main.py doesn't
                 care which one it's talking to.
@@ -65,6 +70,11 @@ default) points the bot at it.
 ```bash
 python backtest.py --days 180
 python backtest.py --days 365 --symbol ETH/USDT --timeframe 4h --fast 12 --slow 26
+python backtest.py --days 180 --trend 200        # only enter when price is above the 200-EMA
+python backtest.py --days 180 --trend 0          # disable the trend filter, raw crossover
+python backtest.py --days 180 --atr-stop-mult 1.5 --atr-trail-mult 2   # ATR stop + trailing exit
+python backtest.py --days 180 --risk-pct 0.01    # size each trade to risk 1% of equity at the stop
+python backtest.py --days 180 --atr-stop-mult 0 --atr-trail-mult 0     # back to the plain fixed-% stop
 python backtest.py --days 180 --no-fees          # see the module docstring before trusting this number
 python backtest.py --days 180 --sweep            # parameter sweep table -- read the overfitting warning in backtest.py
 ```
@@ -122,16 +132,34 @@ before ever pointing this at a real account, and start with a small
 **StrategyConfig**
 - `timeframe` -- candle size (`"1h"`, `"4h"`, `"1d"`, ...).
 - `fast_ema` / `slow_ema` -- EMA crossover periods, in candles.
-- `candle_limit` -- candles fetched per poll; needs headroom above
-  `slow_ema` for the EMA to be meaningful.
+- `trend_ema` -- trend-filter EMA period. A `buy` crossover is only acted
+  on when price is above this long EMA (a coarse "is this an uptrend?"
+  gate that keeps the bot out of counter-trend bounces). `sell`
+  crossovers are never filtered. Set to `0` to trade the raw crossover.
+- `candle_limit` -- candles fetched per poll; needs headroom above the
+  slowest EMA in play (`trend_ema`) for it to be meaningful.
 
 **RiskConfig**
-- `quote_amount_per_trade` -- fixed quote-currency amount spent per
-  entry (e.g. 100 USDT).
-- `stop_loss_pct` -- hard stop-loss as a fraction below entry (0.05 =
-  5%), checked every poll cycle regardless of candle closes.
-- `daily_loss_limit_quote` -- stop opening new trades for the rest of
-  the UTC day once realised losses exceed this.
+- `quote_amount_per_trade` -- fallback trade size in quote currency, used
+  when risk-based sizing is off (e.g. 100 USDT).
+- `risk_per_trade_pct` -- when `> 0`, size every entry so that price
+  hitting the stop loses this fraction of equity (`0.01` = 1%); a wider
+  stop buys less. `0` uses the flat `quote_amount_per_trade`.
+- `max_position_pct_equity` -- hard cap on how much of equity a single
+  spot position may use, whatever the risk math says.
+- `stop_loss_pct` -- stop distance as a fraction below entry (`0.05` =
+  5%). With ATR stops on this is the **hard cap** on per-trade risk; with
+  them off it's the stop itself. Checked every poll regardless of candle
+  closes.
+- `atr_period` / `atr_stop_mult` / `atr_trail_mult` -- ATR (Average True
+  Range) stops. The initial stop is `atr_stop_mult` ATRs below entry
+  (`0` = use the flat `stop_loss_pct`); the trailing stop then ratchets
+  up to `atr_trail_mult` ATRs below the highest price since entry, never
+  loosening (`0` = no trailing).
+- `daily_loss_limit_quote` / `daily_loss_limit_pct` -- stop opening new
+  trades for the rest of the UTC day once realised losses exceed EITHER
+  this many quote units OR this fraction of current equity (`0` = flat
+  cap only).
 - `fee_pct` / `slippage_pct` -- used by both the backtester and
   PaperBroker, so paper results reflect real trading costs.
 
@@ -151,6 +179,9 @@ before ever pointing this at a real account, and start with a small
 - **Acts once per closed candle**, not once per poll -- `main.py` tracks
   `last_processed_candle_ts` in state and skips re-evaluating a candle it's
   already handled.
+- **Checks the stop every poll, not just on candle closes.** The ATR
+  trailing stop is also re-evaluated every poll: it only ever ratchets
+  the stop up (toward the high-water mark since entry), never loosens it.
 - **State is persisted after every action** (`bot_state.json`), so a
   crash or restart doesn't lose track of an open position.
 - **Reconciles on startup** (live mode only): compares the saved position

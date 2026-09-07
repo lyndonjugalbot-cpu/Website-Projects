@@ -35,6 +35,10 @@ class Position:
     base_amount: float  # amount of base asset held (e.g. BTC)
     quote_spent: float  # quote spent including the simulated/actual entry fee
     stop_loss_price: float
+    # Highest price seen since entry, for the ATR trailing stop. Defaults
+    # to 0.0 so state files written before this field existed still load;
+    # the poll loop re-seeds it to the live price on the next tick.
+    highest_price: float = 0.0
 
 
 @dataclass

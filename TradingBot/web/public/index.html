@@ -22,8 +22,13 @@
     <section class="card" id="config-card">
       <h2>Session setup</h2>
       <p class="muted config-hint">Defaults (1m candles, EMA 9/21) are tuned to produce a crossover within minutes so you can watch the
-        mechanics work &mdash; not for realistic profitability. Slower EMAs on longer candles (e.g. 5m/20/50) are less noisy
-        but a crossover might not happen for hours.</p>
+        mechanics work &mdash; not for realistic profitability. Slower EMAs on longer candles (e.g. 15m/20/50) are less noisy
+        but a crossover might not happen for hours. The <strong>Trend EMA</strong> only lets buy signals through when price is
+        above that long EMA (an "is this an uptrend?" gate); set it to 0 to trade the raw crossover.
+        <strong>ATR stop &times;</strong> places the stop that many Average-True-Range units below entry and
+        <strong>ATR trail &times;</strong> ratchets it up under the high-water mark (0 on either falls back to the fixed
+        Stop-loss %). <strong>Risk % / trade</strong> sizes each entry so hitting the stop loses that % of the balance
+        (0 = flat "Quote per trade").</p>
       <div class="config-grid">
         <label>Symbol
           <select id="cfg-symbol">
@@ -49,8 +54,20 @@
         <label>Slow EMA
           <input id="cfg-slow" type="number" min="2" step="1" value="21" />
         </label>
-        <label>Stop-loss %
+        <label>Trend EMA (0 = off)
+          <input id="cfg-trend" type="number" min="0" step="1" value="0" />
+        </label>
+        <label>Stop-loss % (max risk)
           <input id="cfg-stoploss" type="number" min="0.1" step="0.1" value="5" />
+        </label>
+        <label>ATR stop &times; (0 = fixed %)
+          <input id="cfg-atrstop" type="number" min="0" step="0.1" value="1.5" />
+        </label>
+        <label>ATR trail &times; (0 = off)
+          <input id="cfg-atrtrail" type="number" min="0" step="0.1" value="2" />
+        </label>
+        <label>Risk % / trade (0 = fixed size)
+          <input id="cfg-riskpct" type="number" min="0" step="0.1" value="0" />
         </label>
         <label>Quote per trade
           <input id="cfg-quote" type="number" min="1" step="1" value="100" />
@@ -60,6 +77,9 @@
         </label>
         <label>Daily loss limit
           <input id="cfg-dailyloss" type="number" min="1" step="1" value="50" />
+        </label>
+        <label>Daily loss cap % (0 = off)
+          <input id="cfg-dailypct" type="number" min="0" step="0.5" value="0" />
         </label>
         <label>Fee % per side
           <input id="cfg-fee" type="number" min="0" step="0.01" value="0.1" />

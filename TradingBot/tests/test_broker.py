@@ -75,3 +75,27 @@ def test_paper_broker_rejects_double_entry(tmp_path):
     broker.enter("BTC/USDT", current_price=100.0)
     with pytest.raises(RuntimeError):
         broker.enter("BTC/USDT", current_price=100.0)
+
+
+def test_paper_broker_honours_explicit_stop_and_size(tmp_path):
+    config = make_config(tmp_path)
+    state = BotState()
+    broker = PaperBroker(config, exchange=None, state=state, state_path=config.runtime.state_file)
+
+    pos = broker.enter("BTC/USDT", current_price=100.0, stop_loss_price=93.0, quote_amount=40.0)
+
+    assert pos.stop_loss_price == 93.0          # not the fixed 5% stop
+    assert pos.quote_spent == 40.0              # risk-sized amount, not quote_amount_per_trade
+    assert pos.highest_price == pos.entry_price
+    assert broker.get_quote_balance() == pytest.approx(1000.0 - 40.0)
+
+
+def test_paper_broker_defaults_match_previous_behaviour(tmp_path):
+    config = make_config(tmp_path)  # stop_loss_pct=0.05, quote_amount_per_trade=100
+    state = BotState()
+    broker = PaperBroker(config, exchange=None, state=state, state_path=config.runtime.state_file)
+
+    pos = broker.enter("BTC/USDT", current_price=100.0)
+
+    assert pos.quote_spent == 100.0
+    assert pos.stop_loss_price == pytest.approx(pos.entry_price * 0.95)

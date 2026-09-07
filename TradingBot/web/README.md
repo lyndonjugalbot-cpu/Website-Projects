@@ -26,10 +26,15 @@ drives the loop:
 - **No database.** Because state round-trips through the browser instead
   of living server-side, there's nothing to provision.
 
-The trading logic itself -- EMA crossover, dropping the in-progress
-candle, acting once per closed candle, checking the stop-loss on every
-poll (not just candle closes), fee/slippage-adjusted paper fills, the
-daily loss limit -- is reimplemented dependency-free in `app.py` to keep
+The trading logic itself -- EMA crossover, the optional long-EMA trend
+filter on buys (the "Trend EMA" field; 0 turns it off), ATR-based initial
+and trailing stops ("ATR stop x" / "ATR trail x"; 0 falls back to the
+fixed Stop-loss %), optional risk-based position sizing ("Risk % / trade";
+0 uses the flat "Quote per trade"), a percentage daily-loss cap, dropping
+the in-progress candle, acting once per closed candle, checking the stop
+on every poll (not just candle closes), fee/slippage-adjusted paper
+fills, the daily loss limit -- is reimplemented dependency-free in
+`app.py` (a line-for-line copy of `strategy.py` + `risk.py`) to keep
 the serverless function light (no pandas, no ccxt), but mirrors
 `strategy.py` / `broker.py` / `main.py` in the parent bot exactly. If you
 change the strategy in one place, change it in the other.
@@ -57,9 +62,11 @@ specifically (same pattern as GSheetTool's `GSheetTool/web`):
 
 ## Using the page
 
-1. Set your symbol, timeframe, EMA periods, stop-loss %, trade size,
-   starting paper balance, daily loss limit, fees/slippage, and how often
-   to poll.
+1. Set your symbol, timeframe, EMA periods, trend-filter EMA (0 = off,
+   only buy when price is above it), stop-loss % / max risk, ATR stop and
+   trail multiples (0 = fixed % stop, no trailing), risk % per trade
+   (0 = flat trade size), trade size, starting paper balance, daily loss
+   limit and % cap, fees/slippage, and how often to poll.
 2. Click **Start**. The first poll fires immediately; after that it
    repeats on your chosen interval for as long as the tab stays open.
 3. Watch the equity chart, stat tiles, trade table, and live log update.

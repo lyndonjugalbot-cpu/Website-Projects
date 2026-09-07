@@ -19,10 +19,15 @@
     timeframe: document.getElementById("cfg-timeframe"),
     fast: document.getElementById("cfg-fast"),
     slow: document.getElementById("cfg-slow"),
+    trend: document.getElementById("cfg-trend"),
     stoploss: document.getElementById("cfg-stoploss"),
+    atrstop: document.getElementById("cfg-atrstop"),
+    atrtrail: document.getElementById("cfg-atrtrail"),
+    riskpct: document.getElementById("cfg-riskpct"),
     quote: document.getElementById("cfg-quote"),
     balance: document.getElementById("cfg-balance"),
     dailyloss: document.getElementById("cfg-dailyloss"),
+    dailypct: document.getElementById("cfg-dailypct"),
     fee: document.getElementById("cfg-fee"),
     slippage: document.getElementById("cfg-slippage"),
     interval: document.getElementById("cfg-interval"),
@@ -46,8 +51,9 @@
   };
 
   const configInputs = [
-    els.symbol, els.timeframe, els.fast, els.slow, els.stoploss,
-    els.quote, els.balance, els.dailyloss, els.fee, els.slippage,
+    els.symbol, els.timeframe, els.fast, els.slow, els.trend, els.stoploss,
+    els.atrstop, els.atrtrail, els.riskpct,
+    els.quote, els.balance, els.dailyloss, els.dailypct, els.fee, els.slippage,
   ];
 
   let session = loadSession() || freshSession();
@@ -64,10 +70,15 @@
       timeframe: els.timeframe.value,
       fast_ema: Number(els.fast.value),
       slow_ema: Number(els.slow.value),
+      trend_ema: Number(els.trend.value),
       stop_loss_pct: Number(els.stoploss.value) / 100,
+      atr_stop_mult: Number(els.atrstop.value),
+      atr_trail_mult: Number(els.atrtrail.value),
+      risk_per_trade_pct: Number(els.riskpct.value) / 100,
       quote_amount_per_trade: Number(els.quote.value),
       starting_balance: Number(els.balance.value),
       daily_loss_limit_quote: Number(els.dailyloss.value),
+      daily_loss_limit_pct: Number(els.dailypct.value) / 100,
       fee_pct: Number(els.fee.value) / 100,
       slippage_pct: Number(els.slippage.value) / 100,
       poll_interval_seconds: Math.max(5, Number(els.interval.value) || 15),
@@ -79,10 +90,15 @@
     els.timeframe.value = cfg.timeframe;
     els.fast.value = cfg.fast_ema;
     els.slow.value = cfg.slow_ema;
+    els.trend.value = cfg.trend_ema ?? 0;
     els.stoploss.value = cfg.stop_loss_pct * 100;
+    els.atrstop.value = cfg.atr_stop_mult ?? 1.5;
+    els.atrtrail.value = cfg.atr_trail_mult ?? 2;
+    els.riskpct.value = (cfg.risk_per_trade_pct ?? 0) * 100;
     els.quote.value = cfg.quote_amount_per_trade;
     els.balance.value = cfg.starting_balance;
     els.dailyloss.value = cfg.daily_loss_limit_quote;
+    els.dailypct.value = (cfg.daily_loss_limit_pct ?? 0) * 100;
     els.fee.value = cfg.fee_pct * 100;
     els.slippage.value = cfg.slippage_pct * 100;
     els.interval.value = cfg.poll_interval_seconds;
@@ -159,6 +175,18 @@
       const cfg = readConfigFromInputs();
       if (cfg.fast_ema >= cfg.slow_ema) {
         alert("Fast EMA must be less than Slow EMA.");
+        return;
+      }
+      if (cfg.trend_ema < 0) {
+        alert("Trend EMA must be 0 (off) or a positive number of candles.");
+        return;
+      }
+      if (cfg.trend_ema > 0 && cfg.trend_ema <= cfg.slow_ema) {
+        alert("Trend EMA should be longer than the Slow EMA (or 0 to turn it off).");
+        return;
+      }
+      if (cfg.atr_stop_mult < 0 || cfg.atr_trail_mult < 0 || cfg.risk_per_trade_pct < 0 || cfg.daily_loss_limit_pct < 0) {
+        alert("ATR multiples, Risk % / trade, and Daily loss cap % must be 0 or positive.");
         return;
       }
       session.config = cfg;
@@ -457,7 +485,14 @@
         const gap = document.createElement("div");
         gap.className = "log-gap";
         const diff = log.ema_fast - log.ema_slow;
-        gap.textContent = `fast ${log.ema_fast.toFixed(2)} · slow ${log.ema_slow.toFixed(2)} · Δ ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`;
+        let text = `fast ${log.ema_fast.toFixed(2)} · slow ${log.ema_slow.toFixed(2)} · Δ ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}`;
+        if (log.ema_trend !== null && log.ema_trend !== undefined) {
+          text += ` · trend ${log.ema_trend.toFixed(2)}`;
+        }
+        if (log.atr !== null && log.atr !== undefined) {
+          text += ` · ATR ${log.atr.toFixed(2)}`;
+        }
+        gap.textContent = text;
         row.appendChild(gap);
       }
 

@@ -64,29 +64,58 @@ class StrategyConfig:
     fast_ema: int = 20
     slow_ema: int = 50
 
-    # Candles fetched per poll. Needs enough history for the slow EMA to
-    # stabilize (EMAs are influenced by all prior data, but the influence
-    # of very old candles decays quickly) -- 300 is comfortable headroom
-    # for the default slow_ema=50.
-    candle_limit: int = 300
+    # Trend filter. A "buy" crossover is only acted on when price is above
+    # this long EMA -- a coarse "is this even an uptrend?" gate that keeps
+    # the bot from buying every dead-cat bounce in a downtrend (the main
+    # way a bare crossover bleeds money). "sell" crossovers are never
+    # filtered. Set to 0 to disable and trade the raw crossover.
+    trend_ema: int = 200
+
+    # Candles fetched per poll. Needs enough history for the slowest EMA
+    # (trend_ema) to settle -- roughly 2-3x its span. 500 covers
+    # trend_ema=200 with headroom; raise it if you raise trend_ema.
+    candle_limit: int = 500
 
 
 @dataclass(frozen=True)
 class RiskConfig:
-    # Fixed quote-currency amount spent per entry (e.g. 100 USDT buys
-    # whatever that's worth in BTC at the time). Simple and predictable;
-    # no position sizing based on volatility or account %, by design.
+    # Fallback trade size in quote currency, used when risk-based sizing is
+    # off (risk_per_trade_pct == 0) or can't be computed. e.g. 100 USDT
+    # buys whatever that's worth at the time.
     quote_amount_per_trade: float = 100.0
 
-    # Hard stop-loss as a fraction below entry price (0.05 = 5%). Checked
-    # every poll cycle, independent of candle closes or EMA signals --
-    # this is a safety net, not a strategy signal.
+    # Risk-based position sizing. When > 0, each entry is sized so that
+    # price hitting the stop loses this fraction of equity (0.01 = 1%): a
+    # wider stop => smaller position, so every trade risks the same slice
+    # of the account. 0 = use the flat quote_amount_per_trade above.
+    risk_per_trade_pct: float = 0.0
+
+    # Never put more than this fraction of equity into a single spot
+    # position, whatever the risk math says (spot, long-only, no leverage).
+    max_position_pct_equity: float = 1.0
+
+    # Stop-loss distance as a fraction below entry (0.05 = 5%). With ATR
+    # stops on (below) this is the HARD CAP on per-trade risk; with them
+    # off it's the stop itself. Checked every poll, independent of candle
+    # closes -- a safety net, not a signal.
     stop_loss_pct: float = 0.05
 
+    # ATR (Average True Range) based stops. atr_stop_mult places the
+    # initial stop this many ATRs below entry (0 = use the flat
+    # stop_loss_pct instead). atr_trail_mult trails the stop this many
+    # ATRs below the highest price since entry, ratcheting up only, so
+    # trend profits get locked in instead of round-tripped (0 = no
+    # trailing). atr_period is the ATR lookback in candles.
+    atr_period: int = 14
+    atr_stop_mult: float = 1.5
+    atr_trail_mult: float = 2.0
+
     # If realised losses (sum of negative P/L from closed trades) exceed
-    # this many quote-currency units in a calendar day, trading halts
-    # until the next day. Resets at UTC midnight.
+    # EITHER this many quote-currency units OR daily_loss_limit_pct of
+    # current equity in a calendar day, trading halts until the next day.
+    # Resets at UTC midnight. Set the pct to 0 to use only the flat cap.
     daily_loss_limit_quote: float = 50.0
+    daily_loss_limit_pct: float = 0.0
 
     # Backtest realism. Both ON by default -- see the module docstring in
     # backtest.py for why an unrealistic backtest is actively misleading.

@@ -12,9 +12,10 @@ fresh market data and advance the state by one step. No database, no
 Binance API keys -- api/klines and api/ticker/price are public,
 unauthenticated endpoints, and paper trading never places real orders.
 
-The trading logic (EMA crossover, drop-the-in-progress-candle, act-once-
-per-closed-candle, stop-loss checked on every call, fee/slippage-adjusted
-paper fills, daily loss limit) mirrors strategy.py / broker.py / main.py
+The trading logic (EMA crossover, optional long-EMA trend filter on buys,
+drop-the-in-progress-candle, act-once-per-closed-candle, stop-loss checked
+on every call, fee/slippage-adjusted paper fills, daily loss limit)
+mirrors strategy.py / broker.py / main.py
 in the root bot as closely as a dependency-free, stateless rewrite
 allows -- see each function's docstring for which one it mirrors. Keep
 them in sync if you change the strategy.
@@ -72,7 +73,7 @@ def _http_get_json(path: str, params: dict, timeout: float = 8.0):
         return json.loads(resp.read().decode("utf-8"))
 
 
-def fetch_klines(binance_symbol: str, interval: str, limit: int = 300) -> list[list]:
+def fetch_klines(binance_symbol: str, interval: str, limit: int = 500) -> list[list]:
     return _http_get_json("/klines", {"symbol": binance_symbol, "interval": interval, "limit": limit})
 
 
@@ -96,8 +97,69 @@ def compute_ema_series(closes: list[float], period: int) -> list[float]:
     return emas
 
 
-def generate_signal(closes: list[float], fast_period: int, slow_period: int):
-    """Returns (signal, ema_fast, ema_slow). Mirrors strategy.generate_signal()."""
+def trend_ema_value(closes: list[float], trend_period: int | None):
+    """Latest trend EMA, or None if the filter is off / there isn't enough history. Mirrors strategy.latest_trend_ema()."""
+    if not trend_period or len(closes) < trend_period:
+        return None
+    return compute_ema_series(closes, trend_period)[-1]
+
+
+def compute_atr_series(highs: list[float], lows: list[float], closes: list[float], period: int):
+    """
+    Wilder's ATR, one value per candle (None until defined). Line-for-line
+    copy of strategy.compute_atr() -- keep them identical.
+    """
+    n = len(closes)
+    if period <= 0 or n < period + 1:
+        return [None] * n
+
+    trs = [highs[0] - lows[0]]
+    for i in range(1, n):
+        trs.append(max(highs[i] - lows[i], abs(highs[i] - closes[i - 1]), abs(lows[i] - closes[i - 1])))
+
+    out = [None] * n
+    atr = sum(trs[1 : period + 1]) / period
+    out[period] = atr
+    for i in range(period + 1, n):
+        atr = (atr * (period - 1) + trs[i]) / period
+        out[i] = atr
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Sizing / stop placement (line-for-line copy of risk.py).
+# ---------------------------------------------------------------------------
+
+
+def initial_stop_price(entry_price, atr, atr_stop_mult, max_stop_pct):
+    hard_floor = entry_price * (1 - max_stop_pct)
+    if atr and atr > 0 and atr_stop_mult > 0:
+        return max(entry_price - atr_stop_mult * atr, hard_floor)
+    return hard_floor
+
+
+def trailed_stop_price(current_stop, highest_price_since_entry, atr, atr_trail_mult):
+    if not atr or atr <= 0 or atr_trail_mult <= 0:
+        return current_stop
+    candidate = highest_price_since_entry - atr_trail_mult * atr
+    return max(current_stop, candidate)
+
+
+def position_quote(equity, entry_price, stop_loss_price, risk_per_trade_pct,
+                   fallback_quote, available_quote, max_position_pct_equity=1.0):
+    stop_distance = entry_price - stop_loss_price
+    if risk_per_trade_pct > 0 and equity > 0 and stop_distance > 0:
+        size = (equity * risk_per_trade_pct) * entry_price / stop_distance
+    else:
+        size = fallback_quote
+    ceiling = available_quote
+    if equity > 0:
+        ceiling = min(ceiling, max_position_pct_equity * equity)
+    return max(0.0, min(size, ceiling))
+
+
+def crossover_signal(closes: list[float], fast_period: int, slow_period: int):
+    """Raw EMA-crossover signal with no trend filter -- (signal, ema_fast, ema_slow)."""
     if len(closes) < slow_period + 1:
         return "hold", None, None
 
@@ -115,6 +177,27 @@ def generate_signal(closes: list[float], fast_period: int, slow_period: int):
     return signal, curr_fast, curr_slow
 
 
+def generate_signal(closes: list[float], fast_period: int, slow_period: int, trend_period: int | None = None):
+    """
+    Returns (signal, ema_fast, ema_slow, ema_trend). Mirrors strategy.generate_signal().
+
+    When trend_period is set, a "buy" cross is only returned if the last
+    close is above the trend EMA (regime gate). "sell" crosses are never
+    filtered. trend_period=None or 0 disables the filter. If the filter is
+    on but there isn't enough history for the trend EMA, "buy" is
+    suppressed -- we can't confirm the regime, so we don't enter.
+    """
+    raw, curr_fast, curr_slow = crossover_signal(closes, fast_period, slow_period)
+    ema_trend = trend_ema_value(closes, trend_period)
+
+    signal = raw
+    if raw == "buy" and trend_period:
+        in_uptrend = ema_trend is not None and closes[-1] > ema_trend
+        if not in_uptrend:
+            signal = "hold"
+    return signal, curr_fast, curr_slow, ema_trend
+
+
 # ---------------------------------------------------------------------------
 # Paper fills (mirrors broker.PaperBroker.enter / .exit exactly: same
 # slippage-adjusted fill price, same fee model).
@@ -129,10 +212,12 @@ def _utcnow_date_str() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
-def enter_position(state, symbol, current_price, quote_amount, fee_pct, slippage_pct, stop_loss_pct):
+def enter_position(state, symbol, current_price, quote_amount, fee_pct, slippage_pct,
+                   stop_loss_pct, stop_loss_price=None):
     fill_price = current_price * (1 + slippage_pct)
     fee = quote_amount * fee_pct
     base_amount = (quote_amount - fee) / fill_price
+    stop_px = fill_price * (1 - stop_loss_pct) if stop_loss_price is None else stop_loss_price
 
     state["quote_balance"] -= quote_amount
     state["base_balance"] += base_amount
@@ -142,7 +227,8 @@ def enter_position(state, symbol, current_price, quote_amount, fee_pct, slippage
         "entry_time": _utcnow_iso(),
         "base_amount": base_amount,
         "quote_spent": quote_amount,
-        "stop_loss_price": fill_price * (1 - stop_loss_pct),
+        "stop_loss_price": stop_px,
+        "highest_price": fill_price,
     }
 
 
@@ -195,8 +281,11 @@ def check_daily_reset(state) -> None:
         state["halt_reason"] = None
 
 
-def enforce_daily_loss_limit(state, daily_loss_limit_quote: float) -> None:
-    if state["daily_realized_loss"] >= daily_loss_limit_quote and not state["trading_halted"]:
+def enforce_daily_loss_limit(state, daily_loss_limit_quote, daily_loss_limit_pct=0.0, equity=0.0) -> None:
+    limit = daily_loss_limit_quote
+    if daily_loss_limit_pct > 0 and equity > 0:
+        limit = min(limit, equity * daily_loss_limit_pct)
+    if state["daily_realized_loss"] >= limit and not state["trading_halted"]:
         state["trading_halted"] = True
         state["halt_reason"] = "daily_loss_limit"
 
@@ -215,15 +304,27 @@ def poll():
     timeframe = str(body.get("timeframe", "1m"))
     fast_ema = int(body.get("fast_ema", 9))
     slow_ema = int(body.get("slow_ema", 21))
+    trend_ema = int(body.get("trend_ema", 200))  # 0 disables the trend filter
     stop_loss_pct = float(body.get("stop_loss_pct", 0.05))
     quote_amount = float(body.get("quote_amount_per_trade", 100.0))
     fee_pct = float(body.get("fee_pct", 0.001))
     slippage_pct = float(body.get("slippage_pct", 0.0005))
     daily_loss_limit = float(body.get("daily_loss_limit_quote", 50.0))
+    daily_loss_limit_pct = float(body.get("daily_loss_limit_pct", 0.0))
     starting_balance = float(body.get("starting_balance", 1000.0))
+    atr_period = int(body.get("atr_period", 14))
+    atr_stop_mult = float(body.get("atr_stop_mult", 1.5))    # 0 = fixed-% stop
+    atr_trail_mult = float(body.get("atr_trail_mult", 2.0))  # 0 = no trailing
+    risk_per_trade_pct = float(body.get("risk_per_trade_pct", 0.0))  # 0 = flat quote_amount
+    max_position_pct_equity = float(body.get("max_position_pct_equity", 1.0))
 
     if fast_ema < 1 or slow_ema < 1 or fast_ema >= slow_ema:
         return jsonify({"error": "fast_ema must be positive and less than slow_ema"}), 400
+    if trend_ema < 0:
+        return jsonify({"error": "trend_ema must be 0 (off) or a positive number of candles"}), 400
+    if atr_stop_mult < 0 or atr_trail_mult < 0 or risk_per_trade_pct < 0:
+        return jsonify({"error": "ATR multiples and risk % must be 0 or positive"}), 400
+    trend_period = trend_ema or None
 
     state = {**DEFAULT_STATE, **(body.get("state") or {})}
     if state["quote_balance"] is None:
@@ -232,7 +333,7 @@ def poll():
     binance_symbol = symbol.replace("/", "").upper()
 
     try:
-        klines = fetch_klines(binance_symbol, timeframe, limit=300)
+        klines = fetch_klines(binance_symbol, timeframe, limit=500)
         current_price = fetch_price(binance_symbol)
     except (urllib.error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError) as exc:
         return jsonify({"error": f"Market data request failed: {exc}", "state": state}), 502
@@ -244,7 +345,12 @@ def poll():
     # docstring in the root bot for why this matters.
     closed_klines = klines[:-1]
     closes = [float(row[4]) for row in closed_klines]
+    highs = [float(row[2]) for row in closed_klines]
+    lows = [float(row[3]) for row in closed_klines]
     last_closed_open_time = int(closed_klines[-1][0])
+
+    atr_by_row = compute_atr_series(highs, lows, closes, atr_period)
+    atr = atr_by_row[-1] if atr_by_row and atr_by_row[-1] is not None else None
 
     check_daily_reset(state)
     if state["first_price_seen"] is None:
@@ -255,17 +361,30 @@ def poll():
         "price": current_price,
         "ema_fast": None,
         "ema_slow": None,
+        "ema_trend": None,
+        "atr": atr,
         "signal": "hold",
         "action": "none",
         "message": "",
     }
 
-    # --- Hard stop-loss: checked on every poll, independent of candle closes. ---
+    # --- Trailing stop + hard stop-loss: checked on every poll. ---
+    pos = state["position"]
+    if pos is not None:
+        pos["highest_price"] = max(pos.get("highest_price") or pos["entry_price"], current_price)
+        trailed = trailed_stop_price(pos["stop_loss_price"], pos["highest_price"], atr, atr_trail_mult)
+        if trailed > pos["stop_loss_price"]:
+            pos["stop_loss_price"] = trailed
+
     if state["position"] is not None and current_price <= state["position"]["stop_loss_price"]:
-        trade = exit_position(state, current_price, "stop_loss", fee_pct, slippage_pct)
-        enforce_daily_loss_limit(state, daily_loss_limit)
-        log["action"] = "stop_loss_exit"
-        log["message"] = f"Stop-loss hit at {current_price:.6f} -- exited, pnl {trade['pnl_quote']:+.4f}"
+        pos = state["position"]
+        reason = "trailing_stop" if pos["stop_loss_price"] > pos["entry_price"] else "stop_loss"
+        trade = exit_position(state, current_price, reason, fee_pct, slippage_pct)
+        equity_now = state["quote_balance"] + state["base_balance"] * current_price
+        enforce_daily_loss_limit(state, daily_loss_limit, daily_loss_limit_pct, equity_now)
+        log["action"] = f"{reason}_exit"
+        label = "Trailing stop" if reason == "trailing_stop" else "Stop-loss"
+        log["message"] = f"{label} hit at {current_price:.6f} -- exited, pnl {trade['pnl_quote']:+.4f}"
 
     # --- Act once per closed candle, not once per poll. ---
     new_candle = last_closed_open_time != state["last_processed_candle_ts"]
@@ -275,21 +394,41 @@ def poll():
         if len(closes) < slow_ema + 1:
             log["message"] = f"Warming up: {len(closes)}/{slow_ema + 1} closed candles"
         else:
-            signal, ema_fast, ema_slow = generate_signal(closes, fast_ema, slow_ema)
+            signal, ema_fast, ema_slow, ema_trend = generate_signal(closes, fast_ema, slow_ema, trend_period)
+            raw_signal, _, _ = crossover_signal(closes, fast_ema, slow_ema)
             log["signal"], log["ema_fast"], log["ema_slow"] = signal, ema_fast, ema_slow
+            log["ema_trend"] = ema_trend
+
+            buy_blocked_by_trend = bool(trend_period) and raw_signal == "buy" and signal == "hold"
 
             if state["trading_halted"]:
                 log["message"] = f"Trading halted ({state['halt_reason']}) -- signal '{signal}' ignored"
+            elif buy_blocked_by_trend and ema_trend is not None:
+                log["message"] = (
+                    f"Buy cross ignored: price {closes[-1]:.6f} is below the {trend_ema}-EMA "
+                    f"trend line ({ema_trend:.6f}) -- not an uptrend"
+                )
+            elif buy_blocked_by_trend:
+                log["message"] = f"Buy cross ignored: not enough history yet for the {trend_ema}-EMA trend filter"
             elif signal == "buy" and state["position"] is None:
-                if quote_amount <= state["quote_balance"]:
-                    enter_position(state, symbol, current_price, quote_amount, fee_pct, slippage_pct, stop_loss_pct)
+                stop_px = initial_stop_price(current_price, atr, atr_stop_mult, stop_loss_pct)
+                equity_now = state["quote_balance"]
+                size = position_quote(
+                    equity_now, current_price, stop_px, risk_per_trade_pct,
+                    quote_amount, equity_now, max_position_pct_equity,
+                )
+                if 0 < size <= state["quote_balance"]:
+                    enter_position(
+                        state, symbol, current_price, size, fee_pct, slippage_pct, stop_loss_pct, stop_px
+                    )
                     log["action"] = "entered"
-                    log["message"] = f"Entered long at {current_price:.6f}"
+                    log["message"] = f"Entered long at {current_price:.6f} (stop {stop_px:.6f}, spent {size:.2f})"
                 else:
                     log["message"] = "Buy signal, but paper balance is below the trade size"
             elif signal == "sell" and state["position"] is not None:
                 trade = exit_position(state, current_price, "signal", fee_pct, slippage_pct)
-                enforce_daily_loss_limit(state, daily_loss_limit)
+                equity_now = state["quote_balance"] + state["base_balance"] * current_price
+                enforce_daily_loss_limit(state, daily_loss_limit, daily_loss_limit_pct, equity_now)
                 log["action"] = "exited"
                 log["message"] = f"Exited on sell signal at {current_price:.6f}, pnl {trade['pnl_quote']:+.4f}"
             else:
