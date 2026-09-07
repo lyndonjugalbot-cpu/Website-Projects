@@ -89,6 +89,35 @@ button{ font-family:inherit; cursor:pointer; }
 }
 .section-head.center p{ margin-left:auto; margin-right:auto; }
 
+.price-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top: 24px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  font-weight:600;
+}
+.price-badge strong{
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-family:'Bebas Neue',sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+.price-note{
+  font-size: 0.88rem;
+  color: var(--gold);
+  font-weight:600;
+  margin: -18px 0 24px;
+}
+
 .btn{
   display:inline-flex;
   align-items:center;
