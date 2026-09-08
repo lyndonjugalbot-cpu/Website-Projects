@@ -1,17 +1,19 @@
 import { supabase, configured, ensureSession } from "./supabase";
 
 /* ------------------------------------------------------------------
-   Drop-in replacement for the `store` stub in SelfLeveling.jsx.
-   Same shape: await store.get(key) / store.set(key, value).
+   Offline-first `store` for SelfLeveling. Same shape the app has always
+   used: await store.get(key) / await store.set(key, value).
 
-   How it behaves:
+   Behaviour:
    - Reads come from the local cache immediately, then reconcile with the
-     server row. Whichever was written last wins, so a device that was
-     offline doesn't clobber newer progress from another device.
+     server row. Whichever was written last wins, so an offline device
+     doesn't clobber newer progress from another device.
    - Writes go to the local cache synchronously and to Postgres on a
-     debounce. Ticking six quests in a row is one round trip, not six.
+     debounce. Ticking a handful of quests is one round trip, not many.
    - No network, no keys, or a failed sign-in: everything still works,
      local-only, and syncs on the next successful connection.
+   - Signing in/out swaps which account the sync targets; the local cache
+     is cleared on sign-out so the next user never inherits a save.
 ------------------------------------------------------------------- */
 
 const DEBOUNCE_MS = 900;
@@ -38,16 +40,22 @@ function localSet(key, value) {
   try {
     window.localStorage.setItem(LOCAL_PREFIX + key, JSON.stringify(value));
   } catch {
-    /* private mode or quota — memory copy still holds for this session */
+    /* private mode or quota — the memory copy still holds for this session */
   }
 }
 function markDirty(dirty) {
   try {
     window.localStorage.setItem(DIRTY_KEY, dirty ? "1" : "0");
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 function isDirty() {
-  try { return window.localStorage.getItem(DIRTY_KEY) === "1"; } catch { return false; }
+  try {
+    return window.localStorage.getItem(DIRTY_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 /* ----------------------------- session ---------------------------- */
@@ -57,15 +65,28 @@ async function init() {
   return ready;
 }
 
-/* --------------------------- derived cols -------------------------- */
-/* Mirrors of the values worth querying in SQL. Kept here so the app code
-   doesn't have to know the table exists. Duplicated from the app's own
-   level curve — if you change one, change both, or better, move both into
-   a shared module. */
-function xpForLevel(n) { return Math.round(90 + 55 * Math.pow(n - 1, 1.28)); }
+/* keep the cached user in step with sign-in / sign-out / token refresh */
+if (supabase) {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    user = session?.user ?? null;
+    ready = Promise.resolve(user);
+  });
+}
+
+/* --------------------------- mirror cols -------------------------- */
+/* Denormalised copies of a few values worth querying in SQL. The JSONB
+   blob stays the source of truth; these are best-effort. If the app's
+   level curve changes, change it here too. */
+function xpForLevel(n) {
+  return Math.round(90 + 55 * Math.pow(n - 1, 1.28));
+}
 function levelFromXp(totalXp) {
   let level = 1, remaining = totalXp, need = xpForLevel(1);
-  while (remaining >= need && level < 99) { remaining -= need; level += 1; need = xpForLevel(level); }
+  while (remaining >= need && level < 99) {
+    remaining -= need;
+    level += 1;
+    need = xpForLevel(level);
+  }
   return level;
 }
 function derive(state) {
@@ -74,7 +95,8 @@ function derive(state) {
   const dates = Object.keys(log).sort();
   let streak = 0;
   for (let i = dates.length - 1; i >= 0; i--) {
-    if ((log[dates[i]]?.done?.length ?? 0) >= 5) streak += 1; else break;
+    if ((log[dates[i]]?.done?.length ?? 0) >= 5) streak += 1;
+    else break;
   }
   return {
     xp: state.xp ?? 0,
@@ -100,21 +122,29 @@ async function pull(key) {
     console.warn("SelfLeveling: pull failed, using local copy.", error.message);
     return null;
   }
-  if (!data?.state || Object.keys(data.state).length === 0) return null;
-  return { value: data.state[key] ?? null, updatedAt: data.updated_at };
+  const bag = data?.state && !Array.isArray(data.state) ? data.state : null;
+  const value = bag ? bag[key] ?? null : null;
+  return value ? { value, updatedAt: data.updated_at } : null;
 }
 
 async function push(key, value) {
   await init();
-  if (!supabase || !user) { markDirty(true); return false; }
+  if (!supabase || !user) {
+    markDirty(true);
+    return false;
+  }
+  // upsert, not update — don't depend on the new-user trigger having run
   const { error } = await supabase
     .from("profiles")
-    .update({
-      state: { [key]: value },
-      last_active_at: new Date().toISOString(),
-      ...derive(value),
-    })
-    .eq("id", user.id);
+    .upsert(
+      {
+        id: user.id,
+        state: { [key]: value },
+        last_active_at: new Date().toISOString(),
+        ...derive(value),
+      },
+      { onConflict: "id" }
+    );
   if (error) {
     console.warn("SelfLeveling: push failed, queued locally.", error.message);
     markDirty(true);
@@ -128,10 +158,17 @@ async function push(key, value) {
 export const store = {
   async get(key) {
     const local = localGet(key);
-    // A local copy that never reached the server is newer by definition.
-    if (local && isDirty()) { push(key, local); return local; }
+    // a local copy that never reached the server is newer by definition
+    if (local && isDirty()) {
+      push(key, local);
+      return local;
+    }
     const remote = await pull(key);
-    if (remote?.value) { localSet(key, remote.value); return remote.value; }
+    if (remote?.value) {
+      localSet(key, remote.value);
+      markDirty(false);
+      return remote.value;
+    }
     return local;
   },
 
@@ -142,10 +179,14 @@ export const store = {
     timers[key] = setTimeout(() => push(key, value), DEBOUNCE_MS);
   },
 
-  /* Call on sign-out so the next user doesn't inherit a stranger's streak. */
+  /* call on sign-out so the next user doesn't inherit a stranger's streak */
   async clearLocal(key) {
     delete memory[key];
-    try { window.localStorage.removeItem(LOCAL_PREFIX + key); } catch { /* ignore */ }
+    try {
+      window.localStorage.removeItem(LOCAL_PREFIX + key);
+    } catch {
+      /* ignore */
+    }
     markDirty(false);
   },
 };
@@ -163,4 +204,4 @@ if (typeof document !== "undefined") {
   });
 }
 
-export { ensureSession };
+export { ensureSession, configured };

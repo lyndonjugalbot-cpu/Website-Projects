@@ -1,44 +1,19 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { store } from "./persistence";
+import { watchAuth, register, signIn, signOut } from "./auth";
 
 /* ------------------------------------------------------------------ */
 /*  SelfLeveling — 66-day Solo-Leveling-style training program.        */
 /*  "The System" issues a Daily Quest (training + a rotating Gate +    */
 /*  the basics), you clear it for XP, level up, and rank E -> S. Miss  */
 /*  a day and the next one opens with a Penalty Quest.                 */
-/*  Single-file React app. No external deps.                           */
 /* ------------------------------------------------------------------ */
 
-/* ---------------------------- storage ----------------------------- */
-/* Tries the artifact storage API, then localStorage, then memory.
-   On Vercel you'll want to swap this for Supabase/Postgres so progress
-   follows the account instead of the device. */
-const mem = {};
-const store = {
-  async get(key) {
-    try {
-      if (typeof window !== "undefined" && window.storage) {
-        const r = await window.storage.get(key);
-        return r ? JSON.parse(r.value) : null;
-      }
-    } catch (e) { /* key missing or API absent */ }
-    try {
-      const v = window.localStorage.getItem(key);
-      return v ? JSON.parse(v) : null;
-    } catch (e) { /* blocked */ }
-    return mem[key] ?? null;
-  },
-  async set(key, value) {
-    const s = JSON.stringify(value);
-    mem[key] = value;
-    try {
-      if (typeof window !== "undefined" && window.storage) {
-        await window.storage.set(key, s);
-        return;
-      }
-    } catch (e) { /* fall through */ }
-    try { window.localStorage.setItem(key, s); } catch (e) { /* memory only */ }
-  },
-};
+/* -------------------------- persistence -------------------------- */
+/* `store` (./persistence) is offline-first: writes land in a local cache
+   instantly and sync to Supabase on a debounce when the device has an
+   account. With no Supabase keys configured it is simply local-only and
+   every feature still works — see SETUP.md. */
 const SAVE_KEY = "selfleveling:save";
 
 /* ---------------------------- domain ------------------------------ */
@@ -539,6 +514,11 @@ const CSS = `
 .sl button.opt { border-radius:0; border:1px solid var(--edge); background:linear-gradient(180deg, rgba(23,29,58,.7), rgba(13,17,36,.8));
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
 .sl button.opt[data-sel="true"] { border-color:var(--cyan); background:rgba(77,160,255,.12); }
+.sl .fld { display:block; width:100%; margin-bottom:9px; padding:12px 13px; font:inherit;
+  color:var(--text); background:rgba(9,13,28,.75); border:1px solid var(--edge); border-radius:0;
+  clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px); }
+.sl .fld:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan); }
+.sl .fld::placeholder { color:var(--muted); }
 .sl button.plan { border-radius:0; background:linear-gradient(180deg, rgba(23,29,58,.7), rgba(13,17,36,.8));
   border:1px solid var(--edge);
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
@@ -911,6 +891,91 @@ function TopBar({ rank, level, streak }) {
   );
 }
 
+/* Register / sign-in panel. Anonymous-first: the app already works and
+   already syncs to a private anonymous slot; this links an email so the
+   save follows the person to another device. */
+function Account({ auth }) {
+  const [mode, setMode] = useState("register"); // register | signin
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  if (auth.status === "unconfigured") {
+    return (
+      <div className="panel" style={{ marginBottom: 12 }}>
+        <div className="syslabel">⟦ Account ⟧</div>
+        <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+          Cloud sync isn't configured on this build — progress is saved on this device only.
+        </p>
+      </div>
+    );
+  }
+
+  if (auth.status === "email") {
+    return (
+      <div className="panel" style={{ marginBottom: 12 }}>
+        <div className="syslabel">⟦ Account ⟧</div>
+        <p className="muted" style={{ fontSize: 13, margin: "0 0 12px" }}>
+          Signed in as <b style={{ color: "var(--text)" }}>{auth.email}</b>. Progress syncs across your devices.
+        </p>
+        <button className="opt" disabled={busy}
+          onClick={async () => { setBusy(true); try { await signOut(); } finally { setBusy(false); } }}>
+          Sign out
+        </button>
+      </div>
+    );
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true); setMsg(null);
+    try {
+      if (mode === "register") {
+        const r = await register(email.trim(), pw);
+        setMsg(r.pending
+          ? "Almost there — check your email to confirm, then you're synced."
+          : "Account created. Your progress now follows you to any device.");
+      } else {
+        await signIn(email.trim(), pw);
+        setMsg("Signed in — pulling your progress…");
+      }
+      setPw("");
+    } catch (err) {
+      setMsg(err?.message || "Something went wrong. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel" style={{ marginBottom: 12 }}>
+      <div className="syslabel">⟦ Account ⟧</div>
+      <p className="muted" style={{ fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
+        {mode === "register"
+          ? "Your progress is safe on this device. Add an email + password to sync it to another device — nothing is lost."
+          : "Signing in loads that account's progress and replaces what's on this device."}
+      </p>
+      <form onSubmit={submit}>
+        <input className="fld" type="email" required placeholder="Email" autoComplete="email"
+          value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="fld" type="password" required minLength={8}
+          placeholder="Password (8+ characters)"
+          autoComplete={mode === "register" ? "new-password" : "current-password"}
+          value={pw} onChange={(e) => setPw(e.target.value)} />
+        <button className="cta" type="submit" disabled={busy} style={{ marginTop: 2 }}>
+          {busy ? "…" : mode === "register" ? "Create account & sync" : "Sign in"}
+        </button>
+      </form>
+      <button className="cta ghost" type="button"
+        onClick={() => { setMode(mode === "register" ? "signin" : "register"); setMsg(null); }}>
+        {mode === "register" ? "I already have an account" : "Create a new account instead"}
+      </button>
+      {msg && <p className="muted" style={{ fontSize: 12.5, marginTop: 8, lineHeight: 1.5 }}>{msg}</p>}
+    </div>
+  );
+}
+
 export default function SelfLeveling() {
   const [save, setSave] = useState(null);
   const [step, setStep] = useState("welcome");
@@ -922,8 +987,10 @@ export default function SelfLeveling() {
   const [levelUp, setLevelUp] = useState(null);
   const [plan, setPlan] = useState("year");
   const [nowTick, setNowTick] = useState(Date.now());
+  const [auth, setAuth] = useState({ status: "unconfigured", email: null, id: null });
   const loaded = useRef(false);
   const celebrateT = useRef(null);
+  const authId = useRef(null);
 
   /* Only tick on the offer screens — no point re-rendering the app every second. */
   useEffect(() => {
@@ -944,6 +1011,24 @@ export default function SelfLeveling() {
   useEffect(() => {
     if (loaded.current && save) store.set(SAVE_KEY, save);
   }, [save]);
+
+  /* Track the signed-in account. When it changes to a *different* user
+     (a real sign-in, not the first anonymous session), re-pull that
+     account's save so the app shows their progress. */
+  useEffect(() => {
+    return watchAuth((next) => {
+      setAuth(next);
+      const prev = authId.current;
+      authId.current = next.id;
+      if (loaded.current && next.id && prev && prev !== next.id) {
+        (async () => {
+          const s = await store.get(SAVE_KEY);
+          setSave(s && s.v === 2 ? s : blankSave());
+          setStep(s && s.onboarded ? "app" : "welcome");
+        })();
+      }
+    });
+  }, []);
 
   /* derived */
   const today = useMemo(() => (save ? iso(addDays(new Date(), save.offset)) : null), [save]);
@@ -1346,6 +1431,9 @@ export default function SelfLeveling() {
               <p className="syslabel">⟦ Records ⟧</p>
               <h2 className="h1 serif" style={{ fontSize: 28 }}>Achievements</h2>
               <p className="lede">{save.achievements.length} of {ACHIEVEMENTS.length} unlocked · {rankFor(s.level)}.</p>
+
+              <Account auth={auth} />
+
               {ACHIEVEMENTS.map((a) => {
                 const got = save.achievements.includes(a.id);
                 return (

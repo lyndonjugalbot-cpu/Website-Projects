@@ -2,23 +2,21 @@
 
 A 66-day training program framed as **"the System"** from *Solo Leveling*: it
 issues a Daily Quest, you clear it for XP, level up, and climb E-Rank → S-Rank.
-Miss a day and the next one opens with a **Penalty Quest**. Single-file React
-component ([SelfLeveling.jsx](SelfLeveling.jsx)), no app-specific dependencies.
+Miss a day and the next one opens with a **Penalty Quest**. React
+([SelfLeveling.jsx](SelfLeveling.jsx)) + Vite. Live at
+[selfleveling.vercel.app](https://selfleveling.vercel.app).
 
 ## Run it
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-```
-
-```bash
 npm run build    # -> dist/
-npm run preview  # serve the production build
 ```
 
-Progress is saved per device (artifact API → `localStorage` → in-memory), so it
-runs with zero configuration.
+Runs with zero config — progress saves to the device. Add a Supabase project
+for **accounts + cross-device sync**, and there's an **iOS app** (Capacitor).
+Both in **[SETUP.md](SETUP.md)**.
 
 ## The program
 
@@ -41,15 +39,20 @@ Each cleared quest plays a short SVG animation of the movement and pushes its
 stat up. Levels trigger a `⟪ Level Up ⟫` window; ranks and achievements track on
 the **Records** tab.
 
-## Cross-device progress (optional)
+## Accounts, sync & iOS
 
-Wire up Supabase per [PERSISTENCE.md](PERSISTENCE.md): run [schema.sql](schema.sql),
-`npm install @supabase/supabase-js`, set `VITE_SUPABASE_URL` /
-`VITE_SUPABASE_ANON_KEY`, then swap the inline `store` block in
-[SelfLeveling.jsx](SelfLeveling.jsx) for `import { store } from "./persistence"`.
+- **[persistence.js](persistence.js)** — offline-first `store`: local cache +
+  debounced Supabase sync, last-write-wins, flushes on reconnect / tab-hide.
+- **[auth.js](auth.js)** — anonymous-first email/password. `register()` *links*
+  an email to the current anonymous account (same id, nothing lost); the
+  Account panel lives on the **Records** tab.
+- **[capacitor.config.json](capacitor.config.json)** + `ios/` — the iOS app is
+  this build wrapped by Capacitor; `npm run ios:sync` / `ios:open`.
+
+Full setup (Supabase project, env vars, Xcode) in **[SETUP.md](SETUP.md)**.
 
 ## Before shipping
 
-The **You** tab has testing controls (skip-day, reset) to remove, and the `pro`
-flag lives in client state — replace it with server-side entitlement before
-taking money.
+The **Records** tab still has dev testing controls (skip-day, reset), and the
+`pro` paywall flag lives in client state — move entitlement server-side before
+charging. See SETUP.md §4.
