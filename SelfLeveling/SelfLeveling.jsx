@@ -478,8 +478,8 @@ const CSS = `
 /* --- brand lockup --- */
 .brand-img { display:block; width:min(300px,80%); height:auto; margin:0 auto;
   filter:drop-shadow(0 6px 16px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(168,123,255,.4)); }
-.brand-img--mini { width:auto; height:30px; margin:0;
-  filter:drop-shadow(0 0 8px rgba(168,123,255,.55)); }
+.brand-img--mini { width:auto; height:34px; margin:0;
+  filter:drop-shadow(0 0 10px rgba(168,123,255,.65)); }
 .brand { text-align:center; line-height:.82; }
 .brand b { display:block; font-family:inherit; font-weight:700; text-transform:uppercase;
   transform:skewX(-5deg);
@@ -924,7 +924,7 @@ function Brand({ mini }) {
     return (
       <img
         className={`brand-img${mini ? " brand-img--mini" : ""}`}
-        src={mini ? "/emblem.png" : "/logo.png"}
+        src={mini ? "/emblem.webp" : "/logo.webp"}
         alt="SelfLeveling by Wots"
         onError={() => setImgOk(false)}
       />
