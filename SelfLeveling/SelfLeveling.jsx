@@ -178,9 +178,10 @@ const CSS = `
 /* One typeface for the whole app. */
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap');
 
-.sl { --ink:#0A0D1E; --panel:#171B33; --panel2:#1F2444; --line:#2C3157;
-      --gold:#E9C46A; --gold-deep:#B08A3C; --cyan:#7BD0E0; --cyan-bright:#7CE0FF;
-      --violet:#9B6BFF; --edge:rgba(123,208,224,.30);
+.sl { --ink:#0A0C1C; --panel:#161A31; --panel2:#1F2444; --line:#2C3157;
+      --gold:#E9C46A; --gold-deep:#B08A3C;
+      --cyan:#8AD1F0; --cyan-bright:#9EE6FF; --violet:#A87BFF; --magenta:#E86BC6;
+      --edge:rgba(138,209,240,.30); --edge-hot:rgba(232,107,198,.32);
       --text:#EDEAE2; --muted:#8E93B8;
       font-family:'Chakra Petch',system-ui,sans-serif; color:var(--text);
       background:var(--ink); min-height:100vh; -webkit-font-smoothing:antialiased; }
@@ -191,10 +192,10 @@ const CSS = `
 .sl-frame { max-width:430px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;
             position:relative; overflow:hidden;
             background:
-              radial-gradient(120% 42% at 50% -6%, rgba(90,120,255,.26), transparent 60%),
-              radial-gradient(70% 26% at 12% 107%, rgba(255,130,60,.10), transparent 60%),
-              radial-gradient(70% 26% at 88% 107%, rgba(155,107,255,.13), transparent 60%),
-              linear-gradient(180deg,#10142B 0%, #0A0D1E 58%, #06080F 100%); }
+              radial-gradient(135% 46% at 50% 30%, rgba(120,140,255,.24), transparent 62%),
+              radial-gradient(80% 30% at 8% 104%, rgba(168,123,255,.15), transparent 62%),
+              radial-gradient(80% 30% at 92% 104%, rgba(232,107,198,.14), transparent 62%),
+              linear-gradient(180deg,#0F1230 0%, #0A0C1C 56%, #05060E 100%); }
 .sl-body { flex:1; padding:20px 18px 104px; position:relative; z-index:1; }
 
 /* legacy class — kept so headings stay bold without touching every call site */
@@ -428,27 +429,32 @@ const CSS = `
           mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.4) 55%, transparent 92%); }
 .dbg::after { content:""; position:absolute; inset:0; box-shadow:inset 0 0 130px 34px rgba(3,5,14,.82); }
 
-.dbg-portal { position:absolute; top:-78px; left:50%; width:230px; height:230px; margin-left:-115px;
-  border-radius:50%; filter:blur(2px); animation:portalPulse 6s ease-in-out infinite;
-  background:radial-gradient(circle, rgba(150,210,255,.5) 0%, rgba(80,140,255,.3) 34%, rgba(40,60,160,.1) 55%, transparent 70%); }
-.dbg-portal::before { content:""; position:absolute; inset:24%; border-radius:50%;
-  background:conic-gradient(from 0deg, transparent, rgba(160,220,255,.5), transparent 52%, rgba(150,107,255,.42), transparent);
-  animation:portalSpin 9s linear infinite; }
+/* the summoning arch: a stone ring, its inner glow, and a band of runes */
+.dbg-arch { position:absolute; top:-40px; left:50%; width:560px; max-width:150%; height:440px;
+  margin-left:-280px; }
+.dbg-gateglow { position:absolute; top:-30px; left:50%; width:300px; height:300px; margin-left:-150px;
+  border-radius:50%; filter:blur(6px); animation:portalPulse 6s ease-in-out infinite;
+  background:radial-gradient(circle, rgba(150,200,255,.42) 0%, rgba(150,110,255,.24) 38%, rgba(232,107,198,.10) 60%, transparent 74%); }
 @keyframes portalPulse { 0%,100%{ opacity:.6; } 50%{ opacity:1; } }
-@keyframes portalSpin { to { transform:rotate(360deg); } }
+.dbg-runering { animation:runeGlow 5s ease-in-out infinite; }
+@keyframes runeGlow { 0%,100%{ opacity:.4; } 50%{ opacity:.95; } }
 
-.dbg-brazier { position:absolute; bottom:70px; width:96px; height:140px; border-radius:50%;
-  filter:blur(10px); animation:flick 2.6s ease-in-out infinite; }
-.dbg-brazier--l { left:-30px; background:radial-gradient(circle, rgba(255,150,70,.46), rgba(180,60,255,.14) 55%, transparent 72%); }
-.dbg-brazier--r { right:-30px; background:radial-gradient(circle, rgba(150,110,255,.46), rgba(90,150,255,.14) 55%, transparent 72%); animation-delay:-1.1s; }
-@keyframes flick { 0%,100%{ transform:scale(1) translateY(0); opacity:.65; } 50%{ transform:scale(1.09) translateY(-4px); opacity:1; } }
+.dbg-floor { position:absolute; left:0; right:0; bottom:0; height:190px; opacity:.5;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(150,180,255,.05) 0 1px, transparent 1px 58px),
+    repeating-linear-gradient(0deg,  rgba(150,180,255,.04) 0 1px, transparent 1px 34px);
+  -webkit-mask-image:linear-gradient(0deg,#000, transparent 88%);
+          mask-image:linear-gradient(0deg,#000, transparent 88%);
+  transform:perspective(320px) rotateX(58deg); transform-origin:bottom; }
 
-.dbg-runes { position:absolute; inset:0; width:100%; height:100%; color:rgba(123,208,224,.15);
-  animation:runeGlow 5s ease-in-out infinite; }
-@keyframes runeGlow { 0%,100%{ opacity:.45; } 50%{ opacity:1; } }
+.dbg-brazier { position:absolute; bottom:64px; width:100px; height:150px; border-radius:50%;
+  filter:blur(11px); animation:flick 2.8s ease-in-out infinite; }
+.dbg-brazier--l { left:-34px; background:radial-gradient(circle, rgba(120,150,255,.4), rgba(168,123,255,.16) 55%, transparent 72%); }
+.dbg-brazier--r { right:-34px; background:radial-gradient(circle, rgba(232,107,198,.36), rgba(150,110,255,.16) 55%, transparent 72%); animation-delay:-1.2s; }
+@keyframes flick { 0%,100%{ transform:scale(1) translateY(0); opacity:.6; } 50%{ transform:scale(1.09) translateY(-4px); opacity:1; } }
 
 .dbg-mote { position:absolute; bottom:-12px; left:calc(var(--i) * 6.2% + 4%); width:3px; height:3px;
-  border-radius:50%; background:rgba(165,215,255,.85); filter:blur(.5px); opacity:0;
+  border-radius:50%; background:rgba(196,178,255,.85); filter:blur(.5px); opacity:0;
   animation:mote linear infinite; animation-duration:calc(9s + var(--i) * 0.7s); animation-delay:calc(var(--i) * -1.3s); }
 @keyframes mote { 0%{ transform:translateY(0) scale(.5); opacity:0; } 12%{ opacity:.9; } 88%{ opacity:.45; } 100%{ transform:translateY(-760px) scale(1); opacity:0; } }
 
@@ -470,18 +476,22 @@ const CSS = `
 .syslabel { font-family:inherit; }
 
 /* --- brand lockup --- */
-.brand { text-align:center; line-height:.86; }
+.brand-img { display:block; width:min(300px,80%); height:auto; margin:0 auto;
+  filter:drop-shadow(0 6px 16px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(168,123,255,.4)); }
+.brand-img--mini { width:auto; height:30px; margin:0;
+  filter:drop-shadow(0 0 8px rgba(168,123,255,.55)); }
+.brand { text-align:center; line-height:.82; }
 .brand b { display:block; font-family:inherit; font-weight:700; text-transform:uppercase;
-  letter-spacing:.05em; transform:skewX(-5deg);
-  background:linear-gradient(180deg,#EDF8FF 0%, #86E2FF 36%, #3AA0FF 60%, #7B54FF 100%);
+  transform:skewX(-5deg);
+  background:linear-gradient(180deg,#EAF6FF 0%, #8FD4FF 26%, #A87BFF 58%, #E86BC6 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
-  filter:drop-shadow(0 2px 0 #070C24) drop-shadow(0 0 16px rgba(95,175,255,.5)); }
-.brand .b1 { font-size:clamp(30px,11vw,44px); }
-.brand .b2 { font-size:clamp(23px,8.4vw,34px); letter-spacing:.12em; }
-.brand .byline { font-family:'Chakra Petch',sans-serif; font-weight:600; letter-spacing:.36em;
-  font-size:10px; color:var(--cyan); margin-top:10px; text-transform:uppercase; }
-.brand--mini b { font-size:15px; letter-spacing:.16em; transform:skewX(-4deg);
-  filter:drop-shadow(0 1px 0 #070C24) drop-shadow(0 0 8px rgba(95,175,255,.45)); }
+  filter:drop-shadow(0 2px 0 #05060E) drop-shadow(0 0 24px rgba(168,123,255,.55)); }
+.brand .b1 { font-size:clamp(15px,4.6vw,20px); letter-spacing:.44em; margin-bottom:.12em; }
+.brand .b2 { font-size:clamp(34px,12.5vw,52px); letter-spacing:.05em; }
+.brand .byline { font-family:'Chakra Petch',sans-serif; font-weight:600; letter-spacing:.38em;
+  font-size:10px; color:var(--magenta); margin-top:12px; text-transform:uppercase; }
+.brand--mini b { font-size:13px; letter-spacing:.16em; transform:skewX(-4deg);
+  filter:drop-shadow(0 1px 0 #05060E) drop-shadow(0 0 8px rgba(168,123,255,.5)); }
 
 /* --- top HUD bar --- */
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:16px; }
@@ -512,12 +522,12 @@ const CSS = `
   border:1px solid transparent; color:var(--muted);
   font-family:'Chakra Petch',sans-serif; font-size:10px; font-weight:600; letter-spacing:.12em;
   clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); }
-.nav button[data-on="true"] { color:#EDF8FF; border-color:rgba(123,208,224,.5);
-  background:linear-gradient(180deg, rgba(77,160,255,.18), rgba(77,160,255,.03));
-  box-shadow:0 0 16px rgba(77,160,255,.28), inset 0 0 14px rgba(77,160,255,.12); }
+.nav button[data-on="true"] { color:#F1ECFF; border-color:rgba(168,123,255,.5);
+  background:linear-gradient(180deg, rgba(168,123,255,.2), rgba(168,123,255,.03));
+  box-shadow:0 0 16px rgba(168,123,255,.3), inset 0 0 14px rgba(168,123,255,.12); }
 .navglyph { width:22px; height:22px; display:block; fill:none; stroke:currentColor;
   stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-.nav button[data-on="true"] .navglyph { filter:drop-shadow(0 0 6px rgba(124,224,255,.7)); }
+.nav button[data-on="true"] .navglyph { filter:drop-shadow(0 0 6px rgba(180,140,255,.8)); }
 
 /* --- quest rows as energy nodes (.sl prefix outranks the button reset) --- */
 .sl button.quest { border-radius:0; border:1px solid rgba(123,208,224,.16); border-left:3px solid var(--cyan);
@@ -539,9 +549,9 @@ const CSS = `
 
 /* --- CTAs + option chips (.sl prefix outranks the button reset) --- */
 .sl button.cta { border-radius:0; font-family:'Chakra Petch',sans-serif; letter-spacing:.07em;
-  background:linear-gradient(180deg,#86E2FF,#3AA0FF 55%,#2E64FF); color:#08122B;
+  background:linear-gradient(155deg,#9CDCFF 0%, #8C7BFF 50%, #D25CDE 100%); color:#0B0716;
   clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px);
-  box-shadow:0 0 22px rgba(77,160,255,.38), inset 0 1px 0 rgba(255,255,255,.4); }
+  box-shadow:0 0 22px rgba(168,123,255,.42), inset 0 1px 0 rgba(255,255,255,.45); }
 .sl button.cta.ghost { background:transparent; box-shadow:none; color:var(--muted); clip-path:none; }
 .sl button.opt { border-radius:0; border:1px solid var(--edge); background:linear-gradient(180deg, rgba(23,29,58,.7), rgba(13,17,36,.8));
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
@@ -850,25 +860,56 @@ const OFFER_MINUTES = 10;
 const LAST_CHANCE_MINUTES = 5;
 
 /* --------------------------- theme art --------------------------- */
-/* Dungeon backdrop: a gate, two braziers, floating runes and drifting
-   embers — all CSS/SVG, scoped to the phone frame, frozen under
-   prefers-reduced-motion by the global rule. */
+/* Dungeon backdrop pulled from the key art: a stone summoning arch ringed
+   with glowing runes, its inner gate-glow, braziers, a receding stone
+   floor and drifting embers. All CSS/SVG, scoped to the phone frame,
+   frozen under prefers-reduced-motion by the global rule. */
+
+const RUNES = [
+  "M0 -7 V7 M-5 -3 L0 -7 M5 -3 L0 -7",
+  "M-4 -7 L4 0 L-4 7",
+  "M0 -7 V7 M-5 0 H5",
+  "M-4 -7 V7 M-4 -7 L4 -1 L-4 5",
+  "M0 -7 L5 7 H-5 Z",
+  "M-4 -7 H4 M0 -7 V7 M-4 7 H4",
+];
+
 function DungeonBg() {
+  const cx = 280, cy = 300;
+  const runes = Array.from({ length: 17 }, (_, i) => {
+    const a = 192 + i * (156 / 16);
+    const r = (a * Math.PI) / 180;
+    return { x: cx + 150 * Math.cos(r), y: cy + 150 * Math.sin(r), rot: a + 90, d: RUNES[i % RUNES.length] };
+  });
+  const joints = Array.from({ length: 13 }, (_, i) => {
+    const a = 188 + i * (164 / 12);
+    const r = (a * Math.PI) / 180;
+    return {
+      x1: cx + 168 * Math.cos(r), y1: cy + 168 * Math.sin(r),
+      x2: cx + 226 * Math.cos(r), y2: cy + 226 * Math.sin(r),
+    };
+  });
+  const arch = "M90 440 V300 A190 190 0 0 1 470 300 V440";
   return (
     <div className="dbg" aria-hidden="true">
-      <div className="dbg-portal" />
-      <div className="dbg-brazier dbg-brazier--l" />
-      <div className="dbg-brazier dbg-brazier--r" />
-      <svg className="dbg-runes" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
-        <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M28 118 l15 -24 15 24 M43 94 v40 M34 128 h18" />
-          <path d="M362 176 v34 M350 186 l24 12 M374 186 l-24 12" />
-          <path d="M22 470 l20 0 -10 -18 z M32 452 v44 M22 496 h20" />
-          <path d="M370 540 l-18 13 18 13 M352 553 h30 M382 540 v26" />
-          <path d="M40 664 l18 -11 0 22 z M40 664 v30" />
-          <path d="M356 690 l14 -10 14 10 v20 l-14 10 -14 -10 z" />
+      <div className="dbg-gateglow" />
+      <svg className="dbg-arch" viewBox="0 0 560 440" preserveAspectRatio="xMidYMin slice">
+        <path d={arch} fill="none" stroke="#141930" strokeWidth="72" />
+        <path d={arch} fill="none" stroke="#242B44" strokeWidth="62" />
+        <g stroke="#11162a" strokeWidth="3">
+          {joints.map((j, i) => <line key={i} x1={j.x1.toFixed(1)} y1={j.y1.toFixed(1)} x2={j.x2.toFixed(1)} y2={j.y2.toFixed(1)} />)}
+        </g>
+        <g className="dbg-runering" fill="none" stroke="rgba(150,205,255,.55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {runes.map((rn, i) => (
+            <g key={i} transform={`translate(${rn.x.toFixed(1)} ${rn.y.toFixed(1)}) rotate(${rn.rot.toFixed(1)})`}>
+              <path d={rn.d} />
+            </g>
+          ))}
         </g>
       </svg>
+      <div className="dbg-floor" />
+      <div className="dbg-brazier dbg-brazier--l" />
+      <div className="dbg-brazier dbg-brazier--r" />
       {Array.from({ length: 16 }).map((_, i) => (
         <span key={i} className="dbg-mote" style={{ "--i": i }} />
       ))}
@@ -876,7 +917,19 @@ function DungeonBg() {
   );
 }
 
+/* Uses the key art from /public when present, else a styled CSS wordmark. */
 function Brand({ mini }) {
+  const [imgOk, setImgOk] = useState(true);
+  if (imgOk) {
+    return (
+      <img
+        className={`brand-img${mini ? " brand-img--mini" : ""}`}
+        src={mini ? "/emblem.png" : "/logo.png"}
+        alt="SelfLeveling by Wots"
+        onError={() => setImgOk(false)}
+      />
+    );
+  }
   if (mini) return <div className="brand brand--mini"><b className="b1">Self&nbsp;Leveling</b></div>;
   return (
     <div className="brand">
