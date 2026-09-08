@@ -175,13 +175,14 @@ const daysBetween = (a, b) =>
 
 /* ---------------------------- styles ------------------------------ */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=Orbitron:wght@600;700;900&display=swap');
+/* One typeface for the whole app. */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap');
 
 .sl { --ink:#0A0D1E; --panel:#171B33; --panel2:#1F2444; --line:#2C3157;
       --gold:#E9C46A; --gold-deep:#B08A3C; --cyan:#7BD0E0; --cyan-bright:#7CE0FF;
       --violet:#9B6BFF; --edge:rgba(123,208,224,.30);
       --text:#EDEAE2; --muted:#8E93B8;
-      font-family:'Archivo',system-ui,sans-serif; color:var(--text);
+      font-family:'Chakra Petch',system-ui,sans-serif; color:var(--text);
       background:var(--ink); min-height:100vh; -webkit-font-smoothing:antialiased; }
 .sl *, .sl *::before, .sl *::after { box-sizing:border-box; }
 .sl button { font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
@@ -196,7 +197,8 @@ const CSS = `
               linear-gradient(180deg,#10142B 0%, #0A0D1E 58%, #06080F 100%); }
 .sl-body { flex:1; padding:20px 18px 104px; position:relative; z-index:1; }
 
-.serif { font-family:'Instrument Serif',Georgia,serif; font-weight:400; }
+/* legacy class — kept so headings stay bold without touching every call site */
+.serif { font-family:inherit; font-weight:700; letter-spacing:.005em; }
 .h1 { font-size:34px; line-height:1.08; letter-spacing:-0.01em; margin:0 0 10px; }
 .h2 { font-size:20px; font-weight:600; letter-spacing:-0.01em; margin:0 0 4px; }
 .lede { color:var(--muted); font-size:15px; line-height:1.55; margin:0 0 24px; max-width:34ch; }
@@ -465,11 +467,11 @@ const CSS = `
 .sysbanner { position:relative; border-radius:0;
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
 
-.syslabel { font-family:'Chakra Petch','Archivo',sans-serif; }
+.syslabel { font-family:inherit; }
 
 /* --- brand lockup --- */
 .brand { text-align:center; line-height:.86; }
-.brand b { display:block; font-family:'Orbitron',sans-serif; font-weight:900; text-transform:uppercase;
+.brand b { display:block; font-family:inherit; font-weight:700; text-transform:uppercase;
   letter-spacing:.05em; transform:skewX(-5deg);
   background:linear-gradient(180deg,#EDF8FF 0%, #86E2FF 36%, #3AA0FF 60%, #7B54FF 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -484,8 +486,8 @@ const CSS = `
 /* --- top HUD bar --- */
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:16px; }
 .rankchip { display:flex; align-items:center; gap:6px; flex:none; }
-.rankchip span { width:28px; height:32px; display:grid; place-items:center; font-family:'Orbitron',sans-serif;
-  font-weight:900; font-size:13px; color:#EDF8FF;
+.rankchip span { width:28px; height:32px; display:grid; place-items:center; font-family:inherit;
+  font-weight:700; font-size:13px; color:#EDF8FF;
   background:linear-gradient(180deg,#1e2a58,#0d1330);
   clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
   box-shadow:0 0 12px rgba(77,160,255,.4), inset 0 0 8px rgba(123,208,224,.28); }
@@ -551,7 +553,7 @@ const CSS = `
 
 .bar { background:#141a34; }
 .bar > i { box-shadow:0 0 10px rgba(233,196,106,.5); }
-.lvlnum { font-family:'Orbitron',sans-serif; font-weight:900; color:var(--gold);
+.lvlnum { font-family:inherit; font-weight:700; color:var(--gold);
   filter:drop-shadow(0 0 18px rgba(233,196,106,.35)); }
 .brand--mini .b1 { font-size:13px; letter-spacing:.14em; white-space:nowrap;
   filter:drop-shadow(0 1px 0 #070C24) drop-shadow(0 0 8px rgba(95,175,255,.45)); }
