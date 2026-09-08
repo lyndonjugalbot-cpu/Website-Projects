@@ -1,0 +1,15 @@
+{
+  "name": "PyWots",
+  "short_name": "PyWots",
+  "description": "A 60-day Solo-Leveling-style ascent from zero Python to competent Python.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05060F",
+  "theme_color": "#05060F",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -9,9 +9,48 @@ Supabase backend — they can't drift. Fix a bug once, `cap sync`, ship.
 - **Xcode** (has been built with Xcode 26). Open it once and accept the licence.
 - **CocoaPods is NOT needed** — this project uses Swift Package Manager
   (`npx cap add ios --packagemanager SPM`). Xcode resolves the plugin packages.
-- **Apple Developer Program** ($99/yr) for: running on a physical device, Sign
-  in with Apple, TestFlight, and the App Store. The **simulator works without
-  it** (minus Apple sign-in).
+- **Simulator:** works with nothing else.
+- **Your own iPhone:** works with a **free** Apple ID (no $99 Developer Program).
+  Xcode makes a "Personal Team" the first time you add the account. Caveat: the
+  build **expires after 7 days** and must be re-run from Xcode; max 3 sideloaded
+  apps at once; Sign in with Apple isn't available (Google + email still are).
+- **TestFlight / App Store / native Sign in with Apple:** need the paid Apple
+  Developer Program.
+
+### Install on your own iPhone (free)
+
+1. **Xcode ▸ Settings ▸ Accounts ▸ +** → add your Apple ID.
+2. `npm run ios` (opens the project). Select the **App** target ▸
+   **Signing & Capabilities** ▸ **Team** → your name (Personal Team). Leave
+   "Automatically manage signing" ticked. If the bundle id `app.pywots` is
+   rejected as taken, change it here to something unique like `app.pywots.<you>`.
+3. On the iPhone: **Settings ▸ Privacy & Security ▸ Developer Mode ▸ On**
+   (restart when asked). Plug it in, unlock it, tap **Trust**.
+4. Pick the iPhone in Xcode's device menu (top bar) → press **▶**.
+5. First launch fails with "Untrusted Developer" — on the phone:
+   **Settings ▸ General ▸ VPN & Device Management** → tap your Apple ID → **Trust**.
+   Re-launch the app.
+6. In ~7 days it stops opening — just press **▶** in Xcode again to refresh it.
+
+CLI equivalent once you know your team id (`xcrun devicectl list devices` for the
+device id, Xcode ▸ Settings ▸ Accounts for the team):
+
+```bash
+npm run build && npx cap sync ios
+cd ios/App
+xcodebuild -scheme App -configuration Debug -allowProvisioningUpdates \
+  DEVELOPMENT_TEAM=XXXXXXXXXX \
+  -destination 'id=<device-id>' -derivedDataPath /tmp/pw-dd build
+xcrun devicectl device install app --device <device-id> \
+  /tmp/pw-dd/Build/Products/Debug-iphoneos/App.app
+```
+
+### No-Xcode option: Add to Home Screen (PWA)
+
+On the iPhone open **https://pywots.vercel.app** in Safari → Share →
+**Add to Home Screen**. Full-screen, own icon (the emblem), works offline, no
+expiry. It's the web app, not a store build, but it's the same code and the same
+account — good enough for daily use and for handing to testers today.
 
 ## Everyday workflow
 
