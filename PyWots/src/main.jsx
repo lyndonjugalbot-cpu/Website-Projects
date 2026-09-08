@@ -1,11 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import PyWots from "../PyWots.jsx";
+import { isNative } from "./lib/platform.js";
 
-/* The component ships with its own storage layer (artifact API -> localStorage ->
-   memory), so it runs with zero configuration and stores progress per-device.
-   For accounts / cross-device sync, swap the inline `store` in PyWots.jsx for a
-   Supabase or Convex-backed store. */
+/* Persistence and auth live in src/lib/. The app is local-first: it runs
+   with zero configuration (per-device), and when Supabase env vars are
+   present it syncs to an account across web + iOS. */
+
+/* Native-only wiring (status bar, OAuth deep-link) — never enters the web bundle. */
+if (isNative) import("./lib/native-bridge.js");
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <PyWots />

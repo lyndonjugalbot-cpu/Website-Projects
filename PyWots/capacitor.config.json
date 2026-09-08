@@ -1,0 +1,20 @@
+{
+  "appId": "app.pywots",
+  "appName": "PyWots",
+  "webDir": "dist",
+  "ios": {
+    "scheme": "PyWots",
+    "contentInset": "always",
+    "backgroundColor": "#05060F"
+  },
+  "server": {
+    "iosScheme": "pywots"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#05060F",
+      "overlaysWebView": false
+    }
+  }
+}

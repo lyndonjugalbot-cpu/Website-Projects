@@ -5,44 +5,24 @@ import {
   dayContent, topicFor, TOPIC_MAP,
   ACHIEVEMENTS, earnedAchievements, clearedDungeons,
 } from "./curriculum.js";
+import { store, onSyncState } from "./src/lib/persistence.js";
+import { SAVE_KEY } from "./src/lib/keys.js";
+import {
+  isConfigured, onAuthChange, currentUser, isAnon,
+  signInEmail, registerEmail, sendPasswordReset, signInWithProvider,
+  completeOAuthFromUrl, signOut, deleteAccount,
+} from "./src/lib/auth.js";
 
 /* ================================================================== */
 /*  PyWots — a 60-day Solo-Leveling-style ascent from zero Python      */
 /*  to competent Python. Single component. Content lives in            */
 /*  curriculum.js. Real code is graded in-browser by Pyodide.          */
+/*                                                                    */
+/*  Persistence is local-first (src/lib/persistence.js): the local     */
+/*  copy is the working truth; when Supabase is configured it syncs    */
+/*  to an account so progress follows the user to other devices and    */
+/*  the iOS app. With no keys set, everything still runs local-only.   */
 /* ================================================================== */
-
-/* ---------------------------- storage ----------------------------- */
-/* artifact storage API -> localStorage -> memory. Swap for a         */
-/* Supabase/Convex-backed store to make progress follow an account.   */
-const mem = {};
-const store = {
-  async get(key) {
-    try {
-      if (typeof window !== "undefined" && window.storage) {
-        const r = await window.storage.get(key);
-        return r ? JSON.parse(r.value) : null;
-      }
-    } catch (e) { /* absent */ }
-    try {
-      const v = window.localStorage.getItem(key);
-      return v ? JSON.parse(v) : null;
-    } catch (e) { /* blocked */ }
-    return mem[key] ?? null;
-  },
-  async set(key, value) {
-    const s = JSON.stringify(value);
-    mem[key] = value;
-    try {
-      if (typeof window !== "undefined" && window.storage) {
-        await window.storage.set(key, s);
-        return;
-      }
-    } catch (e) { /* fall through */ }
-    try { window.localStorage.setItem(key, s); } catch (e) { /* memory only */ }
-  },
-};
-const SAVE_KEY = "pywots:save:v1";
 
 /* ----------------------------- dates ------------------------------ */
 const dayStr = (d = new Date()) => {
@@ -387,6 +367,25 @@ a,.pw-link{color:var(--cyan)}
 .pw-ach.on .pw-achname{color:var(--gold)}
 .pw-reveal{animation:pw-reveal .45s ease both}
 @keyframes pw-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---- account / auth ---- */
+.pw-acct{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--text);border-radius:99px;padding:3px 4px 3px 8px;font-size:11px;font-family:var(--display);
+  letter-spacing:.06em}
+.pw-acct:hover{border-color:var(--cyan)}
+.pw-avatar{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;
+  background:linear-gradient(180deg,var(--cyan),var(--violet));color:#04060E;font-weight:900}
+.pw-syncdot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex:none}
+.pw-syncdot.synced{background:var(--ok);box-shadow:0 0 8px rgba(61,240,169,.7)}
+.pw-syncdot.syncing{background:var(--cyan);box-shadow:0 0 8px rgba(56,225,255,.8);animation:pw-tick 1s ease-in-out infinite}
+.pw-syncdot.error{background:var(--bad);box-shadow:var(--glow-bad)}
+.pw-overlay{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:18px;
+  background:rgba(4,6,15,.72);backdrop-filter:blur(6px);animation:pw-reveal .2s ease both}
+.pw-input{width:100%;background:#04060E;color:#DCE6FF;border:1px solid var(--line);border-radius:2px;
+  padding:10px 12px;font-family:var(--mono);font-size:14px;margin-top:8px;outline:none;
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.pw-input:focus{border-color:var(--cyan);box-shadow:0 0 18px -6px rgba(56,225,255,.6)}
+.pw-oauth{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px}
 
 @media (max-width:560px){
   .pw-statusrow{gap:8px;padding:8px 12px}
@@ -1076,7 +1075,7 @@ function countBosses(save) {
   return Object.keys(BOSS_DAYS).filter((d) => c[d] && c[d].boss).length;
 }
 
-function Hunter({ save, mutate, toast, resetAll }) {
+function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
   const earned = new Set(save.achievements || []);
@@ -1147,6 +1146,8 @@ function Hunter({ save, mutate, toast, resetAll }) {
         </div>
       </Frame>
 
+      <AccountPanel save={save} auth={auth} openAuth={openAuth} toast={toast} />
+
       <Frame style={{ marginTop: 14 }}>
         <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Testing controls — remove before ship</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1164,6 +1165,216 @@ function Hunter({ save, mutate, toast, resetAll }) {
   );
 }
 
+/* ========================== accounts ====================== */
+function useAuth() {
+  const [user, setUser] = useState(isConfigured() ? undefined : null); // undefined = resolving
+  const [syncState, setSyncState] = useState("off");
+  useEffect(() => {
+    if (!isConfigured()) return;
+    let alive = true;
+    currentUser().then((u) => { if (alive) setUser(u || null); });
+    const offAuth = onAuthChange((_e, session) => { if (alive) setUser(session?.user || null); });
+    const offSync = onSyncState(setSyncState);
+    return () => { alive = false; offAuth(); offSync(); };
+  }, []);
+  const email = user && !isAnon(user) ? (user.email || null) : null;
+  return { user, email, isAnon: !user || isAnon(user), syncState, configured: isConfigured() };
+}
+
+function GBrand() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.6l6.2 5.2C41.4 34.9 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+  );
+}
+function AppleBrand() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.1-.8-1.6 0-3 .9-3.9 2.4-1.6 2.9-.4 7.1 1.2 9.4.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7 1.4 0 1.8.7 3 .7 1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.5-1-2.5-3.8zM14 4.8c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.5-.6.7-1.1 1.8-1 2.9 1.1.1 2.2-.6 2.8-1.4z"/></svg>
+  );
+}
+
+function AuthSheet({ onClose, toast }) {
+  const [mode, setMode] = useState("register"); // register | signin
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [note, setNote] = useState("");
+
+  const submit = async () => {
+    setErr(""); setNote(""); setBusy(true);
+    try {
+      if (mode === "register") {
+        const u = await registerEmail(email.trim(), pw);
+        if (u && !u.email_confirmed_at && u.confirmation_sent_at) {
+          setNote("Check your inbox to confirm the address. Your progress is already saved.");
+          toast("sys", "⟢ SYSTEM", "Confirmation email sent.");
+          return;
+        }
+        toast("sys", "⟢ SYSTEM", "Account created. Progress will sync from now on.");
+      } else {
+        await signInEmail(email.trim(), pw);
+        toast("sys", "⟢ SYSTEM", "Signed in. Progress synced.");
+      }
+      onClose();
+    } catch (e) {
+      setErr(e?.message || "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const oauth = async (provider) => {
+    setErr(""); setBusy(true);
+    try { await signInWithProvider(provider); /* web navigates away */ }
+    catch (e) { setErr(e?.message || `Could not continue with ${provider}.`); setBusy(false); }
+  };
+
+  const forgot = async () => {
+    setErr(""); setNote("");
+    try { await sendPasswordReset(email.trim()); setNote("Password reset email sent."); }
+    catch (e) { setErr(e?.message || "Could not send reset email."); }
+  };
+
+  return (
+    <div className="pw-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <Frame style={{ width: "min(420px, 100%)" }}>
+        <div className="pw-row" style={{ justifyContent: "space-between" }}>
+          <div className="pw-display" style={{ fontSize: 16 }}>
+            {mode === "register" ? "Save your progress" : "Welcome back"}
+          </div>
+          <button className="pw-btn" style={{ padding: "4px 10px" }} onClick={onClose}>✕</button>
+        </div>
+        <div className="pw-muted pw-read" style={{ fontSize: 12.5, marginTop: 6 }}>
+          {mode === "register"
+            ? "Your progress stays on this device and is yours. An account just lets it follow you to other devices and the iOS app."
+            : "Sign in to pull your progress onto this device."}
+        </div>
+
+        <input className="pw-input" type="email" inputMode="email" autoComplete="email"
+          placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="pw-input" type="password"
+          autoComplete={mode === "register" ? "new-password" : "current-password"}
+          placeholder="password" value={pw} onChange={(e) => setPw(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") submit(); }} />
+
+        {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 8 }}>{err}</div>}
+        {note && <div style={{ color: "var(--ok)", fontSize: 12.5, marginTop: 8 }}>{note}</div>}
+
+        <button className="pw-btn primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !email || !pw}
+          onClick={submit}>
+          {busy ? "…" : mode === "register" ? "Create account" : "Sign in"}
+        </button>
+
+        <div className="pw-row" style={{ gap: 8, margin: "12px 0 4px" }}>
+          <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
+          <span className="pw-eyebrow">or</span>
+          <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
+        </div>
+        <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("google")}>
+          <GBrand /> Continue with Google
+        </button>
+        <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("apple")}>
+          <AppleBrand /> Continue with Apple
+        </button>
+
+        <div className="pw-row" style={{ justifyContent: "space-between", marginTop: 12, fontSize: 12.5 }}>
+          <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }}
+            onClick={() => { setMode(mode === "register" ? "signin" : "register"); setErr(""); setNote(""); }}>
+            {mode === "register" ? "I already have an account" : "Create an account"}
+          </button>
+          {mode === "signin" && (
+            <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }} onClick={forgot}>
+              Forgot password?
+            </button>
+          )}
+        </div>
+      </Frame>
+    </div>
+  );
+}
+
+function AccountPanel({ save, auth, openAuth, toast }) {
+  const [busy, setBusy] = useState(false);
+
+  if (!auth.configured) {
+    return (
+      <Frame style={{ marginTop: 14 }}>
+        <div className="pw-phase" style={{ marginTop: 0 }}>Account</div>
+        <div className="pw-muted pw-read" style={{ fontSize: 13 }}>
+          Cloud sync isn't set up for this build — progress is saved on this device only.
+          See <code>supabase/README.md</code> to enable accounts.
+        </div>
+      </Frame>
+    );
+  }
+
+  const exportData = async () => {
+    try {
+      const blob = await store.exportBlob(SAVE_KEY);
+      const text = JSON.stringify(blob ?? save ?? {}, null, 2);
+      const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = "pywots-progress.json"; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      try { await navigator.clipboard.writeText(JSON.stringify(save)); toast("sys", "⟢ SYSTEM", "Progress copied to clipboard."); }
+      catch { toast("sys", "⟢ SYSTEM", "Could not export."); }
+    }
+  };
+
+  const doSignOut = async () => {
+    if (!window.confirm("Sign out? Local progress on this device is cleared (it stays in your account).")) return;
+    setBusy(true);
+    await signOut();
+    window.location.reload();
+  };
+
+  const doDelete = async () => {
+    if (!window.confirm("Delete your account and all its data? This cannot be undone.")) return;
+    setBusy(true);
+    try { await deleteAccount(); window.location.reload(); }
+    catch (e) { toast("sys", "⟢ SYSTEM", e?.message || "Delete failed."); setBusy(false); }
+  };
+
+  const syncLabel = { synced: "Synced", syncing: "Syncing…", error: "Sync error — will retry", off: "Local only" }[auth.syncState] || "";
+
+  return (
+    <Frame style={{ marginTop: 14 }} tone={auth.email ? undefined : "gold"}>
+      <div className="pw-phase" style={{ marginTop: 0 }}>Account</div>
+
+      {auth.isAnon ? (
+        <>
+          <div className="pw-read" style={{ fontSize: 13 }}>
+            You're playing as a <b>guest</b>. Progress is saved on this device and is yours —
+            create an account to sync it to other devices and the iOS app.
+          </div>
+          <button className="pw-btn primary" style={{ marginTop: 10 }} onClick={openAuth}>
+            Create account / Sign in
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="pw-row" style={{ gap: 8 }}>
+            <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
+            <div>
+              <div style={{ fontSize: 13 }}>{auth.email}</div>
+              <div className="pw-row" style={{ gap: 6, fontSize: 11 }} >
+                <span className={`pw-syncdot ${auth.syncState}`} /> <span className="pw-muted">{syncLabel}</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+            <button className="pw-btn" disabled={busy} onClick={() => store.resync(SAVE_KEY).then(() => toast("sys", "⟢ SYSTEM", "Synced."))}>Sync now</button>
+            <button className="pw-btn" disabled={busy} onClick={exportData}>Export data</button>
+            <button className="pw-btn" disabled={busy} onClick={doSignOut}>Sign out</button>
+            <button className="pw-btn danger" disabled={busy} onClick={doDelete}>Delete account</button>
+          </div>
+        </>
+      )}
+    </Frame>
+  );
+}
+
 /* =========================== shell ======================== */
 export default function PyWots() {
   const [save, setSave] = useState(undefined); // undefined = loading
@@ -1172,7 +1383,9 @@ export default function PyWots() {
   const [toasts, setToasts] = useState([]);
   const [booting, setBooting] = useState(true);
   const [burst, setBurst] = useState(null); // {title, sub}
+  const [authOpen, setAuthOpen] = useState(false);
   const py = usePyodide();
+  const auth = useAuth();
   const prevLevel = useRef(null);
   const prevRank = useRef(null);
 
@@ -1186,6 +1399,28 @@ export default function PyWots() {
     const t = setTimeout(() => setBooting(false), 2050);
     return () => clearTimeout(t);
   }, []);
+
+  // finish an OAuth redirect / deep-link return, if any
+  useEffect(() => { completeOAuthFromUrl(); }, []);
+
+  // when the user signs in as a real (non-guest) identity, pull that
+  // account's save and adopt it if it carries progress.
+  const prevUid = useRef(null);
+  useEffect(() => {
+    if (!auth.configured || auth.user === undefined) return;
+    const uid = auth.user?.id || null;
+    const changed = uid !== prevUid.current;
+    const becameReal = Boolean(auth.user) && !auth.isAnon;
+    prevUid.current = uid;
+    if (!changed || !becameReal) return;
+    let alive = true;
+    store.resync(SAVE_KEY).then((s) => {
+      if (!alive || !s || !s.answers) return;
+      setSave((cur) => (cur && JSON.stringify(cur) === JSON.stringify(s) ? cur : s));
+      setViewDay(s.day || 1);
+    });
+    return () => { alive = false; };
+  }, [auth.user, auth.isAnon, auth.configured]);
 
   // load
   useEffect(() => {
@@ -1228,6 +1463,15 @@ export default function PyWots() {
   }, [save]);
 
   const mutate = useCallback((fn) => setSave((s) => fn(s)), []);
+
+  // soft, one-time nudge to create an account — only after there's progress
+  // worth protecting (Day 3 cleared) and only for guests.
+  useEffect(() => {
+    if (!save || !save.answers || !auth.configured || !auth.isAnon) return;
+    if (save.promptedLink || !save.completed?.[3]?.dungeon) return;
+    toast("sys", "⟢ SYSTEM", "Your progress lives only on this device. Open Hunter ▸ Account to save it to an account.");
+    mutate((s) => ({ ...s, promptedLink: true }));
+  }, [save, auth.configured, auth.isAnon, toast, mutate]);
 
   const finishAssessment = (answers) => {
     const fresh = {
@@ -1328,6 +1572,18 @@ export default function PyWots() {
           <span className="pw-row" style={{ gap: 4, fontFamily: "var(--display)", fontSize: 13 }}>
             🔥 {save.streak || 0}
           </span>
+          {auth.configured && (
+            auth.isAnon ? (
+              <button className="pw-acct" onClick={() => setAuthOpen(true)} title="Save your progress">
+                <span className="pw-syncdot" /> Guest
+              </button>
+            ) : (
+              <button className="pw-acct" onClick={() => setTab("hunter")} title={auth.email || "Account"}>
+                <span className={`pw-syncdot ${auth.syncState}`} />
+                <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
+              </button>
+            )
+          )}
         </div>
       </div>
 
@@ -1335,7 +1591,9 @@ export default function PyWots() {
         <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} />
       )}
       {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} />}
-      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} />}
+      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} />}
+
+      {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} toast={toast} />}
 
       <div className="pw-dock">
         <div className="pw-dockinner">
