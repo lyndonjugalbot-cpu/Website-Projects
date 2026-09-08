@@ -416,44 +416,23 @@ const CSS = `
 .timer[data-dead="true"] { background:#241F2E; border-color:#3A3448; color:var(--muted); }
 
 /* ============================================================= */
-/*  DUNGEON THEME — procedural background + HUD chrome (no assets) */
+/*  DUNGEON THEME — painted key art background + HUD chrome        */
 /* ============================================================= */
 
-/* --- background layer, scoped to the phone frame --- */
 .dbg { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-.dbg::before { content:""; position:absolute; inset:0; opacity:.5;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(200,220,255,.03) 0 2px, transparent 2px 48px),
-    repeating-linear-gradient(90deg, rgba(200,220,255,.022) 0 2px, transparent 2px 66px);
-  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.4) 55%, transparent 92%);
-          mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.4) 55%, transparent 92%); }
-.dbg::after { content:""; position:absolute; inset:0; box-shadow:inset 0 0 130px 34px rgba(3,5,14,.82); }
 
-/* the summoning arch: a stone ring, its inner glow, and a band of runes */
-.dbg-arch { position:absolute; top:-40px; left:50%; width:560px; max-width:150%; height:440px;
-  margin-left:-280px; }
-.dbg-gateglow { position:absolute; top:-30px; left:50%; width:300px; height:300px; margin-left:-150px;
-  border-radius:50%; filter:blur(6px); animation:portalPulse 6s ease-in-out infinite;
-  background:radial-gradient(circle, rgba(150,200,255,.42) 0%, rgba(150,110,255,.24) 38%, rgba(232,107,198,.10) 60%, transparent 74%); }
-@keyframes portalPulse { 0%,100%{ opacity:.6; } 50%{ opacity:1; } }
-.dbg-runering { animation:runeGlow 5s ease-in-out infinite; }
-@keyframes runeGlow { 0%,100%{ opacity:.4; } 50%{ opacity:.95; } }
+/* the real key art, viewport-locked like a wallpaper, dimmed through the
+   middle band (baked into bg.webp) so content stays readable */
+.dbg-bg { position:fixed; top:0; bottom:0; left:50%; width:100%; max-width:430px;
+  transform:translateX(-50%); z-index:0;
+  background:#05060E url(/bg.webp) top center / cover no-repeat; }
+.dbg-bg::after { content:""; position:absolute; inset:0;
+  box-shadow:inset 0 0 120px 44px rgba(4,6,15,.72);
+  background:radial-gradient(120% 46% at 50% 8%, rgba(120,150,255,.12), transparent 60%);
+  animation:gatePulse 7s ease-in-out infinite; }
+@keyframes gatePulse { 0%,100%{ opacity:.7; } 50%{ opacity:1; } }
 
-.dbg-floor { position:absolute; left:0; right:0; bottom:0; height:190px; opacity:.5;
-  background-image:
-    repeating-linear-gradient(90deg, rgba(150,180,255,.05) 0 1px, transparent 1px 58px),
-    repeating-linear-gradient(0deg,  rgba(150,180,255,.04) 0 1px, transparent 1px 34px);
-  -webkit-mask-image:linear-gradient(0deg,#000, transparent 88%);
-          mask-image:linear-gradient(0deg,#000, transparent 88%);
-  transform:perspective(320px) rotateX(58deg); transform-origin:bottom; }
-
-.dbg-brazier { position:absolute; bottom:64px; width:100px; height:150px; border-radius:50%;
-  filter:blur(11px); animation:flick 2.8s ease-in-out infinite; }
-.dbg-brazier--l { left:-34px; background:radial-gradient(circle, rgba(120,150,255,.4), rgba(168,123,255,.16) 55%, transparent 72%); }
-.dbg-brazier--r { right:-34px; background:radial-gradient(circle, rgba(232,107,198,.36), rgba(150,110,255,.16) 55%, transparent 72%); animation-delay:-1.2s; }
-@keyframes flick { 0%,100%{ transform:scale(1) translateY(0); opacity:.6; } 50%{ transform:scale(1.09) translateY(-4px); opacity:1; } }
-
-.dbg-mote { position:absolute; bottom:-12px; left:calc(var(--i) * 6.2% + 4%); width:3px; height:3px;
+.dbg-mote { position:fixed; bottom:-12px; left:calc(var(--i) * 6.2% + 4%); width:3px; height:3px;
   border-radius:50%; background:rgba(196,178,255,.85); filter:blur(.5px); opacity:0;
   animation:mote linear infinite; animation-duration:calc(9s + var(--i) * 0.7s); animation-delay:calc(var(--i) * -1.3s); }
 @keyframes mote { 0%{ transform:translateY(0) scale(.5); opacity:0; } 12%{ opacity:.9; } 88%{ opacity:.45; } 100%{ transform:translateY(-760px) scale(1); opacity:0; } }
@@ -461,7 +440,7 @@ const CSS = `
 /* --- angular HUD panels (upgrades every .panel / .syswin at once) --- */
 .panel, .syswin {
   position:relative; border-radius:0;
-  background:linear-gradient(180deg, rgba(23,29,58,.82), rgba(13,17,36,.9));
+  background:linear-gradient(180deg, rgba(19,24,49,.94), rgba(11,14,31,.96));
   border:1px solid var(--edge);
   clip-path:polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
   box-shadow:inset 0 0 26px rgba(77,160,255,.09);
@@ -860,56 +839,13 @@ const OFFER_MINUTES = 10;
 const LAST_CHANCE_MINUTES = 5;
 
 /* --------------------------- theme art --------------------------- */
-/* Dungeon backdrop pulled from the key art: a stone summoning arch ringed
-   with glowing runes, its inner gate-glow, braziers, a receding stone
-   floor and drifting embers. All CSS/SVG, scoped to the phone frame,
-   frozen under prefers-reduced-motion by the global rule. */
-
-const RUNES = [
-  "M0 -7 V7 M-5 -3 L0 -7 M5 -3 L0 -7",
-  "M-4 -7 L4 0 L-4 7",
-  "M0 -7 V7 M-5 0 H5",
-  "M-4 -7 V7 M-4 -7 L4 -1 L-4 5",
-  "M0 -7 L5 7 H-5 Z",
-  "M-4 -7 H4 M0 -7 V7 M-4 7 H4",
-];
-
+/* Backdrop is the painted key art itself (public/bg.webp — the full scene
+   with a dimmed middle band baked in for legibility), viewport-locked
+   like a wallpaper, with drifting embers on top. */
 function DungeonBg() {
-  const cx = 280, cy = 300;
-  const runes = Array.from({ length: 17 }, (_, i) => {
-    const a = 192 + i * (156 / 16);
-    const r = (a * Math.PI) / 180;
-    return { x: cx + 150 * Math.cos(r), y: cy + 150 * Math.sin(r), rot: a + 90, d: RUNES[i % RUNES.length] };
-  });
-  const joints = Array.from({ length: 13 }, (_, i) => {
-    const a = 188 + i * (164 / 12);
-    const r = (a * Math.PI) / 180;
-    return {
-      x1: cx + 168 * Math.cos(r), y1: cy + 168 * Math.sin(r),
-      x2: cx + 226 * Math.cos(r), y2: cy + 226 * Math.sin(r),
-    };
-  });
-  const arch = "M90 440 V300 A190 190 0 0 1 470 300 V440";
   return (
     <div className="dbg" aria-hidden="true">
-      <div className="dbg-gateglow" />
-      <svg className="dbg-arch" viewBox="0 0 560 440" preserveAspectRatio="xMidYMin slice">
-        <path d={arch} fill="none" stroke="#141930" strokeWidth="72" />
-        <path d={arch} fill="none" stroke="#242B44" strokeWidth="62" />
-        <g stroke="#11162a" strokeWidth="3">
-          {joints.map((j, i) => <line key={i} x1={j.x1.toFixed(1)} y1={j.y1.toFixed(1)} x2={j.x2.toFixed(1)} y2={j.y2.toFixed(1)} />)}
-        </g>
-        <g className="dbg-runering" fill="none" stroke="rgba(150,205,255,.55)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {runes.map((rn, i) => (
-            <g key={i} transform={`translate(${rn.x.toFixed(1)} ${rn.y.toFixed(1)}) rotate(${rn.rot.toFixed(1)})`}>
-              <path d={rn.d} />
-            </g>
-          ))}
-        </g>
-      </svg>
-      <div className="dbg-floor" />
-      <div className="dbg-brazier dbg-brazier--l" />
-      <div className="dbg-brazier dbg-brazier--r" />
+      <div className="dbg-bg" />
       {Array.from({ length: 16 }).map((_, i) => (
         <span key={i} className="dbg-mote" style={{ "--i": i }} />
       ))}
