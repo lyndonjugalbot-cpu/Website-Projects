@@ -1448,19 +1448,6 @@ export default function SelfLeveling() {
                   </div>
                 );
               })}
-
-              <div className="panel" style={{ marginTop: 20 }}>
-                <div className="h2">Testing controls</div>
-                <p className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
-                  Remove these before you ship.
-                </p>
-                <button className="opt" onClick={() => setSave((s2) => ({ ...s2, offset: s2.offset + 1 }))}>
-                  Skip to next day (currently +{save.offset})
-                </button>
-                <button className="opt" onClick={() => { setSave(blankSave()); setAnswers({}); setQi(0); setStep("welcome"); }}>
-                  Reset everything
-                </button>
-              </div>
             </>
           )}
         </div>
