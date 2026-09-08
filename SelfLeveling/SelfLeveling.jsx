@@ -469,8 +469,12 @@ const CSS = `
 .brand .b2 { font-size:clamp(34px,12.5vw,52px); letter-spacing:.05em; }
 .brand .byline { font-family:'Chakra Petch',sans-serif; font-weight:600; letter-spacing:.38em;
   font-size:10px; color:var(--magenta); margin-top:12px; text-transform:uppercase; }
-.brand--mini b { font-size:13px; letter-spacing:.16em; transform:skewX(-4deg);
-  filter:drop-shadow(0 1px 0 #05060E) drop-shadow(0 0 8px rgba(168,123,255,.5)); }
+.brand--mini { display:flex; align-items:baseline; justify-content:center; gap:.42em;
+  line-height:1; white-space:nowrap; }
+.brand--mini b { display:inline; transform:skewX(-4deg);
+  filter:drop-shadow(0 1px 0 #05060E) drop-shadow(0 0 9px rgba(168,123,255,.55)); }
+.brand--mini .b1 { font-size:12px; letter-spacing:.22em; margin:0; }
+.brand--mini .b2 { font-size:16px; letter-spacing:.11em; }
 
 /* --- top HUD bar --- */
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:16px; }
@@ -544,9 +548,7 @@ const CSS = `
 .bar > i { box-shadow:0 0 10px rgba(233,196,106,.5); }
 .lvlnum { font-family:inherit; font-weight:700; color:var(--gold);
   filter:drop-shadow(0 0 18px rgba(233,196,106,.35)); }
-.brand--mini .b1 { font-size:13px; letter-spacing:.14em; white-space:nowrap;
-  filter:drop-shadow(0 1px 0 #070C24) drop-shadow(0 0 8px rgba(95,175,255,.45)); }
-.brand--mini { min-width:0; overflow:hidden; }
+.brand--mini { flex:none; min-width:0; }
 .rank { font-family:'Chakra Petch',sans-serif; letter-spacing:.14em; color:var(--cyan); }
 .grid66 .cell { border-radius:0; }
 .cell[data-s="today"] { box-shadow:0 0 0 2px var(--cyan-bright), 0 0 10px rgba(124,224,255,.6); }
@@ -853,20 +855,27 @@ function DungeonBg() {
   );
 }
 
-/* Uses the key art from /public when present, else a styled CSS wordmark. */
+/* Full lockup = the key art (welcome). Mini = a readable text wordmark
+   for the top bar, so the app's title is always visible on screen. */
 function Brand({ mini }) {
   const [imgOk, setImgOk] = useState(true);
+  if (mini) {
+    return (
+      <div className="brand brand--mini" aria-label="SelfLeveling">
+        <b className="b1">Self</b><b className="b2">Leveling</b>
+      </div>
+    );
+  }
   if (imgOk) {
     return (
       <img
-        className={`brand-img${mini ? " brand-img--mini" : ""}`}
-        src={mini ? "/emblem.webp" : "/logo.webp"}
+        className="brand-img"
+        src="/logo.webp"
         alt="SelfLeveling by Wots"
         onError={() => setImgOk(false)}
       />
     );
   }
-  if (mini) return <div className="brand brand--mini"><b className="b1">Self&nbsp;Leveling</b></div>;
   return (
     <div className="brand">
       <b className="b1">Self</b>
