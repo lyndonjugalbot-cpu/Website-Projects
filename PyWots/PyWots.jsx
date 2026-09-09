@@ -148,7 +148,7 @@ const CSS = `
   --glow-bad:0 0 12px rgba(255,92,122,.55),0 0 34px rgba(255,92,122,.25);
 }
 *{box-sizing:border-box}
-html,body{background:var(--bg)}
+html,body{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
   color:var(--text);font-family:var(--sans);font-size:16px;
   /* never let the page pan sideways; wide content scrolls inside its own box */
@@ -159,6 +159,9 @@ body{
     linear-gradient(180deg,#070A18,#05060F 60%);
 }
 img,svg,video{max-width:100%}
+/* iOS zooms the page when a focused field is under 16px and doesn't reliably
+   zoom back out — keep every text field at 16px. */
+input,textarea,select{font-size:16px}
 
 /* ---- layout ---- */
 .pw-app{position:relative;z-index:1;min-height:100vh;width:100%;overflow-x:clip}
@@ -265,7 +268,7 @@ a,.pw-link{color:var(--cyan)}
 
 /* ---- editor / output ---- */
 .pw-editor{width:100%;min-height:200px;background:#04060E;color:#DCE6FF;border:1px solid var(--line);
-  border-radius:2px;padding:12px;font-family:var(--mono);font-size:13.5px;line-height:1.6;
+  border-radius:2px;padding:12px;font-family:var(--mono);font-size:16px;line-height:1.55;
   resize:vertical;tab-size:4;outline:none;transition:.15s}
 .pw-editor:focus{border-color:var(--cyan);box-shadow:0 0 22px -6px rgba(56,225,255,.6)}
 .pw-out{background:#04060E;border:1px solid var(--line);border-radius:2px;padding:12px;
@@ -394,7 +397,7 @@ a,.pw-link{color:var(--cyan)}
 .pw-overlay{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:18px;
   background:rgba(4,6,15,.72);backdrop-filter:blur(6px);animation:pw-reveal .2s ease both}
 .pw-input{width:100%;background:#04060E;color:#DCE6FF;border:1px solid var(--line);border-radius:2px;
-  padding:10px 12px;font-family:var(--mono);font-size:14px;margin-top:8px;outline:none;
+  padding:10px 12px;font-family:var(--mono);font-size:16px;margin-top:8px;outline:none;
   clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
 .pw-input:focus{border-color:var(--cyan);box-shadow:0 0 18px -6px rgba(56,225,255,.6)}
 .pw-oauth{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px}
