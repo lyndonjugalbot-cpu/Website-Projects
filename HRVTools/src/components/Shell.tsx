@@ -45,7 +45,7 @@ export function Shell({ user, children }: { user: UserDoc; children: ReactNode }
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
 
       <footer className="border-t border-slate-200 bg-white py-4 text-center dark:border-slate-800 dark:bg-slate-900">
-        <p className="text-xs text-slate-400 dark:text-slate-500">web app by Wots Dev</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">© 2026 Wots Dev. All rights reserved.</p>
       </footer>
 
       {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}

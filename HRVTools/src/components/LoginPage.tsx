@@ -78,7 +78,9 @@ export function LoginPage() {
         <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
           Accounts are created by your Team Leader / Admin.
         </p>
-        <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">web app by Wots Dev</p>
+        <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
+          © 2026 Wots Dev. All rights reserved.
+        </p>
       </div>
     </div>
   );
