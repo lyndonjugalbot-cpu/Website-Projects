@@ -1,8 +1,49 @@
-# PyWots iOS (Capacitor)
+# PyWots native apps (Capacitor)
 
-The iOS app is the **same web build** running in a native WKWebView shell, so
-`https://pywots.vercel.app` and the App Store build share one codebase and one
+iOS and Android are the **same web build** running in a native WebView shell, so
+`https://pywots.vercel.app` and both native apps share one codebase and one
 Supabase backend — they can't drift. Fix a bug once, `cap sync`, ship.
+
+---
+
+# Android — the APK
+
+Unlike iOS, Android lets you hand someone an installable file. `public/pywots.apk`
+is a **debug-signed** build served from the site; the Hunter screen has a
+**Download for Android** button pointing at `/pywots.apk`.
+
+## Build / refresh the APK
+
+```bash
+npm run android:apk
+```
+
+That runs `vite build` → `cap sync android` → `gradlew assembleDebug`, then copies
+the result to `public/pywots.apk`. Re-run it after any web change and redeploy so
+the download stays current. (The script deletes the copied-in `pywots.apk` from
+the Android assets before Gradle runs, so the APK doesn't nest a copy of itself.)
+
+Toolchain used here: Homebrew `android-commandlinetools` at
+`/opt/homebrew/share/android-commandlinetools`, `openjdk@21`, SDK platform
+`android-35`. A fresh clone needs `android/local.properties` with
+`sdk.dir=<path-to-sdk>` (or `ANDROID_HOME` set), plus `JAVA_HOME` pointing at a
+JDK 17/21.
+
+## Notes
+
+- Debug signing = fine for sideloading, not for the Play Store. For Play, add a
+  release keystore and `./gradlew bundleRelease` (`.aab`).
+- Installing: the user opens the `.apk`, allows "install unknown apps" for their
+  browser once, taps Install. Play Protect may show a "scan" prompt — normal for
+  a sideloaded app.
+- `minSdk 24` (Android 7.0+). Deep-link scheme `pywots://` and
+  `POST_NOTIFICATIONS` are in `AndroidManifest.xml`.
+- Not yet tested on a physical Android device — the APK builds, signs, and
+  bundles the current web app; verify on hardware before wider distribution.
+
+---
+
+# iOS
 
 ## Prerequisites
 
