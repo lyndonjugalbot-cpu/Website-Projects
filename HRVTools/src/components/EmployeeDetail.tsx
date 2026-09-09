@@ -43,10 +43,18 @@ export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">
                 ID: {employee.idNumber} · {employee.email}
               </p>
             )}
+            {employee?.phone && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">{employee.phone}</p>
+            )}
+            {employee?.address && (
+              <p className="whitespace-pre-line text-sm text-slate-500 dark:text-slate-400">
+                {employee.address}
+              </p>
+            )}
           </div>
           <button
             onClick={handleDelete}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-300 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-red-400"
+            className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-300 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-red-400"
           >
             <Trash2 size={14} />
             Delete employee
@@ -56,7 +64,7 @@ export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Weekly metrics
+          Stats
         </h2>
         {metrics === undefined ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>

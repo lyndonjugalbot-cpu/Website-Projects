@@ -10,7 +10,8 @@ export const record = mutation({
     value: v.number(),
   },
   handler: async (ctx, args) => {
-    const admin = await requireAdmin(ctx);
+    // Agents record their own stats; admins can record for anyone.
+    const author = await requireSelfOrAdmin(ctx, args.employeeId);
     const metricName = args.metricName.trim();
     if (!metricName) throw new Error("Metric name is required");
 
@@ -24,7 +25,7 @@ export const record = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         value: args.value,
-        createdBy: admin._id,
+        createdBy: author._id,
         createdAt: new Date().toISOString(),
       });
       return existing._id;
@@ -35,7 +36,7 @@ export const record = mutation({
       weekStart: args.weekStart,
       metricName,
       value: args.value,
-      createdBy: admin._id,
+      createdBy: author._id,
       createdAt: new Date().toISOString(),
     });
   },

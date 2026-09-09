@@ -2,13 +2,7 @@ import { useAction } from "convex/react";
 import { LoaderCircle, X } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../convex/_generated/api";
-
-function randomPassword() {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$";
-  let out = "";
-  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
-}
+import { randomPassword } from "../lib/password";
 
 export function AddEmployeeModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const createEmployee = useAction(api.admin.createEmployee);
