@@ -861,6 +861,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
   const day = useMemo(() => dayContent(viewDay), [viewDay]);
   const rec = save.completed?.[viewDay] || { lessons: [], dungeon: false, boss: false };
   const [codex, setCodex] = useState(viewDay === (save.day || 1));
+  useEffect(() => { setCodex(viewDay === (save.day || 1)); }, [viewDay]); // eslint-disable-line
   const draft = save.drafts?.[viewDay] ?? day.dungeon.starter;
   const setDraft = (v) => mutate((s) => ({ ...s, drafts: { ...(s.drafts || {}), [viewDay]: v } }));
   const hinted = !!save.hintDays?.[viewDay];
@@ -949,6 +950,11 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
         <button className="pw-btn" disabled={viewDay >= (save.day || 1)} onClick={() => setViewDay(viewDay + 1)}>Day {viewDay + 1} ›</button>
       </div>
 
+      {/* One keyed wrapper: the whole day-specific subtree remounts atomically
+          when viewDay changes, so no per-lesson state (or framed panels) leaks
+          across days. */}
+      <div key={viewDay}>
+
       {isReplay && (
         <div className="pw-muted" style={{ fontSize: 12, marginBottom: 8 }}>
           Replaying a cleared day — practice freely, no rewards granted.
@@ -962,7 +968,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
         </Frame>
       )}
 
-      <Frame className="pw-sysbox pw-reveal" key={viewDay}>
+      <Frame className="pw-sysbox pw-reveal">
         <div className="pw-eyebrow"><b>⟢ SYSTEM MESSAGE</b> · Day {viewDay}</div>
         <div className="pw-sys">{day.system}</div>
       </Frame>
@@ -1019,6 +1025,8 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
           )}
         </Frame>
       )}
+
+      </div>{/* /key={viewDay} */}
     </div>
   );
 }
