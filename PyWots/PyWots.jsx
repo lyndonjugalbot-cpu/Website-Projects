@@ -14,6 +14,14 @@ import {
   completeOAuthFromUrl, signOut, deleteAccount,
 } from "./src/lib/auth.js";
 
+/* PRO build: baked in at build time via `VITE_PYWOTS_PRO=1` (set in the
+   iOS build's .env.local, NOT in Vercel). OR-ed with a per-save `pro` flag
+   so it can also be granted at runtime later. PRO = every Gate unlocked,
+   no dev/testing UI, a PRO badge. Client-side only — fine while nothing is
+   billed; gate server-side before charging. */
+const PRO_BUILD = import.meta.env.VITE_PYWOTS_PRO === "1";
+const isProSave = (save) => PRO_BUILD || !!(save && save.pro);
+
 /* ================================================================== */
 /*  PyWots — a 100-day Solo-Leveling-style ascent from zero Python     */
 /*  to competent Python. Single component. Content lives in            */
@@ -235,6 +243,9 @@ a,.pw-link{color:var(--cyan)}
   text-transform:uppercase;padding:3px 8px;border-radius:2px;border:1px solid var(--line);color:var(--dim)}
 .pw-badge{font-family:var(--display);font-weight:900;border:1px solid var(--cyan);color:var(--cyan);
   border-radius:2px;padding:3px 10px;font-size:12px;letter-spacing:.1em;box-shadow:var(--glow-cyan)}
+.pw-pro{font-family:var(--display);font-weight:900;border:1px solid var(--gold);color:var(--gold);
+  border-radius:2px;padding:3px 8px;font-size:11px;letter-spacing:.16em;flex:none;white-space:nowrap;
+  box-shadow:0 0 12px rgba(255,194,75,.5)}
 .pw-bar{height:9px;background:#05070F;border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative}
 .pw-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));
   box-shadow:0 0 12px rgba(56,225,255,.6);transition:width .5s cubic-bezier(.2,.8,.2,1)}
@@ -912,7 +923,7 @@ const phaseFor = (day) => {
   return name;
 };
 
-function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
+function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
   const day = useMemo(() => dayContent(viewDay), [viewDay]);
   const rec = save.completed?.[viewDay] || { lessons: [], dungeon: false, boss: false };
   const [codex, setCodex] = useState(viewDay === (save.day || 1));
@@ -972,7 +983,11 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
         penalty = false;
       }
 
-      const nextDay = Math.min(PROGRAM_DAYS, Math.max(s.day || 1, viewDay + 1));
+      // PRO can clear Gates out of order without dragging the progression
+      // pointer past the days they skipped.
+      const nextDay = pro && viewDay !== (s.day || 1)
+        ? (s.day || 1)
+        : Math.min(PROGRAM_DAYS, Math.max(s.day || 1, viewDay + 1));
       const xp = (s.xp || 0) + (isReplay ? 0 : day.dungeon.xp);
 
       const draftState = { ...s, completed: c, stats, xp, flawless, streak, bestStreak, lastActive, penalty, day: nextDay };
@@ -1002,7 +1017,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
           <div className="pw-eyebrow">{phaseFor(viewDay)} · Day {viewDay} / {PROGRAM_DAYS}</div>
           <div className="pw-h1">{day.title}</div>
         </div>
-        <button className="pw-btn" disabled={viewDay >= (save.day || 1)} onClick={() => setViewDay(viewDay + 1)}>Day {viewDay + 1} ›</button>
+        <button className="pw-btn" disabled={viewDay >= (pro ? PROGRAM_DAYS : (save.day || 1))} onClick={() => setViewDay(viewDay + 1)}>Day {viewDay + 1} ›</button>
       </div>
 
       {/* One keyed wrapper: the whole day-specific subtree remounts atomically
@@ -1074,7 +1089,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
               : "You have reached the summit of the tower. You are the Python Monarch."}
           </div>
           {viewDay < PROGRAM_DAYS && (
-            <button className="pw-btn primary" onClick={() => setViewDay(Math.min(save.day || 1, viewDay + 1))}>
+            <button className="pw-btn primary" onClick={() => setViewDay(Math.min(pro ? PROGRAM_DAYS : (save.day || 1), viewDay + 1))}>
               Enter Day {viewDay + 1} →
             </button>
           )}
@@ -1087,7 +1102,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
 }
 
 /* ============================ path ========================= */
-function Path({ save, setViewDay, setTab }) {
+function Path({ save, setViewDay, setTab, pro }) {
   const cur = save.day || 1;
   const rows = [];
   let lastPhase = null;
@@ -1096,7 +1111,7 @@ function Path({ save, setViewDay, setTab }) {
     if (ph !== lastPhase) { rows.push({ phase: ph, key: "p" + d }); lastPhase = ph; }
     const meta = d <= 10 ? dayContent(d) : topicFor(d);
     const done = !!save.completed?.[d]?.dungeon;
-    const locked = d > cur;
+    const locked = !pro && d > cur;
     rows.push({ d, meta, done, locked, cur: d === cur, boss: isBossDay(d), key: "d" + d });
   }
   return (
@@ -1139,7 +1154,7 @@ function countBosses(save) {
   return Object.keys(BOSS_DAYS).filter((d) => c[d] && c[d].boss).length;
 }
 
-function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
+function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
   const earned = new Set(save.achievements || []);
@@ -1246,19 +1261,29 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
         </button>
       </Frame>
 
-      <Frame style={{ marginTop: 14 }}>
-        <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Testing controls — remove before ship</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button className="pw-btn" onClick={() => mutate((s) => ({ ...s, day: Math.min(PROGRAM_DAYS, (s.day || 1) + 1) }))}>
-            Unlock next day
-          </button>
-          <button className="pw-btn" onClick={() => mutate((s) => ({ ...s, xp: (s.xp || 0) + 200 }))}>+200 XP</button>
-          <button className="pw-btn" onClick={() => { mutate((s) => ({ ...s, lastActive: dayStr(new Date(Date.now() - 3 * 86400000)) })); toast("sys", "⟢ DEBUG", "lastActive set 3 days back — reload to trigger penalty."); }}>
-            Age progress 3 days
-          </button>
-          <button className="pw-btn danger" onClick={resetAll}>Reset all progress</button>
-        </div>
-      </Frame>
+      {pro ? (
+        <Frame style={{ marginTop: 14 }}>
+          <div className="pw-phase" style={{ marginTop: 0 }}>PRO</div>
+          <div className="pw-muted pw-read" style={{ fontSize: 13 }}>
+            All {PROGRAM_DAYS} Gates unlocked — pick any day from the Tower.
+          </div>
+          <button className="pw-btn danger" style={{ marginTop: 10 }} onClick={resetAll}>Reset all progress</button>
+        </Frame>
+      ) : (
+        <Frame style={{ marginTop: 14 }}>
+          <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Testing controls — remove before ship</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button className="pw-btn" onClick={() => mutate((s) => ({ ...s, day: Math.min(PROGRAM_DAYS, (s.day || 1) + 1) }))}>
+              Unlock next day
+            </button>
+            <button className="pw-btn" onClick={() => mutate((s) => ({ ...s, xp: (s.xp || 0) + 200 }))}>+200 XP</button>
+            <button className="pw-btn" onClick={() => { mutate((s) => ({ ...s, lastActive: dayStr(new Date(Date.now() - 3 * 86400000)) })); toast("sys", "⟢ DEBUG", "lastActive set 3 days back — reload to trigger penalty."); }}>
+              Age progress 3 days
+            </button>
+            <button className="pw-btn danger" onClick={resetAll}>Reset all progress</button>
+          </div>
+        </Frame>
+      )}
     </div>
   );
 }
@@ -1701,6 +1726,7 @@ export default function PyWots() {
 
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
+  const pro = isProSave(save);
 
   const TABS = [
     { id: "today", label: "Today", Icon: IconToday },
@@ -1728,6 +1754,7 @@ export default function PyWots() {
           <Emblem size={30} word={false} />
           <span className="pw-word" style={{ fontSize: 17 }}>PYWOTS</span>
           <span className="pw-badge">{rank}-RANK</span>
+          {pro && <span className="pw-pro">PRO</span>}
           <div className="pw-status-xp">
             <div className="pw-row" style={{ justifyContent: "space-between", fontSize: 10.5 }} >
               <span className="pw-eyebrow">Lv {level}</span>
@@ -1754,10 +1781,10 @@ export default function PyWots() {
       </div>
 
       {tab === "today" && (
-        <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} />
+        <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} pro={pro} />
       )}
-      {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} />}
-      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} />}
+      {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} pro={pro} />}
+      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} pro={pro} />}
 
       {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} toast={toast} />}
 
