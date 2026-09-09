@@ -15,8 +15,9 @@ npm run build    # -> dist/
 ```
 
 Runs with zero config — progress saves to the device. Add a Supabase project
-for **accounts + cross-device sync**, and there's an **iOS app** (Capacitor).
-Both in **[SETUP.md](SETUP.md)**.
+for **accounts + cross-device sync**; **iOS and Android apps** (Capacitor) wrap
+this same build. All in **[SETUP.md](SETUP.md)**. The live site's
+*Records → Get the app* has a **Download APK** button.
 
 ## The program
 
@@ -39,15 +40,17 @@ Each cleared quest plays a short SVG animation of the movement and pushes its
 stat up. Levels trigger a `⟪ Level Up ⟫` window; ranks and achievements track on
 the **Records** tab.
 
-## Accounts, sync & iOS
+## Accounts, sync & native apps
 
 - **[persistence.js](persistence.js)** — offline-first `store`: local cache +
   debounced Supabase sync, last-write-wins, flushes on reconnect / tab-hide.
 - **[auth.js](auth.js)** — anonymous-first email/password. `register()` *links*
   an email to the current anonymous account (same id, nothing lost); the
   Account panel lives on the **Records** tab.
-- **[capacitor.config.json](capacitor.config.json)** + `ios/` — the iOS app is
-  this build wrapped by Capacitor; `npm run ios:sync` / `ios:open`.
+- **[capacitor.config.json](capacitor.config.json)** + `ios/` + `android/` —
+  the native apps wrap this same build. `npm run ios:sync` / `ios:open`,
+  `npm run android:apk` (→ `public/selfleveling.apk`, served by the download
+  button) / `android:open`.
 
 Full setup (Supabase project, env vars, Xcode) in **[SETUP.md](SETUP.md)**.
 

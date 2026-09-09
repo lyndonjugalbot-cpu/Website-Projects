@@ -101,7 +101,60 @@ npm run ios:sync     # re-bundles the current web app into the iOS project
 
 ---
 
-## 3. How sync works
+## 3. Android app (Capacitor)
+
+Same idea as iOS — the `android/` Gradle project is committed and loads this
+web build. Android debug APKs self-sign, so **no account setup is needed** to
+build and install one.
+
+### One-time
+
+- **JDK 21** (newer JDKs break the Android Gradle Plugin): `brew install openjdk@21`
+- **Android SDK** — Android Studio, or the command-line tools:
+  `brew install --cask android-commandlinetools`, then
+  ```bash
+  export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+  sdkmanager --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+  echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+  ```
+
+### Build the APK
+
+```bash
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+npm run android:apk
+```
+
+That builds the web app, syncs it into `android/`, runs
+`gradlew assembleDebug`, and copies the result to
+**`public/selfleveling.apk`** — which is what the web app's *Records → Get the
+app → Download Android APK* button serves. Commit the updated
+`public/selfleveling.apk` and redeploy the site to publish a new build.
+
+### Install on a phone
+
+Download the APK on the Android device (or `adb install public/selfleveling.apk`
+with the phone in USB debugging), open it, and allow "install from this source"
+when prompted. Or `npm run android:open` and Run from Android Studio.
+
+### Play Store
+
+For a release build you need a signing keystore
+(`keytool -genkey -v -keystore selfleveling.keystore -alias selfleveling -keyalg RSA -keysize 2048 -validity 10000`),
+wire it into `android/app/build.gradle` `signingConfigs`, then
+`gradlew bundleRelease` for the `.aab` to upload. Application id is
+**`app.wots.selfleveling`**.
+
+### After any web change
+
+```bash
+npm run android:apk   # rebuild + refresh public/selfleveling.apk, then commit + redeploy
+```
+
+---
+
+## 4. How sync works
 
 - Every client — a web tab, the iOS app — signs into the **same Supabase
   project**. First launch = a silent anonymous account.
@@ -118,7 +171,7 @@ npm run ios:sync     # re-bundles the current web app into the iOS project
 
 ---
 
-## 4. Known follow-ups
+## 5. Known follow-ups
 
 - The onboarding **paywall** (`pro` flag) is still client-side only — there's
   no real billing. Entitlement has to move server-side before charging money

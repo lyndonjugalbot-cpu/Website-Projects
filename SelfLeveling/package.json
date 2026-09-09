@@ -9,9 +9,14 @@
     "preview": "vite preview",
     "ios:sync": "vite build && cap sync ios",
     "ios:open": "cap open ios",
-    "ios:run": "vite build && cap run ios"
+    "ios:run": "vite build && cap run ios",
+    "android:sync": "vite build && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "vite build && cap run android",
+    "android:apk": "vite build && cap sync android && ./android/gradlew -p android assembleDebug && cp android/app/build/outputs/apk/debug/app-debug.apk public/selfleveling.apk"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.2",
     "@capacitor/app": "^6.0.3",
     "@capacitor/core": "^6.2.2",
     "@capacitor/ios": "^6.2.2",

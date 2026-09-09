@@ -506,7 +506,9 @@ const CSS = `
 .quest--gate .qxp { color:var(--violet); }
 
 /* --- CTAs + option chips (.sl prefix outranks the button reset) --- */
-.sl button.cta { border-radius:0; font-family:'Chakra Petch',sans-serif; letter-spacing:.07em;
+.sl button.cta, .sl a.cta { display:block; width:100%; padding:15px; border:none; font-size:16px; font-weight:700;
+  text-align:center; text-decoration:none; cursor:pointer; border-radius:0;
+  font-family:'Chakra Petch',sans-serif; letter-spacing:.07em;
   background:linear-gradient(155deg,#9CDCFF 0%, #8C7BFF 50%, #D25CDE 100%); color:#0B0716;
   clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px);
   box-shadow:0 0 22px rgba(168,123,255,.42), inset 0 1px 0 rgba(255,255,255,.45); }
@@ -976,6 +978,32 @@ function Account({ auth }) {
   );
 }
 
+/* Download links for the native builds. Hidden inside the installed app. */
+function GetApps() {
+  const native =
+    typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.() === true;
+  if (native) return null;
+  const android =
+    typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
+  return (
+    <div className="panel" style={{ marginBottom: 12 }}>
+      <div className="syslabel">⟦ Get the app ⟧</div>
+      <p className="muted" style={{ fontSize: 13, margin: "0 0 12px", lineHeight: 1.5 }}>
+        {android
+          ? "Install the Android app for a home-screen icon and full offline access."
+          : "Android build below. iOS: build from the repo — an App Store build is on the way."}
+      </p>
+      <a className="cta" href="/selfleveling.apk" download="SelfLeveling.apk">
+        Download Android APK
+      </a>
+      <p className="muted" style={{ fontSize: 11.5, marginTop: 8, lineHeight: 1.5 }}>
+        Open the downloaded file and allow install from this source when Android asks.
+        ~4&nbsp;MB.
+      </p>
+    </div>
+  );
+}
+
 export default function SelfLeveling() {
   const [save, setSave] = useState(null);
   const [step, setStep] = useState("welcome");
@@ -1433,6 +1461,7 @@ export default function SelfLeveling() {
               <p className="lede">{save.achievements.length} of {ACHIEVEMENTS.length} unlocked · {rankFor(s.level)}.</p>
 
               <Account auth={auth} />
+              <GetApps />
 
               {ACHIEVEMENTS.map((a) => {
                 const got = save.achievements.includes(a.id);
