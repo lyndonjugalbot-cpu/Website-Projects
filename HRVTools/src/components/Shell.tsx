@@ -9,7 +9,7 @@ export function Shell({ user, children }: { user: UserDoc; children: ReactNode }
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2">
@@ -42,7 +42,11 @@ export function Shell({ user, children }: { user: UserDoc; children: ReactNode }
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
+
+      <footer className="border-t border-slate-200 bg-white py-4 text-center dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs text-slate-400 dark:text-slate-500">web app by Wots Dev</p>
+      </footer>
 
       {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
     </div>
