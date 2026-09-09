@@ -232,6 +232,7 @@ const CSS = `
 .opt[data-sel="true"] { border-color:var(--gold); background:#221F30; }
 
 /* path grid */
+.statgrid { display:flex; flex-direction:column; gap:16px; }
 .grid66 { display:grid; grid-template-columns:repeat(11,1fr); gap:6px; }
 .cell { aspect-ratio:1; border-radius:4px; background:#20254A; }
 .cell[data-s="full"] { background:var(--gold); }
@@ -534,6 +535,48 @@ const CSS = `
 .rank { font-family:'Chakra Petch',sans-serif; letter-spacing:.14em; color:var(--cyan); }
 .grid66 .cell { border-radius:0; }
 .cell[data-s="today"] { box-shadow:0 0 0 2px var(--cyan-bright), 0 0 10px rgba(124,224,255,.6); }
+
+/* ---- desktop / laptop: the mobile column becomes a framed console
+       with a left nav rail, over the full-bleed key art ---- */
+@media (min-width: 900px) {
+  .dbg-bg { max-width:none; width:100vw;
+    background-image:url(/bg-desk.webp); background-size:cover; background-position:center; }
+  .dbg-bg::after { box-shadow:inset 0 0 200px 40px rgba(3,4,10,.6); background:none; }
+
+  .sl-frame { max-width:1060px; margin:36px auto; min-height:calc(100vh - 72px);
+    flex-direction:row; align-items:stretch; position:relative;
+    border:1px solid rgba(138,209,240,.6); border-radius:2px;
+    background:linear-gradient(180deg, #12162E 0%, #0B0E22 100%);
+    box-shadow:0 0 0 1px rgba(6,9,20,.9), 0 40px 120px rgba(0,0,0,.7),
+               0 0 60px rgba(77,120,255,.14), inset 0 0 70px rgba(77,120,255,.05); }
+  .sl-frame::before, .sl-frame::after { content:""; position:absolute; width:16px; height:16px;
+    border:2px solid var(--cyan); z-index:3; }
+  .sl-frame::before { top:-1px; left:-1px; border-right:0; border-bottom:0; }
+  .sl-frame::after { bottom:-1px; right:-1px; border-left:0; border-top:0; }
+
+  .nav { position:static; order:-1; flex:0 0 210px; display:flex; flex-direction:column;
+    align-content:flex-start; max-width:none; margin:0; gap:5px; z-index:2;
+    border-top:none; border-right:1px solid rgba(138,209,240,.22);
+    padding:74px 14px 24px; background:linear-gradient(180deg, #10142A, #0A0D22); }
+  .nav button { flex-direction:row; justify-content:flex-start; align-items:center; gap:12px;
+    width:100%; padding:12px 13px; font-size:12px; }
+  .nav .navglyph { width:19px; height:19px; }
+  .nav button[data-on="true"] { border-left:2px solid var(--violet); }
+
+  .sl-body { flex:1; min-width:0; padding:34px 40px 52px; z-index:1;
+    background:linear-gradient(180deg, rgba(17,21,42,.985), rgba(10,13,32,.99)); }
+  .sl-body > * { max-width:660px; margin-left:auto; margin-right:auto; }
+  .topbar { max-width:660px; }
+}
+
+@media (min-width: 1200px) {
+  .sl-frame { max-width:1140px; }
+  .sl-body { padding-inline:64px; }
+  .sl-body > * { max-width:760px; }
+  .topbar { max-width:760px; }
+  .sl-body .statgrid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:16px; align-items:start; max-width:760px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .sl *, .sl *::before { animation:none !important; transition:none !important; }
@@ -1411,18 +1454,20 @@ export default function SelfLeveling() {
               <p className="syslabel">⟦ Status Window ⟧</p>
               <h2 className="h1 serif" style={{ fontSize: 28 }}>Your stats</h2>
               <p className="lede">Every cleared quest pushes its stat up. Nothing decays — you keep what you earn.</p>
-              <div className="panel" style={{ marginBottom: 16 }}><Radar stats={s.stats} /></div>
-              <div className="panel">
-                {TRACKS.map((t) => (
-                  <div key={t.id} style={{ marginBottom: 14 }}>
-                    <div className="statrow" style={{ marginBottom: 5 }}>
-                      <span>{t.label}</span>
-                      <div className="bar" style={{ flex: 1 }}><i style={{ width: `${s.stats[t.id]}%` }} /></div>
-                      <b>{s.stats[t.id]}</b>
+              <div className="statgrid">
+                <div className="panel"><Radar stats={s.stats} /></div>
+                <div className="panel">
+                  {TRACKS.map((t) => (
+                    <div key={t.id} style={{ marginBottom: 14 }}>
+                      <div className="statrow" style={{ marginBottom: 5 }}>
+                        <span>{t.label}</span>
+                        <div className="bar" style={{ flex: 1 }}><i style={{ width: `${s.stats[t.id]}%` }} /></div>
+                        <b>{s.stats[t.id]}</b>
+                      </div>
+                      <p className="muted" style={{ fontSize: 12, margin: 0, paddingLeft: 62 }}>{t.blurb}</p>
                     </div>
-                    <p className="muted" style={{ fontSize: 12, margin: 0, paddingLeft: 62 }}>{t.blurb}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </>
           )}
