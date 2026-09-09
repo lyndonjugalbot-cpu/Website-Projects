@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { internalQuery, query } from "./_generated/server";
-import { requireAdmin } from "./authHelpers";
+import { internalQuery, mutation, query } from "./_generated/server";
+import { requireAdmin, requireUser } from "./authHelpers";
 
 export const currentUser = query({
   args: {},
@@ -29,6 +29,30 @@ export const getEmployee = query({
   handler: async (ctx, { employeeId }) => {
     await requireAdmin(ctx);
     return await ctx.db.get(employeeId);
+  },
+});
+
+export const updateProfile = mutation({
+  args: {
+    userId: v.id("users"),
+    name: v.string(),
+    phone: v.optional(v.string()),
+    address: v.optional(v.string()),
+  },
+  handler: async (ctx, { userId, name, phone, address }) => {
+    const caller = await requireUser(ctx);
+    if (caller._id !== userId) {
+      throw new Error("You can only edit your own profile");
+    }
+
+    const trimmedName = name.trim();
+    if (!trimmedName) throw new Error("Full name is required");
+
+    await ctx.db.patch(userId, {
+      name: trimmedName,
+      phone: phone?.trim() ? phone.trim() : undefined,
+      address: address?.trim() ? address.trim() : undefined,
+    });
   },
 });
 

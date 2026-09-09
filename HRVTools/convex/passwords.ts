@@ -36,28 +36,3 @@ export const changeMyPassword = action({
     return { ok: true };
   },
 });
-
-/** Admin resets an employee's password without knowing the current one. */
-export const adminResetEmployeePassword = action({
-  args: { employeeId: v.id("users"), newPassword: v.string() },
-  handler: async (ctx, { employeeId, newPassword }) => {
-    const callerId = await getAuthUserId(ctx);
-    if (!callerId) throw new Error("Not authenticated");
-    const caller = await ctx.runQuery(internal.users.internalGetUser, { userId: callerId });
-    if (caller?.role !== "admin") throw new Error("Only admins can reset passwords");
-    if (newPassword.length < MIN_LENGTH) {
-      throw new Error(`Password must be at least ${MIN_LENGTH} characters`);
-    }
-
-    const employee = await ctx.runQuery(internal.users.internalGetUser, { userId: employeeId });
-    if (!employee?.email || employee.role !== "employee") {
-      throw new Error("Employee not found");
-    }
-
-    await modifyAccountCredentials(ctx, {
-      provider: "password",
-      account: { id: employee.email, secret: newPassword },
-    });
-    return { ok: true };
-  },
-});

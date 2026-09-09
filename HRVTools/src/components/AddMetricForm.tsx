@@ -8,7 +8,15 @@ import { currentWeekStart, mondayOf } from "../lib/weeks";
 
 const COMMON_METRICS = STAT_NAMES;
 
-export function AddMetricForm({ employeeId, onSaved }: { employeeId: Id<"users">; onSaved?: () => void }) {
+export function AddMetricForm({
+  employeeId,
+  onSaved,
+  allowCustom = true,
+}: {
+  employeeId: Id<"users">;
+  onSaved?: () => void;
+  allowCustom?: boolean;
+}) {
   const recordMetric = useMutation(api.metrics.record);
 
   const [weekStart, setWeekStart] = useState(currentWeekStart());
@@ -18,7 +26,7 @@ export function AddMetricForm({ employeeId, onSaved }: { employeeId: Id<"users">
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isCustom = metricName === "__custom__";
+  const isCustom = allowCustom && metricName === "__custom__";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +71,7 @@ export function AddMetricForm({ employeeId, onSaved }: { employeeId: Id<"users">
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Metric</label>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Stat</label>
         <select
           value={metricName}
           onChange={(e) => setMetricName(e.target.value)}
@@ -74,7 +82,7 @@ export function AddMetricForm({ employeeId, onSaved }: { employeeId: Id<"users">
               {m}
             </option>
           ))}
-          <option value="__custom__">Custom…</option>
+          {allowCustom && <option value="__custom__">Custom…</option>}
         </select>
       </div>
 

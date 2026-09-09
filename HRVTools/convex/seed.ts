@@ -1,62 +1,98 @@
-import { createAccount, getAuthUserId } from "@convex-dev/auth/server";
-import { action, mutation } from "./_generated/server";
+import { createAccount, modifyAccountCredentials } from "@convex-dev/auth/server";
+import { internalAction, internalMutation } from "./_generated/server";
+
+const ADMIN = {
+  email: "hrvtool_admin@hrvtools.app",
+  name: "HRVTool_Admin",
+  password: "HrvAdmin123!",
+};
+
+const AGENTS = [
+  { name: "Gihan", email: "gihan@hrvtools.app" },
+  { name: "Roddi", email: "roddi@hrvtools.app" },
+  { name: "Lezle", email: "lezle@hrvtools.app" },
+  { name: "Abbie", email: "abbie@hrvtools.app" },
+  { name: "Kylie", email: "kylie@hrvtools.app" },
+];
+
+// The only accounts that belong in the system.
+const KEEP_EMAILS = [ADMIN.email, ...AGENTS.map((a) => a.email)];
+
+function randomPassword(length = 14): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$";
+  let out = "";
+  for (let i = 0; i < length; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
 
 /**
- * One-time setup: creates the HRVTool_Admin account.
- * Run once via `npx convex run seed:createAdmin` after the first deploy.
- * Errors if the account already exists. Change the password after first sign-in
- * from the app (Shell → Change password).
+ * Creates the HRVTool_Admin account. Run once via
+ * `npx convex run seed:createAdmin`. Errors if it already exists.
+ * Change the password from the app (header → Change password) after first sign-in.
  */
-export const createAdmin = action({
+export const createAdmin = internalAction({
   args: {},
   handler: async (ctx) => {
-    const email = "hrvtool_admin@hrvtools.app";
-    const password = "HrvAdmin123!";
     const result = await createAccount(ctx, {
       provider: "password",
-      account: { id: email, secret: password },
-      profile: {
-        email,
-        name: "HRVTool_Admin",
-        role: "admin" as const,
-        active: true,
-      },
+      account: { id: ADMIN.email, secret: ADMIN.password },
+      profile: { email: ADMIN.email, name: ADMIN.name, role: "admin" as const, active: true },
     });
-    return { userId: result.user._id, email, password };
+    return { userId: result.user._id, email: ADMIN.email, password: ADMIN.password };
   },
 });
 
-// Seeded placeholder accounts that should be removed once real accounts exist.
-const DUMMY_EMAILS = [
-  "torilla.abigail@gmail.com",
-  "gihan@hrvtools.app",
-  "roddi@hrvtools.app",
-  "lezle@hrvtools.app",
-  "abbie@hrvtools.app",
-  "kylie@hrvtools.app",
-];
-
 /**
- * Deletes the seeded placeholder accounts (old default admin + the five dummy
- * agents) along with their logins, sessions, coaching logs and metrics.
- * Run as a signed-in admin via `npx convex run seed:removeDummyAccounts`.
- * The currently signed-in account is skipped. Idempotent.
+ * Creates the five agent accounts (Gihan, Roddi, Lezle, Abbie, Kylie), each with
+ * a fresh random password. Run via `npx convex run seed:createAgents`.
+ * Idempotent — an agent that already exists just gets a new random password so
+ * it stays testable. Returns the credentials to hand out.
  */
-export const removeDummyAccounts = mutation({
+export const createAgents = internalAction({
   args: {},
   handler: async (ctx) => {
-    const callerId = await getAuthUserId(ctx);
-    if (!callerId) throw new Error("Not authenticated");
-    const caller = await ctx.db.get(callerId);
-    if (caller?.role !== "admin") throw new Error("Admins only");
+    const results: { name: string; email: string; password: string; status: string }[] = [];
+    for (let i = 0; i < AGENTS.length; i++) {
+      const agent = AGENTS[i];
+      const password = randomPassword();
+      try {
+        await createAccount(ctx, {
+          provider: "password",
+          account: { id: agent.email, secret: password },
+          profile: {
+            email: agent.email,
+            name: agent.name,
+            role: "employee" as const,
+            idNumber: `AGENT-${String(i + 1).padStart(2, "0")}`,
+            active: true,
+          },
+        });
+        results.push({ ...agent, password, status: "created" });
+      } catch {
+        await modifyAccountCredentials(ctx, {
+          provider: "password",
+          account: { id: agent.email, secret: password },
+        });
+        results.push({ ...agent, password, status: "password reset" });
+      }
+    }
+    return results;
+  },
+});
 
-    const removed: string[] = [];
-    for (const email of DUMMY_EMAILS) {
-      const user = await ctx.db
-        .query("users")
-        .withIndex("email", (q) => q.eq("email", email))
-        .unique();
-      if (!user || user._id === callerId) continue;
+/**
+ * Deletes every account that isn't HRVTool_Admin or one of the five agents,
+ * along with its login, sessions, coaching logs and metrics.
+ * Run via `npx convex run seed:purgeNonCanonicalAccounts`.
+ */
+export const purgeNonCanonicalAccounts = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const removed: { name?: string; email?: string }[] = [];
+
+    for (const user of users) {
+      if (user.email && KEEP_EMAILS.includes(user.email)) continue;
 
       const logs = await ctx.db
         .query("coachingLogs")
@@ -86,9 +122,9 @@ export const removeDummyAccounts = mutation({
       for (const session of sessions) await ctx.db.delete(session._id);
 
       await ctx.db.delete(user._id);
-      removed.push(email);
+      removed.push({ name: user.name, email: user.email });
     }
 
-    return { removed, skipped: DUMMY_EMAILS.filter((e) => !removed.includes(e)) };
+    return { removed, kept: KEEP_EMAILS };
   },
 });
