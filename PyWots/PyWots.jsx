@@ -14,14 +14,6 @@ import {
   completeOAuthFromUrl, signOut, deleteAccount,
 } from "./src/lib/auth.js";
 
-/* PRO build: baked in at build time via `VITE_PYWOTS_PRO=1` (set in the
-   iOS build's .env.local, NOT in Vercel). OR-ed with a per-save `pro` flag
-   so it can also be granted at runtime later. PRO = every Gate unlocked,
-   no dev/testing UI, a PRO badge. Client-side only — fine while nothing is
-   billed; gate server-side before charging. */
-const PRO_BUILD = import.meta.env.VITE_PYWOTS_PRO === "1";
-const isProSave = (save) => PRO_BUILD || !!(save && save.pro);
-
 /* ================================================================== */
 /*  PyWots — a 100-day Solo-Leveling-style ascent from zero Python     */
 /*  to competent Python. Single component. Content lives in            */
@@ -243,9 +235,6 @@ a,.pw-link{color:var(--cyan)}
   text-transform:uppercase;padding:3px 8px;border-radius:2px;border:1px solid var(--line);color:var(--dim)}
 .pw-badge{font-family:var(--display);font-weight:900;border:1px solid var(--cyan);color:var(--cyan);
   border-radius:2px;padding:3px 10px;font-size:12px;letter-spacing:.1em;box-shadow:var(--glow-cyan)}
-.pw-pro{font-family:var(--display);font-weight:900;border:1px solid var(--gold);color:var(--gold);
-  border-radius:2px;padding:3px 8px;font-size:11px;letter-spacing:.16em;flex:none;white-space:nowrap;
-  box-shadow:0 0 12px rgba(255,194,75,.5)}
 .pw-bar{height:9px;background:#05070F;border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative}
 .pw-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));
   box-shadow:0 0 12px rgba(56,225,255,.6);transition:width .5s cubic-bezier(.2,.8,.2,1)}
@@ -923,7 +912,7 @@ const phaseFor = (day) => {
   return name;
 };
 
-function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
+function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
   const day = useMemo(() => dayContent(viewDay), [viewDay]);
   const rec = save.completed?.[viewDay] || { lessons: [], dungeon: false, boss: false };
   const [codex, setCodex] = useState(viewDay === (save.day || 1));
@@ -983,11 +972,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
         penalty = false;
       }
 
-      // PRO can clear Gates out of order without dragging the progression
-      // pointer past the days they skipped.
-      const nextDay = pro && viewDay !== (s.day || 1)
-        ? (s.day || 1)
-        : Math.min(PROGRAM_DAYS, Math.max(s.day || 1, viewDay + 1));
+      const nextDay = Math.min(PROGRAM_DAYS, Math.max(s.day || 1, viewDay + 1));
       const xp = (s.xp || 0) + (isReplay ? 0 : day.dungeon.xp);
 
       const draftState = { ...s, completed: c, stats, xp, flawless, streak, bestStreak, lastActive, penalty, day: nextDay };
@@ -1017,7 +1002,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
           <div className="pw-eyebrow">{phaseFor(viewDay)} · Day {viewDay} / {PROGRAM_DAYS}</div>
           <div className="pw-h1">{day.title}</div>
         </div>
-        <button className="pw-btn" disabled={viewDay >= (pro ? PROGRAM_DAYS : (save.day || 1))} onClick={() => setViewDay(viewDay + 1)}>Day {viewDay + 1} ›</button>
+        <button className="pw-btn" disabled={viewDay >= (save.day || 1)} onClick={() => setViewDay(viewDay + 1)}>Day {viewDay + 1} ›</button>
       </div>
 
       {/* One keyed wrapper: the whole day-specific subtree remounts atomically
@@ -1089,7 +1074,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
               : "You have reached the summit of the tower. You are the Python Monarch."}
           </div>
           {viewDay < PROGRAM_DAYS && (
-            <button className="pw-btn primary" onClick={() => setViewDay(Math.min(pro ? PROGRAM_DAYS : (save.day || 1), viewDay + 1))}>
+            <button className="pw-btn primary" onClick={() => setViewDay(Math.min(save.day || 1, viewDay + 1))}>
               Enter Day {viewDay + 1} →
             </button>
           )}
@@ -1102,7 +1087,7 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast, pro }) {
 }
 
 /* ============================ path ========================= */
-function Path({ save, setViewDay, setTab, pro }) {
+function Path({ save, setViewDay, setTab }) {
   const cur = save.day || 1;
   const rows = [];
   let lastPhase = null;
@@ -1111,7 +1096,7 @@ function Path({ save, setViewDay, setTab, pro }) {
     if (ph !== lastPhase) { rows.push({ phase: ph, key: "p" + d }); lastPhase = ph; }
     const meta = d <= 10 ? dayContent(d) : topicFor(d);
     const done = !!save.completed?.[d]?.dungeon;
-    const locked = !pro && d > cur;
+    const locked = d > cur;
     rows.push({ d, meta, done, locked, cur: d === cur, boss: isBossDay(d), key: "d" + d });
   }
   return (
@@ -1154,7 +1139,7 @@ function countBosses(save) {
   return Object.keys(BOSS_DAYS).filter((d) => c[d] && c[d].boss).length;
 }
 
-function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
+function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
   const earned = new Set(save.achievements || []);
@@ -1166,7 +1151,7 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
     const next = { enabled: true, hour: 9, minute: 0, ...rem, ...patch };
     mutate((s) => ({ ...s, reminder: next }));
     applyReminderPref(next);
-    if (isNative && next.enabled) toast("sys", "⟢ SYSTEM", `Daily Quest reminder set for ${
+    if (next.enabled) toast("sys", "⟢ SYSTEM", `Daily Quest reminder set for ${
       String(next.hour).padStart(2, "0")}:${String(next.minute).padStart(2, "0")}.`);
   };
 
@@ -1252,8 +1237,8 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
         </label>
         <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 10 }}>
           {isNative
-            ? "A System notification with an Accept button. iOS shows it as a standard banner — tapping it opens the full-screen summons and drops you into the Gate. (iOS can't take over the screen on its own.)"
-            : "Scheduled reminders fire from the installed iOS app. On the web, the summons still appears the first time you open PyWots each day."}
+            ? "A System notification with an Accept button — iOS shows it as a standard banner; tapping it opens the full-screen summons and drops you into the Gate. (No app can take over the iOS screen on its own.)"
+            : "You'll get a browser notification and the full-screen summons at this time while PyWots is open, plus the summons the first time you open it each day. Browsers can't wake a closed tab — install the iOS app for a true daily push."}
         </div>
         <button className="pw-btn" style={{ marginTop: 10 }}
           onClick={() => { mutate((s) => ({ ...s, summonedOn: null })); window.dispatchEvent(new CustomEvent("pywots:summon")); }}>
@@ -1261,17 +1246,17 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
         </button>
       </Frame>
 
-      {pro ? (
+      <Frame style={{ marginTop: 14 }}>
+        <div className="pw-phase" style={{ marginTop: 0 }}>Reset</div>
+        <div className="pw-muted pw-read" style={{ fontSize: 13, marginBottom: 10 }}>
+          Wipe this device's progress and start the 100-day path over.
+        </div>
+        <button className="pw-btn danger" onClick={resetAll}>Reset all progress</button>
+      </Frame>
+
+      {import.meta.env.DEV && (
         <Frame style={{ marginTop: 14 }}>
-          <div className="pw-phase" style={{ marginTop: 0 }}>PRO</div>
-          <div className="pw-muted pw-read" style={{ fontSize: 13 }}>
-            All {PROGRAM_DAYS} Gates unlocked — pick any day from the Tower.
-          </div>
-          <button className="pw-btn danger" style={{ marginTop: 10 }} onClick={resetAll}>Reset all progress</button>
-        </Frame>
-      ) : (
-        <Frame style={{ marginTop: 14 }}>
-          <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Testing controls — remove before ship</div>
+          <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Dev only (npm run dev)</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button className="pw-btn" onClick={() => mutate((s) => ({ ...s, day: Math.min(PROGRAM_DAYS, (s.day || 1) + 1) }))}>
               Unlock next day
@@ -1280,7 +1265,6 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth, pro }) {
             <button className="pw-btn" onClick={() => { mutate((s) => ({ ...s, lastActive: dayStr(new Date(Date.now() - 3 * 86400000)) })); toast("sys", "⟢ DEBUG", "lastActive set 3 days back — reload to trigger penalty."); }}>
               Age progress 3 days
             </button>
-            <button className="pw-btn danger" onClick={resetAll}>Reset all progress</button>
           </div>
         </Frame>
       )}
@@ -1526,12 +1510,21 @@ function SystemSummons({ day, onAccept, onDismiss }) {
   );
 }
 
-/* Fire-and-forget: (re)apply the daily reminder schedule on native. */
+/* Fire-and-forget: apply the daily reminder pref.
+   - Native: (re)schedule a real repeating local notification.
+   - Web: ask for the Notifications permission so the in-tab reminder timer
+     (in the shell) can post a browser notification while PyWots is open. */
 function applyReminderPref(pref) {
-  if (!isNative) return;
-  import("./src/lib/reminders.js")
-    .then((m) => m.applyReminder(pref, { requestIfNeeded: true }))
-    .catch(() => {});
+  if (isNative) {
+    import("./src/lib/reminders.js")
+      .then((m) => m.applyReminder(pref, { requestIfNeeded: true }))
+      .catch(() => {});
+    return;
+  }
+  if (pref?.enabled !== false && typeof window !== "undefined"
+      && "Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission().catch(() => {});
+  }
 }
 
 /* =========================== shell ======================== */
@@ -1646,6 +1639,39 @@ export default function PyWots() {
     return () => window.removeEventListener("pywots:summon", h);
   }, []);
 
+  // web: while the PyWots tab is open, fire the reminder at the set time —
+  // a browser notification (if allowed) plus the in-app summons. Browsers
+  // can't wake a closed tab; the iOS app does that.
+  const webFiredRef = useRef(null);
+  useEffect(() => {
+    if (isNative || !save || !save.answers) return;
+    const r = save.reminder || {};
+    if (r.enabled === false) return;
+    const hour = r.hour ?? 9;
+    const minute = r.minute ?? 0;
+    const tick = () => {
+      const now = new Date();
+      const today = dayStr();
+      if (now.getHours() === hour && now.getMinutes() === minute && webFiredRef.current !== today) {
+        webFiredRef.current = today;
+        try {
+          if ("Notification" in window && Notification.permission === "granted") {
+            const n = new Notification("⟢ NOTIFICATION", {
+              body: "The Daily Quest has appeared — will you accept?",
+              icon: "/icon-192.png",
+              tag: "pywots-daily",
+            });
+            n.onclick = () => { window.focus(); window.dispatchEvent(new CustomEvent("pywots:summon")); n.close(); };
+          }
+        } catch { /* Notification blocked */ }
+        window.dispatchEvent(new CustomEvent("pywots:summon"));
+      }
+    };
+    const iv = setInterval(tick, 30000);
+    tick();
+    return () => clearInterval(iv);
+  }, [save?.reminder, save?.answers]);
+
   const closeSummon = (accepted) => {
     setSummon(false);
     mutate((s) => ({ ...s, summonedOn: dayStr() }));
@@ -1726,7 +1752,6 @@ export default function PyWots() {
 
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
-  const pro = isProSave(save);
 
   const TABS = [
     { id: "today", label: "Today", Icon: IconToday },
@@ -1754,7 +1779,6 @@ export default function PyWots() {
           <Emblem size={30} word={false} />
           <span className="pw-word" style={{ fontSize: 17 }}>PYWOTS</span>
           <span className="pw-badge">{rank}-RANK</span>
-          {pro && <span className="pw-pro">PRO</span>}
           <div className="pw-status-xp">
             <div className="pw-row" style={{ justifyContent: "space-between", fontSize: 10.5 }} >
               <span className="pw-eyebrow">Lv {level}</span>
@@ -1781,10 +1805,10 @@ export default function PyWots() {
       </div>
 
       {tab === "today" && (
-        <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} pro={pro} />
+        <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} />
       )}
-      {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} pro={pro} />}
-      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} pro={pro} />}
+      {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} />}
+      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} />}
 
       {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} toast={toast} />}
 
