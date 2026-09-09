@@ -14,6 +14,7 @@ import type * as authHelpers from "../authHelpers.js";
 import type * as coachingLogs from "../coachingLogs.js";
 import type * as http from "../http.js";
 import type * as metrics from "../metrics.js";
+import type * as passwords from "../passwords.js";
 import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   coachingLogs: typeof coachingLogs;
   http: typeof http;
   metrics: typeof metrics;
+  passwords: typeof passwords;
   seed: typeof seed;
   users: typeof users;
 }>;

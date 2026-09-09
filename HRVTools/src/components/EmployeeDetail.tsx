@@ -1,11 +1,13 @@
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, KeyRound, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { AddMetricForm } from "./AddMetricForm";
 import { CoachingLogForm } from "./CoachingLogForm";
 import { CoachingLogList } from "./CoachingLogList";
 import { MetricsChart } from "./MetricsChart";
+import { ResetPasswordModal } from "./ResetPasswordModal";
 
 export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">; onBack: () => void }) {
   const employee = useQuery(api.users.getEmployee, { employeeId });
@@ -13,6 +15,7 @@ export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">
   const logs = useQuery(api.coachingLogs.listForEmployee, { employeeId });
   const removeLog = useMutation(api.coachingLogs.remove);
   const deleteEmployee = useMutation(api.admin.deleteEmployee);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   function handleDelete() {
     if (
@@ -44,15 +47,32 @@ export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">
               </p>
             )}
           </div>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-300 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-red-400"
-          >
-            <Trash2 size={14} />
-            Delete employee
-          </button>
+          <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row">
+            <button
+              onClick={() => setShowResetPassword(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <KeyRound size={14} />
+              Reset password
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-300 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:text-red-400"
+            >
+              <Trash2 size={14} />
+              Delete employee
+            </button>
+          </div>
         </div>
       </div>
+
+      {showResetPassword && (
+        <ResetPasswordModal
+          employeeId={employeeId}
+          employeeName={employee?.name ?? "this employee"}
+          onClose={() => setShowResetPassword(false)}
+        />
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
