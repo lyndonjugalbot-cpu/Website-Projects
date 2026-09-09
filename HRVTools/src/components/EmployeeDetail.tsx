@@ -56,7 +56,7 @@ export function EmployeeDetail({ employeeId, onBack }: { employeeId: Id<"users">
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Weekly metrics
+          Stats
         </h2>
         {metrics === undefined ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>

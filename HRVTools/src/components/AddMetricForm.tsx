@@ -3,9 +3,10 @@ import { LoaderCircle, Plus } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { STAT_NAMES } from "../lib/stats";
 import { currentWeekStart, mondayOf } from "../lib/weeks";
 
-const COMMON_METRICS = ["QA Score", "CSAT", "AHT (sec)", "Calls Handled", "Adherence %"];
+const COMMON_METRICS = STAT_NAMES;
 
 export function AddMetricForm({ employeeId, onSaved }: { employeeId: Id<"users">; onSaved?: () => void }) {
   const recordMetric = useMutation(api.metrics.record);

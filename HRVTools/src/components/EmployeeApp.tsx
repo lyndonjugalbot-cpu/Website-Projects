@@ -12,7 +12,7 @@ export function EmployeeApp({ user }: { user: UserDoc }) {
     <div className="flex flex-col gap-8">
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          My weekly metrics
+          My stats
         </h2>
         {metrics === undefined ? (
           <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
