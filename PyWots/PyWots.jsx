@@ -14,7 +14,7 @@ import {
 } from "./src/lib/auth.js";
 
 /* ================================================================== */
-/*  PyWots — a 60-day Solo-Leveling-style ascent from zero Python      */
+/*  PyWots — a 100-day Solo-Leveling-style ascent from zero Python     */
 /*  to competent Python. Single component. Content lives in            */
 /*  curriculum.js. Real code is graded in-browser by Pyodide.          */
 /*                                                                    */
@@ -882,6 +882,7 @@ function Assessment({ onDone }) {
 const PHASES = [
   [1, "Foundations"], [11, "Data"], [21, "Functions"],
   [31, "Craft"], [41, "Objects"], [51, "Mastery"],
+  [61, "Applied"], [71, "Algorithms"], [81, "Idioms"], [91, "Shipping"],
 ];
 const phaseFor = (day) => {
   let name = "Foundations";
@@ -1078,10 +1079,11 @@ function Path({ save, setViewDay, setTab }) {
   }
   return (
     <div className="pw-wrap">
-      <h1 className="pw-h1" style={{ marginBottom: 4 }}>The Tower · 60 Gates</h1>
+      <h1 className="pw-h1" style={{ marginBottom: 4 }}>The Tower · {PROGRAM_DAYS} Gates</h1>
       <p className="pw-muted pw-read" style={{ marginTop: 0, fontSize: 13 }}>
-        Days 1–10 are fully built. Days 11–60 are scouted — real graded challenges per stat, with
-        full lessons landing over time. Diamond nodes are Gate Bosses (7, 10, 20, 30, 40, 50, 60).
+        Days 1–10 are fully built. Days 11–{PROGRAM_DAYS} are scouted — real graded challenges per
+        stat, with full lessons landing over time. Diamond nodes are Gate Bosses
+        ({Object.keys(BOSS_DAYS).map(Number).sort((a, b) => a - b).join(", ")}).
       </p>
       <div className="pw-daylist">
         {rows.map((r) =>

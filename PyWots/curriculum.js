@@ -10,7 +10,7 @@
 /*  bank of real graded problems per stat — until each day is written.  */
 /* ------------------------------------------------------------------ */
 
-export const PROGRAM_DAYS = 60;
+export const PROGRAM_DAYS = 100;
 
 /* The six stats. Everything you do feeds one of them. */
 export const STATS = [
@@ -23,11 +23,16 @@ export const STATS = [
 ];
 
 /* ---------------------------- ranks ------------------------------ */
-/* Hunter Rank is earned by clearing Gates (boss days), not by XP.    */
-export const RANKS = ["E", "D", "C", "B", "A", "S", "National", "Monarch"];
+/* Hunter Rank is earned by clearing Gates (boss days), not by XP.
+   11 Gates across the 100 days -> index 0 (E, no Gates) through 11 (Monarch). */
+export const RANKS = [
+  "E", "D", "C", "B", "A", "S", "S+", "SS", "SS+", "SSS", "National", "Monarch",
+];
 
 /* boss day -> the rank index you hold after clearing it */
-export const BOSS_DAYS = { 7: 1, 10: 2, 20: 3, 30: 4, 40: 5, 50: 6, 60: 7 };
+export const BOSS_DAYS = {
+  7: 1, 10: 2, 20: 3, 30: 4, 40: 5, 50: 6, 60: 7, 70: 8, 80: 9, 90: 10, 100: 11,
+};
 
 export const isBossDay = (day) => Object.prototype.hasOwnProperty.call(BOSS_DAYS, day);
 
@@ -748,7 +753,55 @@ export const TOPIC_MAP = [
   { day: 57, stat: "CRAFT", title: "Testing your code",             objective: "assert-based tests, unittest basics, arrange-act-assert." },
   { day: 58, stat: "CRAFT", title: "Environments & packaging",      objective: "venv, pip, requirements.txt, project layout — concepts + commands." },
   { day: 59, stat: "CRAFT", title: "Capstone prep",                 objective: "Spec a program: inputs, outputs, data model, failure modes." },
-  { day: 60, stat: "CRAFT", title: "The Monarch's Gate",            objective: "FINAL BOSS: build a complete, tested, multi-function program." },
+  { day: 60, stat: "CRAFT", title: "SS-Rank Gate — The Craftsman's Trial", objective: "BOSS: build a complete, tested, multi-function program from a spec." },
+
+  /* ---- Phase 7 · Applied Python (61-70) ---- */
+  { day: 61, stat: "CRAFT", title: "Dates & time, properly",        objective: "datetime, date, timedelta, parsing/formatting, zoneinfo & UTC." },
+  { day: 62, stat: "DATA",  title: "Regular expressions",           objective: "re: match/search/findall/sub, groups, character classes, anchors." },
+  { day: 63, stat: "DATA",  title: "Text processing patterns",      objective: "Tokenise, clean, and reshape messy text into structured records." },
+  { day: 64, stat: "CRAFT", title: "pathlib & the filesystem",      objective: "Path objects, globbing, reading trees, safe joins, temp files." },
+  { day: 65, stat: "CRAFT", title: "Bytes, encoding, base64",       objective: "str vs bytes, encode/decode, utf-8 pitfalls, base64, hashing." },
+  { day: 66, stat: "CRAFT", title: "HTTP & REST APIs",              objective: "Requests, status codes, headers, query params (against mocked responses)." },
+  { day: 67, stat: "DATA",  title: "Consuming & shaping JSON",       objective: "Walk nested JSON, pick fields, flatten, and re-serialise." },
+  { day: 68, stat: "DATA",  title: "Tabular data without a library",objective: "Group, aggregate and pivot rows of dicts — the job pandas automates." },
+  { day: 69, stat: "CRAFT", title: "Applied — practice mix",        objective: "A small ETL: read a file, transform, validate, write a report." },
+  { day: 70, stat: "CRAFT", title: "A+-Rank Gate — The Pipeline",   objective: "BOSS: ingest raw data, clean it, summarise it, and emit JSON + text." },
+
+  /* ---- Phase 8 · Algorithms & problem solving (71-80) ---- */
+  { day: 71, stat: "FLOW",  title: "Two pointers & sliding window", objective: "In-place scans over sorted/streamed data; window sums and maxes." },
+  { day: 72, stat: "DATA",  title: "Hash maps for speed",           objective: "Trade memory for time: seen-sets, counting, index maps, dedupe." },
+  { day: 73, stat: "FUNC",  title: "Backtracking",                   objective: "Recursion that undoes itself: permutations, subsets, the N-queens shape." },
+  { day: 74, stat: "FLOW",  title: "Sorting, deeper",               objective: "key= functions, stability, sorting by multiple fields, counting sort." },
+  { day: 75, stat: "FLOW",  title: "Binary search as a mindset",    objective: "Search an answer space, not just a list; bisect; first-true problems." },
+  { day: 76, stat: "DATA",  title: "Stacks, queues, deques",        objective: "When each wins; balanced-brackets, BFS queue, monotonic stack." },
+  { day: 77, stat: "FLOW",  title: "Trees & graphs",                objective: "Adjacency lists, DFS & BFS, visited sets, shortest path by BFS." },
+  { day: 78, stat: "FUNC",  title: "Dynamic programming",           objective: "Overlapping subproblems: memoise, then tabulate; classic 1-D DPs." },
+  { day: 79, stat: "FLOW",  title: "Algorithms — practice mix",     objective: "Interview-style set: pick the technique, then implement cleanly." },
+  { day: 80, stat: "FLOW",  title: "AA-Rank Gate — The Gauntlet",   objective: "BOSS: solve a multi-part problem set under a complexity budget." },
+
+  /* ---- Phase 9 · Idiomatic & advanced Python (81-90) ---- */
+  { day: 81, stat: "FUNC",  title: "Generator pipelines",           objective: "Chain lazy generators; itertools recipes; process huge input in O(1) memory." },
+  { day: 82, stat: "FUNC",  title: "functools",                      objective: "reduce, partial, lru_cache, cached_property, singledispatch, wraps." },
+  { day: 83, stat: "FUNC",  title: "Decorators, advanced",          objective: "Parameterised decorators, class decorators, and decorators as classes." },
+  { day: 84, stat: "OOP",   title: "Descriptors & __slots__",       objective: "How @property really works; managed attributes; memory-lean classes." },
+  { day: 85, stat: "OOP",   title: "__init_subclass__ & metaclasses",objective: "Hook subclass creation; a light, practical look at metaclasses." },
+  { day: 86, stat: "CRAFT", title: "Context managers II",           objective: "contextlib (ExitStack, suppress, closing); reusable resource patterns." },
+  { day: 87, stat: "DATA",  title: "Enums & named records",         objective: "Enum, IntEnum, auto(); namedtuple vs typing.NamedTuple vs dataclass." },
+  { day: 88, stat: "FLOW",  title: "Structural pattern matching",   objective: "match / case: literals, sequences, mappings, class patterns, guards." },
+  { day: 89, stat: "FUNC",  title: "Idioms — practice mix",         objective: "Refactor blunt code into idiomatic Python without changing behaviour." },
+  { day: 90, stat: "FUNC",  title: "AAA-Rank Gate — The Idiom Trial",objective: "BOSS: re-implement a crude module the Pythonic way, tests still green." },
+
+  /* ---- Phase 10 · Shipping real software (91-100) ---- */
+  { day: 91, stat: "CRAFT", title: "Packaging a project",           objective: "pyproject.toml, src layout, console entry points, versioning." },
+  { day: 92, stat: "CRAFT", title: "Type checking with mypy",       objective: "Gradual typing, Optional, Union, Protocols, generics, TypedDict." },
+  { day: 93, stat: "CRAFT", title: "Testing II — pytest",           objective: "Fixtures, parametrize, mocking, coverage, testing error paths." },
+  { day: 94, stat: "CRAFT", title: "Logging like a pro",            objective: "logging module: levels, handlers, formatters, why not print()." },
+  { day: 95, stat: "FLOW",  title: "Profiling & performance",       objective: "timeit, cProfile; find the hot path before optimising; big wins first." },
+  { day: 96, stat: "CRAFT", title: "Concurrency, the map",          objective: "Threads vs processes vs async; the GIL; which to reach for and when." },
+  { day: 97, stat: "FUNC",  title: "async / await",                 objective: "Coroutines, the event loop, tasks, gather; async generators." },
+  { day: 98, stat: "OOP",   title: "Validated data models",         objective: "dataclasses with __post_init__ validation; a Pydantic-style pattern." },
+  { day: 99, stat: "CRAFT", title: "Capstone — spec & scaffold",    objective: "Turn an idea into modules, interfaces, a test plan and a CLI." },
+  { day: 100, stat: "CRAFT", title: "The Monarch's Gate",           objective: "FINAL BOSS: design, build, test and package a complete program." },
 ];
 
 export function topicFor(day) {
@@ -787,6 +840,23 @@ export const PRACTICE = {
         { label: "two names", code: "assert initials('Cha Hae') == 'C.H.'" },
       ],
     },
+    {
+      brief: "Write  slugify(title)  -> lowercase, spaces to '-', drop anything that isn't a letter, digit or '-', collapse repeats.  'Hello,  World!' -> 'hello-world'",
+      starter: "def slugify(title):\n    pass\n",
+      tests: [
+        { label: "basic", code: "assert slugify('Hello,  World!') == 'hello-world'" },
+        { label: "trim + collapse", code: "assert slugify('  A---B  ') == 'a-b'" },
+        { label: "keeps digits", code: "assert slugify('Top 10 Tips') == 'top-10-tips'" },
+      ],
+    },
+    {
+      brief: "Write  tokens(expr)  -> split a math string into number / operator tokens (operators: + - * / ( )).  '12+3*(4-1)' -> ['12','+','3','*','(','4','-','1',')']",
+      starter: "def tokens(expr):\n    pass\n",
+      tests: [
+        { label: "mixed", code: "assert tokens('12+3*(4-1)') == ['12','+','3','*','(','4','-','1',')']" },
+        { label: "spaces ignored", code: "assert tokens(' 7 -  20 ') == ['7','-','20']" },
+      ],
+    },
   ],
   FLOW: [
     {
@@ -817,6 +887,24 @@ export const PRACTICE = {
         { label: "27 -> 111", code: "assert collatz_steps(27) == 111" },
       ],
     },
+    {
+      brief: "Write  max_window(nums, k)  -> list of the max of every length-k window.  [1,3,-1,-3,5,3,6,7], k=3 -> [3,3,5,5,6,7]",
+      starter: "def max_window(nums, k):\n    pass\n",
+      tests: [
+        { label: "classic", code: "assert max_window([1,3,-1,-3,5,3,6,7], 3) == [3,3,5,5,6,7]" },
+        { label: "k == 1", code: "assert max_window([4,2,9], 1) == [4,2,9]" },
+        { label: "k == len", code: "assert max_window([4,2,9], 3) == [9]" },
+      ],
+    },
+    {
+      brief: "Write  first_true(lo, hi, pred)  -> smallest n in [lo, hi] where pred(n) is True (pred is monotonic: once True it stays True). Return hi+1 if never.",
+      starter: "def first_true(lo, hi, pred):\n    pass\n",
+      tests: [
+        { label: "threshold", code: "assert first_true(0, 100, lambda n: n*n >= 50) == 8" },
+        { label: "already true", code: "assert first_true(5, 9, lambda n: True) == 5" },
+        { label: "never", code: "assert first_true(0, 3, lambda n: False) == 4" },
+      ],
+    },
   ],
   DATA: [
     {
@@ -841,6 +929,23 @@ export const PRACTICE = {
       tests: [
         { label: "one level", code: "assert flatten([[1, 2], [3], [4, 5]]) == [1, 2, 3, 4, 5]" },
         { label: "empty inners", code: "assert flatten([[], [1], []]) == [1]" },
+      ],
+    },
+    {
+      brief: "Write  group_by(rows, key)  -> dict mapping each rows[i][key] to the list of rows with that value, order preserved.",
+      starter: "def group_by(rows, key):\n    pass\n",
+      tests: [
+        { label: "groups", code: "r=[{'t':'a','n':1},{'t':'b','n':2},{'t':'a','n':3}]\nassert group_by(r,'t') == {'a':[{'t':'a','n':1},{'t':'a','n':3}], 'b':[{'t':'b','n':2}]}" },
+        { label: "empty", code: "assert group_by([], 'x') == {}" },
+      ],
+    },
+    {
+      brief: "Write  balanced(s)  -> True if every '(' '[' '{' is closed by the right bracket in the right order.",
+      starter: "def balanced(s):\n    pass\n",
+      tests: [
+        { label: "ok", code: "assert balanced('([]{()})') is True" },
+        { label: "wrong order", code: "assert balanced('([)]') is False" },
+        { label: "unclosed", code: "assert balanced('(((') is False" },
       ],
     },
   ],
@@ -868,6 +973,22 @@ export const PRACTICE = {
       tests: [
         { label: "three", code: "assert average(2, 4, 6) == 4" },
         { label: "none", code: "assert average() == 0" },
+      ],
+    },
+    {
+      brief: "Write a decorator  once(fn)  -> the wrapped function runs only the first time; later calls return that first result without re-running.",
+      starter: "def once(fn):\n    pass\n",
+      tests: [
+        { label: "runs once", code: "calls=[]\n@once\ndef f():\n    calls.append(1)\n    return 42\nassert f() == 42 and f() == 42 and len(calls) == 1" },
+      ],
+    },
+    {
+      brief: "Write  permutations(items)  -> a list of every ordering of the list (backtracking). permutations([1,2,3]) has 6 entries; permutations([]) -> [[]].",
+      starter: "def permutations(items):\n    pass\n",
+      tests: [
+        { label: "count", code: "assert len(permutations([1,2,3])) == 6" },
+        { label: "contents", code: "assert sorted(permutations([1,2])) == [[1,2],[2,1]]" },
+        { label: "empty", code: "assert permutations([]) == [[]]" },
       ],
     },
   ],
@@ -900,6 +1021,21 @@ export const PRACTICE = {
         { label: "peek keeps it", code: "s = Stack()\ns.push(9)\nassert s.peek() == 9 and s.is_empty() is False" },
       ],
     },
+    {
+      brief: "Write  Vector(x, y)  supporting  +  and  ==  (via __add__ / __eq__) and  __repr__ giving 'Vector(1, 2)'.",
+      starter: "class Vector:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n",
+      tests: [
+        { label: "add", code: "assert (Vector(1,2) + Vector(3,4)) == Vector(4,6)" },
+        { label: "repr", code: "assert repr(Vector(1,2)) == 'Vector(1, 2)'" },
+      ],
+    },
+    {
+      brief: "Write a class  Timer  usable as a context manager:  with Timer() as t: ...  then  t.elapsed  is a float >= 0 (seconds). Use time.perf_counter.",
+      starter: "import time\n\nclass Timer:\n    pass\n",
+      tests: [
+        { label: "works as CM", code: "with Timer() as t:\n    sum(range(1000))\nassert isinstance(t.elapsed, float) and t.elapsed >= 0" },
+      ],
+    },
   ],
   CRAFT: [
     {
@@ -924,6 +1060,22 @@ export const PRACTICE = {
       tests: [
         { label: "climbs", code: "assert list(running_max([1, 3, 2, 5, 4])) == [1, 3, 3, 5, 5]" },
         { label: "descending", code: "assert list(running_max([9, 1, 1])) == [9, 9, 9]" },
+      ],
+    },
+    {
+      brief: "Write  retry(fn, attempts)  -> call fn(); if it raises, try again, up to `attempts` times; return its value, or re-raise the last exception.",
+      starter: "def retry(fn, attempts):\n    pass\n",
+      tests: [
+        { label: "succeeds late", code: "st={'n':0}\ndef f():\n    st['n']+=1\n    if st['n']<3: raise ValueError('x')\n    return 'ok'\nassert retry(f,5)=='ok' and st['n']==3" },
+        { label: "gives up", code: "def g():\n    raise KeyError('nope')\ntry:\n    retry(g,2)\n    assert False\nexcept KeyError:\n    pass" },
+      ],
+    },
+    {
+      brief: "Write  parse_query(qs)  -> turn 'a=1&b=two&a=3' into {'a': ['1','3'], 'b': ['two']} (values always lists, order kept).",
+      starter: "def parse_query(qs):\n    pass\n",
+      tests: [
+        { label: "repeats", code: "assert parse_query('a=1&b=two&a=3') == {'a':['1','3'],'b':['two']}" },
+        { label: "empty", code: "assert parse_query('') == {}" },
       ],
     },
   ],
@@ -987,10 +1139,18 @@ export const ACHIEVEMENTS = [
     test: (s) => (s.bestStreak || 0) >= 30 },
   { id: "level_10",    name: "Double Digits", note: "Reach Level 10.",
     test: (s) => levelFromXP(s.xp || 0).level >= 10 },
-  { id: "halfway",     name: "Halfway to the Top", note: "Reach Day 30.",
-    test: (s) => (s.day || 1) >= 30 },
-  { id: "monarch",     name: "The Python Monarch", note: "Clear the Monarch's Gate (Day 60).",
-    test: (s) => !!(s.completed?.[60]?.boss) },
+  { id: "halfway",     name: "Halfway to the Top", note: "Reach Day 50.",
+    test: (s) => (s.day || 1) >= 50 },
+  { id: "s_rank",      name: "S-Rank Hunter", note: "Clear the S-Rank Gate (Day 50).",
+    test: (s) => !!(s.completed?.[50]?.boss) },
+  { id: "algo_gate",   name: "Gauntlet Runner", note: "Clear the Algorithm Gate (Day 80).",
+    test: (s) => !!(s.completed?.[80]?.boss) },
+  { id: "streak_100",  name: "Century", note: "Hold a 100-day streak.",
+    test: (s) => (s.bestStreak || 0) >= 100 },
+  { id: "level_25",    name: "Ascendant", note: "Reach Level 25.",
+    test: (s) => levelFromXP(s.xp || 0).level >= 25 },
+  { id: "monarch",     name: "The Python Monarch", note: "Clear the Monarch's Gate (Day 100).",
+    test: (s) => !!(s.completed?.[100]?.boss) },
 ];
 
 export function clearedDungeons(save) {

@@ -1,10 +1,11 @@
 # PyWots
 
-A 60-day, Solo-Leveling-style path from zero Python to competent Python.
+A 100-day, Solo-Leveling-style path from zero Python to shipping real software.
 Every day is a Gate: guided micro-lessons to teach the concept, then a real
 **Dungeon** — code you write and run in the browser, graded by hidden tests.
-Clear Gates to raise your Hunter Rank (E → D → C → B → A → S → National →
-Monarch), grow six stats, hold a streak, and dodge the Penalty for missing a day.
+Clear the 11 boss Gates to raise your Hunter Rank (E → D → C → B → A → S → S+ →
+SS → SS+ → SSS → National → Monarch), grow six stats, hold a streak, and dodge
+the Penalty for missing a day.
 
 Live: **https://pywots.vercel.app** · iOS: Capacitor wrap (see `CAPACITOR.md`).
 
@@ -22,7 +23,7 @@ npm run ios      # build + sync + open the iOS project in Xcode
 | File | What it is |
 |------|------------|
 | `PyWots.jsx` | The whole app — one React component. Game loop, screens (Today / Tower / Hunter), XP/rank/streak/penalty logic, the Pyodide runner, radar chart, achievements, the account/auth UI. |
-| `curriculum.js` | All content + game math. Days 1–10 fully authored (teaching cards + guided lessons + a graded Dungeon). Days 11–60 mapped to concrete topics in `TOPIC_MAP`, kept playable by `PRACTICE` — a bank of real graded problems per stat. |
+| `curriculum.js` | All content + game math. Days 1–10 fully authored (teaching cards + guided lessons + a graded Dungeon). Days 11–100 mapped to concrete topics in `TOPIC_MAP`, kept playable by `PRACTICE` — a bank of real graded problems per stat. |
 | `src/lib/` | `supabase.js` (client + anon session), `persistence.js` (local-first store), `auth.js` (email / Google / Apple), `native-bridge.js` (iOS-only), `platform.js`, `keys.js`. |
 | `supabase/` | `schema.sql` + `README.md` — the profiles table, RLS, triggers, `delete_user()`, and setup steps. |
 | `capacitor.config.json`, `ios/` | The iOS shell. |
@@ -60,7 +61,7 @@ Full setup: **`supabase/README.md`**. iOS specifics: **`CAPACITOR.md`**.
 
 - **Remove the "Testing controls"** block on the Hunter screen (unlock day,
   +200 XP, age progress, reset).
-- Author days 11–60 (guided lessons) into `curriculum.js` following the day
+- Author days 11–100 (guided lessons) into `curriculum.js` following the day
   shape documented at the top of that file. The topic map and objectives are
   already there.
 - Rank is client-state only. If anything is ever paywalled, gate it server-side
