@@ -7,6 +7,7 @@ import {
 } from "./curriculum.js";
 import { store, onSyncState } from "./src/lib/persistence.js";
 import { SAVE_KEY } from "./src/lib/keys.js";
+import { isNative } from "./src/lib/platform.js";
 import {
   isConfigured, onAuthChange, currentUser, isAnon,
   signInEmail, registerEmail, sendPasswordReset, signInWithProvider,
@@ -401,6 +402,27 @@ a,.pw-link{color:var(--cyan)}
   clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
 .pw-input:focus{border-color:var(--cyan);box-shadow:0 0 18px -6px rgba(56,225,255,.6)}
 .pw-oauth{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px}
+
+/* ---- System summons (the "NOTIFICATION — will you accept?" screen) ---- */
+.pw-summon{position:fixed;inset:0;z-index:75;display:grid;place-items:center;padding:22px;
+  background:radial-gradient(circle at 50% 42%, rgba(10,16,40,.97), rgba(3,5,12,.99));
+  animation:pw-reveal .3s ease both}
+.pw-summon-card{width:min(460px,100%);text-align:center;position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(56,225,255,.25),0 0 70px -10px rgba(56,225,255,.55),inset 0 1px 0 rgba(255,255,255,.05)}
+.pw-summon-card::after{content:"";position:absolute;left:0;right:0;height:56px;top:-56px;
+  background:linear-gradient(180deg,transparent,rgba(56,225,255,.14),transparent);animation:pw-scan 3.8s linear infinite}
+.pw-summon-bar{height:7px;width:84%;margin:0 auto;border-radius:2px;
+  background:linear-gradient(90deg,rgba(56,225,255,0),var(--cyan) 30%,var(--cyan) 70%,rgba(56,225,255,0));
+  box-shadow:0 0 22px rgba(56,225,255,.7)}
+.pw-summon-head{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0 2px}
+.pw-summon-i{width:30px;height:30px;flex:none;display:grid;place-items:center;border:2px solid var(--cyan);
+  border-radius:50%;color:var(--cyan);font-family:var(--display);font-weight:900;box-shadow:var(--glow-cyan)}
+.pw-summon-title{font-family:var(--display);font-weight:900;letter-spacing:.3em;font-size:19px;color:#EAF6FF;
+  text-shadow:var(--glow-cyan);border:1px solid var(--line);padding:6px 8px 6px 14px}
+.pw-summon-body{font-size:15px;line-height:1.95;color:var(--dim);margin:20px 10px 22px}
+.pw-summon-body b{color:var(--cyan);font-style:italic;font-weight:700;text-shadow:var(--glow-cyan)}
+.pw-summon-actions{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
+@media (prefers-reduced-motion:reduce){ .pw-summon-card::after{display:none} }
 
 @media (max-width:560px){
   .pw-statusrow{gap:8px;padding:8px 12px}
@@ -1123,6 +1145,16 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
   const earned = new Set(save.achievements || []);
   const nextGate = Object.keys(BOSS_DAYS).map(Number).sort((a, b) => a - b).find((d) => !save.completed?.[d]?.boss);
 
+  const rem = save.reminder || { enabled: true, hour: 9, minute: 0 };
+  const remTime = `${String(rem.hour ?? 9).padStart(2, "0")}:${String(rem.minute ?? 0).padStart(2, "0")}`;
+  const setReminder = (patch) => {
+    const next = { enabled: true, hour: 9, minute: 0, ...rem, ...patch };
+    mutate((s) => ({ ...s, reminder: next }));
+    applyReminderPref(next);
+    if (isNative && next.enabled) toast("sys", "⟢ SYSTEM", `Daily Quest reminder set for ${
+      String(next.hour).padStart(2, "0")}:${String(next.minute).padStart(2, "0")}.`);
+  };
+
   return (
     <div className="pw-wrap">
       <div className="pw-row" style={{ gap: 16, flexWrap: "wrap", alignItems: "stretch" }}>
@@ -1189,6 +1221,30 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
       </Frame>
 
       <AccountPanel save={save} auth={auth} openAuth={openAuth} toast={toast} />
+
+      <Frame style={{ marginTop: 14 }}>
+        <div className="pw-phase" style={{ marginTop: 0 }}>Daily Quest Reminder</div>
+        <label className="pw-row" style={{ gap: 10, cursor: "pointer" }}>
+          <input type="checkbox" checked={rem.enabled !== false}
+            onChange={(e) => setReminder({ enabled: e.target.checked })} />
+          <span>Summon me every day at</span>
+          <input type="time" className="pw-input" style={{ width: 130, margin: 0 }}
+            value={remTime}
+            onChange={(e) => {
+              const [h, m] = e.target.value.split(":").map(Number);
+              setReminder({ hour: h || 0, minute: m || 0 });
+            }} />
+        </label>
+        <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 10 }}>
+          {isNative
+            ? "A System notification with an Accept button. iOS shows it as a standard banner — tapping it opens the full-screen summons and drops you into the Gate. (iOS can't take over the screen on its own.)"
+            : "Scheduled reminders fire from the installed iOS app. On the web, the summons still appears the first time you open PyWots each day."}
+        </div>
+        <button className="pw-btn" style={{ marginTop: 10 }}
+          onClick={() => { mutate((s) => ({ ...s, summonedOn: null })); window.dispatchEvent(new CustomEvent("pywots:summon")); }}>
+          Preview the summons
+        </button>
+      </Frame>
 
       <Frame style={{ marginTop: 14 }}>
         <div className="pw-phase" style={{ marginTop: 0, color: "var(--dim)" }}>Testing controls — remove before ship</div>
@@ -1417,6 +1473,42 @@ function AccountPanel({ save, auth, openAuth, toast }) {
   );
 }
 
+/* ---------------------- the System summons ------------------ */
+/* The full-screen "NOTIFICATION — will you accept?" screen. Shown when the
+   app is opened from the 9am reminder, or on the first open of a new day
+   with today's Gate still uncleared. */
+function SystemSummons({ day, onAccept, onDismiss }) {
+  return (
+    <div className="pw-summon" role="dialog" aria-modal="true">
+      <Frame className="pw-summon-card">
+        <div className="pw-summon-bar" />
+        <div className="pw-summon-head">
+          <span className="pw-summon-i">!</span>
+          <span className="pw-summon-title">NOTIFICATION</span>
+        </div>
+        <div className="pw-summon-body pw-read">
+          The Daily Quest has appeared.<br />
+          You have acquired the qualifications to enter <b>Gate {day}</b>.<br />
+          Will you accept?
+        </div>
+        <div className="pw-summon-actions">
+          <button className="pw-btn primary" onClick={onAccept}>Accept</button>
+          <button className="pw-btn" onClick={onDismiss}>Not now</button>
+        </div>
+        <div className="pw-summon-bar" style={{ marginTop: 14 }} />
+      </Frame>
+    </div>
+  );
+}
+
+/* Fire-and-forget: (re)apply the daily reminder schedule on native. */
+function applyReminderPref(pref) {
+  if (!isNative) return;
+  import("./src/lib/reminders.js")
+    .then((m) => m.applyReminder(pref, { requestIfNeeded: true }))
+    .catch(() => {});
+}
+
 /* =========================== shell ======================== */
 export default function PyWots() {
   const [save, setSave] = useState(undefined); // undefined = loading
@@ -1426,6 +1518,7 @@ export default function PyWots() {
   const [booting, setBooting] = useState(true);
   const [burst, setBurst] = useState(null); // {title, sub}
   const [authOpen, setAuthOpen] = useState(false);
+  const [summon, setSummon] = useState(false);
   const py = usePyodide();
   const auth = useAuth();
   const prevLevel = useRef(null);
@@ -1506,6 +1599,34 @@ export default function PyWots() {
 
   const mutate = useCallback((fn) => setSave((s) => fn(s)), []);
 
+  // the System summons — shown when opened from the reminder, or on the
+  // first open of a new day with today's Gate still uncleared.
+  useEffect(() => {
+    if (!save || !save.answers || booting) return;
+    if (typeof window !== "undefined" && window.__pywotsSummon) {
+      window.__pywotsSummon = false;
+      setSummon(true);
+      return;
+    }
+    const today = dayStr();
+    const cur = save.day || 1;
+    const doneToday = !!save.completed?.[cur]?.dungeon;
+    const remindOn = save.reminder?.enabled !== false;
+    if (remindOn && save.summonedOn !== today && !doneToday) setSummon(true);
+  }, [save, booting]);
+
+  useEffect(() => {
+    const h = () => setSummon(true);
+    window.addEventListener("pywots:summon", h);
+    return () => window.removeEventListener("pywots:summon", h);
+  }, []);
+
+  const closeSummon = (accepted) => {
+    setSummon(false);
+    mutate((s) => ({ ...s, summonedOn: dayStr() }));
+    if (accepted) { setTab("today"); setViewDay((save && save.day) || 1); }
+  };
+
   // soft, one-time nudge to create an account — only after there's progress
   // worth protecting (Day 3 cleared) and only for guests.
   useEffect(() => {
@@ -1531,10 +1652,13 @@ export default function PyWots() {
       flawless: 0,
       achievements: [],
       penalty: false,
+      reminder: { enabled: true, hour: 9, minute: 0 },
+      summonedOn: dayStr(),
     };
     setSave(fresh);
     setViewDay(1);
     setTab("today");
+    applyReminderPref(fresh.reminder); // prompts for notification permission on native
     setTimeout(() => toast("sys", "⟢ SYSTEM", "You have awakened as an E-Rank Hunter. The first Gate awaits."), 300);
   };
 
@@ -1636,6 +1760,14 @@ export default function PyWots() {
       {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} />}
 
       {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} toast={toast} />}
+
+      {!booting && summon && (
+        <SystemSummons
+          day={save.day || 1}
+          onAccept={() => closeSummon(true)}
+          onDismiss={() => closeSummon(false)}
+        />
+      )}
 
       <div className="pw-dock">
         <div className="pw-dockinner">

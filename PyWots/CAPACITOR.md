@@ -116,6 +116,20 @@ xcrun simctl launch booted app.pywots
      Pyodide into the app: drop the release files in `public/pyodide/` and point
      `PYODIDE_BASE` in `PyWots.jsx` at `/pyodide/`.
 
+## Daily Quest reminder
+
+`@capacitor/local-notifications` schedules one repeating notification (default
+09:00) — set in **Hunter → Daily Quest Reminder**. Tapping it (or its **Accept**
+action) opens the app and shows the full-screen in-app **System summons**
+(`<SystemSummons>`).
+
+iOS **cannot** be made to take over the screen at a scheduled time — no app can.
+The notification is a standard banner; the "override the phone" experience only
+exists once the app is open. Permission is requested right after the Awakening
+Test and again from the settings toggle. The schedule is re-applied on every
+launch from the saved pref (`src/lib/native-bridge.js`), so it survives restarts
+— but a free-signed build stops firing once the 7-day signature expires.
+
 ## Offline
 
 The app is local-first: it runs fully offline (progress in Preferences) and
