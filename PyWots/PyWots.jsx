@@ -151,16 +151,19 @@ const CSS = `
 html,body{background:var(--bg)}
 body{
   color:var(--text);font-family:var(--sans);font-size:16px;
+  /* never let the page pan sideways; wide content scrolls inside its own box */
+  overflow-x:hidden;
   background:
     radial-gradient(120% 70% at 50% -10%, #16204d 0%, rgba(10,14,34,0) 60%),
     radial-gradient(90% 60% at 50% 120%, #1a1140 0%, rgba(5,6,15,0) 55%),
     linear-gradient(180deg,#070A18,#05060F 60%);
 }
+img,svg,video{max-width:100%}
 
 /* ---- layout ---- */
-.pw-app{position:relative;z-index:1;min-height:100vh}
-.pw-wrap{max-width:940px;margin:0 auto;padding:22px 16px 120px}
-.pw-row{display:flex;align-items:center;gap:10px}
+.pw-app{position:relative;z-index:1;min-height:100vh;width:100%;overflow-x:clip}
+.pw-wrap{width:100%;max-width:940px;margin:0 auto;padding:22px 16px 120px}
+.pw-row{display:flex;align-items:center;gap:10px;min-width:0}
 .pw-display{font-family:var(--display);font-weight:900;letter-spacing:.04em}
 .pw-read{font-family:var(--read)}
 .pw-muted{color:var(--dim)}
@@ -237,15 +240,17 @@ a,.pw-link{color:var(--cyan)}
 @keyframes pw-sheen{0%{transform:translateX(-100%)}60%,100%{transform:translateX(320%)}}
 
 /* ---- choices ---- */
-.pw-choice{display:block;width:100%;text-align:left;border:1px solid var(--line);
+.pw-choice{display:block;width:100%;max-width:100%;text-align:left;border:1px solid var(--line);
   background:linear-gradient(180deg,var(--panel2),var(--panel));color:var(--text);
   padding:11px 13px;border-radius:2px;font-size:14px;margin-top:8px;font-family:var(--mono);
+  overflow-wrap:anywhere;word-break:break-word;
   transition:.13s;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
 .pw-choice:hover:not(:disabled){border-color:var(--cyan);box-shadow:0 0 16px -6px rgba(56,225,255,.6)}
 .pw-choice.right{border-color:var(--ok);color:#eafff6;background:rgba(61,240,169,.12);box-shadow:0 0 18px -6px rgba(61,240,169,.6)}
 .pw-choice.wrong{border-color:var(--bad);color:#ffe9ee;background:rgba(255,92,122,.12)}
 .pw-code{font-family:var(--mono);font-size:13px;background:#05070F;border:1px solid var(--line);
-  border-radius:2px;padding:11px 13px;white-space:pre-wrap;line-height:1.6;color:#DCE6FF}
+  border-radius:2px;padding:11px 13px;white-space:pre-wrap;line-height:1.6;color:#DCE6FF;
+  overflow-x:auto;overflow-wrap:anywhere;max-width:100%}
 
 /* ---- system message ---- */
 .pw-sysbox{position:relative;overflow:hidden}
@@ -301,7 +306,8 @@ a,.pw-link{color:var(--cyan)}
 .pw-daynum{font-family:var(--mono);font-size:12px;color:var(--dim);width:46px;flex:none}
 
 /* ---- toasts ---- */
-.pw-toast{position:fixed;top:14px;right:14px;z-index:60;display:flex;flex-direction:column;gap:8px;max-width:340px}
+.pw-toast{position:fixed;top:14px;right:12px;z-index:60;display:flex;flex-direction:column;gap:8px;
+  width:340px;max-width:calc(100% - 24px)}
 .pw-toastcard{position:relative;background:var(--panel);border:1px solid var(--cyan);border-radius:2px;
   padding:11px 13px;font-size:13.5px;box-shadow:0 10px 34px rgba(0,0,0,.55),var(--glow-cyan);
   animation:pw-toastin .3s cubic-bezier(.2,.9,.2,1);
@@ -311,7 +317,13 @@ a,.pw-link{color:var(--cyan)}
 /* ---- status bar + dock ---- */
 .pw-status{position:sticky;top:0;z-index:30;background:rgba(6,8,20,.86);backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line)}
-.pw-statusrow{max-width:940px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:9px 16px}
+.pw-statusrow{max-width:940px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:9px 16px;
+  min-width:0;overflow:hidden}
+.pw-statusrow .pw-emblem{flex:none}
+.pw-statusrow .pw-word{flex:none;white-space:nowrap}
+.pw-statusrow .pw-badge{flex:none;white-space:nowrap}
+.pw-status-xp{flex:1 1 auto;min-width:34px;max-width:220px}
+.pw-status-streak{flex:none;white-space:nowrap}
 .pw-dock{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;
   padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   background:linear-gradient(180deg,rgba(6,8,20,0),rgba(6,8,20,.9) 40%)}
@@ -389,9 +401,26 @@ a,.pw-link{color:var(--cyan)}
 
 @media (max-width:560px){
   .pw-statusrow{gap:8px;padding:8px 12px}
-  .pw-dockbtn{width:64px}
+  .pw-dockbtn{width:62px}
+  .pw-dockbtn span{font-size:9px;letter-spacing:.1em}
   .pw-burst b{font-size:32px}
+  .pw-wrap{padding-left:12px;padding-right:12px}
+  .pw-daylist{padding-left:22px}
+  .pw-daynum{width:40px;font-size:11px}
 }
+@media (max-width:480px){
+  .pw-statusrow{gap:7px}
+  .pw-statusrow .pw-word{display:none}          /* emblem carries the brand */
+  .pw-statusrow .pw-badge{font-size:11px;padding:3px 7px;letter-spacing:.06em}
+  .pw-status-xp{max-width:none;min-width:28px}
+  .pw-acct{font-size:0;gap:0;padding:3px}       /* icon-only on narrow screens */
+  .pw-acct .pw-syncdot{margin:0 2px}
+  .pw-dockbtn{width:56px}
+}
+@media (max-width:340px){
+  .pw-statusrow .pw-badge{display:none}
+}
+.pw-frame,.pw-daylist,.pw-dayrow,.pw-out,.pw-editor,.pw-toastcard,.pw-ach{max-width:100%}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   .pw-scanline,.pw-rune,.pw-sysbox::after{display:none}
@@ -1570,23 +1599,23 @@ export default function PyWots() {
           <Emblem size={30} word={false} />
           <span className="pw-word" style={{ fontSize: 17 }}>PYWOTS</span>
           <span className="pw-badge">{rank}-RANK</span>
-          <div style={{ flex: 1, minWidth: 60, maxWidth: 220 }}>
+          <div className="pw-status-xp">
             <div className="pw-row" style={{ justifyContent: "space-between", fontSize: 10.5 }} >
               <span className="pw-eyebrow">Lv {level}</span>
               <span className="pw-muted">{into}/{need}</span>
             </div>
             <div style={{ marginTop: 3 }}><Bar value={(into / need) * 100} /></div>
           </div>
-          <span className="pw-row" style={{ gap: 4, fontFamily: "var(--display)", fontSize: 13 }}>
+          <span className="pw-row pw-status-streak" style={{ gap: 4, fontFamily: "var(--display)", fontSize: 13 }}>
             🔥 {save.streak || 0}
           </span>
           {auth.configured && (
             auth.isAnon ? (
-              <button className="pw-acct" onClick={() => setAuthOpen(true)} title="Save your progress">
+              <button className="pw-acct" style={{ flex: "none" }} onClick={() => setAuthOpen(true)} title="Save your progress">
                 <span className="pw-syncdot" /> Guest
               </button>
             ) : (
-              <button className="pw-acct" onClick={() => setTab("hunter")} title={auth.email || "Account"}>
+              <button className="pw-acct" style={{ flex: "none" }} onClick={() => setTab("hunter")} title={auth.email || "Account"}>
                 <span className={`pw-syncdot ${auth.syncState}`} />
                 <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
               </button>
