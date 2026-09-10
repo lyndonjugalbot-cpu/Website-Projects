@@ -15,6 +15,7 @@ import type * as crons from "../crons.js";
 import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
+import type * as periodBudgets from "../periodBudgets.js";
 import type * as recurringExpenses from "../recurringExpenses.js";
 import type * as savings from "../savings.js";
 import type * as scheduleFromText from "../scheduleFromText.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   expenses: typeof expenses;
   http: typeof http;
   notes: typeof notes;
+  periodBudgets: typeof periodBudgets;
   recurringExpenses: typeof recurringExpenses;
   savings: typeof savings;
   scheduleFromText: typeof scheduleFromText;

@@ -23,16 +23,34 @@ export interface Income {
   nextPayDate: string;
 }
 
-/** Per-user budget, savings-goal, and forecast-input settings (backed by the `budgets` table). */
+/** Per-user budget, automatic-savings, and forecast-input settings (backed by the `budgets` table). */
 export interface Budgets {
+  /** Default budgets — prefill each period's input; any single period can override via `PeriodBudget`. */
   weekly: number | null;
   monthly: number | null;
-  /** Savings carved out of the corresponding budget; see forecast.ts for the realized-savings formula. */
+  /**
+   * Fixed automatic savings carved out of every period's budget: the effective spending limit
+   * is budget − this. What actually reaches savings for a period is min(this, budget − spent);
+   * see `computePeriodSavingsImpact` in utils/periodBudget.ts.
+   */
   savingsWeekly: number | null;
   savingsMonthly: number | null;
   startingBalance: number | null;
   income: Income | null;
 }
+
+export type BudgetPeriod = "weekly" | "monthly";
+
+/** An explicit budget the user entered for one specific week or month (backed by `periodBudgets`). */
+export interface PeriodBudget {
+  id: string;
+  period: BudgetPeriod;
+  /** ISO date string — Monday for weekly, the 1st for monthly. */
+  periodStart: string;
+  amount: number;
+}
+
+export type PeriodBudgetInput = Omit<PeriodBudget, "id">;
 
 export type SavingsSource = "manual" | "auto-weekly" | "auto-monthly";
 

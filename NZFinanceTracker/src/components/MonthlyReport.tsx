@@ -5,14 +5,17 @@ import { getHighestSpendingWeek, getLargestPurchase, groupSpendingByCategory, gr
 import type { WeekSpending } from "../utils/expenses";
 import { CategoryDonutChart } from "./charts/CategoryDonutChart";
 import { SpendingTrendChart } from "./charts/SpendingTrendChart";
+import { PeriodSavingsSummary } from "./PeriodSavingsSummary";
 import { ChartCard, ReportStat } from "./ReportPieces";
 
 interface MonthlyReportProps {
   expenses: Expense[];
   range: DateRange;
+  grossBudget: number | null;
+  carveOut: number | null;
 }
 
-export function MonthlyReport({ expenses, range }: MonthlyReportProps) {
+export function MonthlyReport({ expenses, range, grossBudget, carveOut }: MonthlyReportProps) {
   const weekTotals = groupSpendingByWeek(expenses, range);
   const categoryTotals = groupSpendingByCategory(expenses);
   const highestWeek = getHighestSpendingWeek(expenses, range);
@@ -21,6 +24,8 @@ export function MonthlyReport({ expenses, range }: MonthlyReportProps) {
 
   return (
     <div className="flex flex-col gap-5">
+      <PeriodSavingsSummary view="monthly" grossBudget={grossBudget} carveOut={carveOut} spent={totalMonthly} />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <ReportStat label="Total monthly spending" value={formatNZD(totalMonthly)} />
         <ReportStat

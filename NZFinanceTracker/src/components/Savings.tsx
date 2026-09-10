@@ -1,21 +1,18 @@
-import { ArrowDownLeft, Plus, RefreshCw, Wallet } from "lucide-react";
+import { ArrowDownLeft, Plus, ShieldCheck, Wallet } from "lucide-react";
 import { useMemo } from "react";
-import type { Budgets, Expense, ReportView, SavingsEntry } from "../types";
+import type { Budgets, Expense, PeriodBudget, ReportView, SavingsEntry } from "../types";
 import { formatNZD } from "../utils/currency";
-import {
-  buildSavingsTimeline,
-  getAutoContributed,
-  getSavingsBalance,
-  getTotalDeposited,
-  getTotalWithdrawn,
-} from "../utils/savings";
+import { buildSavingsImpactReport } from "../utils/periodBudget";
+import { buildSavingsTimeline, getManualBalance, getTotalDeposited, getTotalWithdrawn } from "../utils/savings";
 import { ChartCard, ReportStat } from "./ReportPieces";
 import { SavingsEntryList } from "./SavingsEntryList";
+import { SavingsImpactReport } from "./SavingsImpactReport";
 import { SavingsHistoryChart } from "./charts/SavingsHistoryChart";
 
 interface SavingsProps {
   savingsEntries: SavingsEntry[];
   expenses: Expense[];
+  periodBudgets: PeriodBudget[];
   budgets: Budgets;
   view: ReportView;
   onAddDeposit: () => void;
@@ -28,6 +25,7 @@ interface SavingsProps {
 export function Savings({
   savingsEntries,
   expenses,
+  periodBudgets,
   budgets,
   view,
   onAddDeposit,
@@ -36,15 +34,20 @@ export function Savings({
   onDeleteEntry,
   onConfigureSettings,
 }: SavingsProps) {
-  const balance = getSavingsBalance(savingsEntries);
+  const manualBalance = getManualBalance(savingsEntries);
   const deposited = getTotalDeposited(savingsEntries);
   const withdrawn = getTotalWithdrawn(savingsEntries);
-  const autoContributed = getAutoContributed(savingsEntries);
-  const autoCount = savingsEntries.filter((e) => e.source !== "manual").length;
+
+  const impactReport = useMemo(
+    () => buildSavingsImpactReport(periodBudgets, budgets, expenses, view),
+    [periodBudgets, budgets, expenses, view],
+  );
+  const autoKept = impactReport.totals.keptSavings;
+  const balance = Math.round((manualBalance + autoKept) * 100) / 100;
 
   const timeline = useMemo(
-    () => buildSavingsTimeline(savingsEntries, expenses, budgets, view),
-    [savingsEntries, expenses, budgets, view],
+    () => buildSavingsTimeline(savingsEntries, expenses, periodBudgets, budgets, view),
+    [savingsEntries, expenses, periodBudgets, budgets, view],
   );
 
   return (
@@ -71,35 +74,54 @@ export function Savings({
         </div>
       </div>
 
+      <p className="text-xs text-slate-400">
+        Use <span className="font-medium text-slate-500 dark:text-slate-400">Add to savings</span> for money you set
+        aside yourself — side-hustle income, a windfall, a transfer. The{" "}
+        <span className="font-medium text-slate-500 dark:text-slate-400">{formatNZD(autoKept)}</span> from automatic{" "}
+        {view === "weekly" ? "weekly" : "monthly"} savings is added for you from each period's budget.
+      </p>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <ReportStat icon={Wallet} label="Current savings balance" value={formatNZD(balance)} />
-        <ReportStat label="Total added" value={formatNZD(deposited)} />
-        <ReportStat label="Total withdrawn" value={formatNZD(withdrawn)} />
+        <ReportStat label="Added by hand" value={formatNZD(deposited)} sub={withdrawn > 0 ? `${formatNZD(withdrawn)} withdrawn` : undefined} />
         <ReportStat
-          icon={RefreshCw}
-          label="From savings goal"
-          value={formatNZD(autoContributed)}
-          sub={autoCount > 0 ? `${autoCount} auto contribution${autoCount === 1 ? "" : "s"}` : "No goal set yet"}
+          icon={ShieldCheck}
+          label={`From automatic ${view === "weekly" ? "weekly" : "monthly"} savings`}
+          value={formatNZD(autoKept)}
+          sub={`${impactReport.totals.periodsTracked} ${view === "weekly" ? "week" : "month"}s tracked`}
+        />
+        <ReportStat
+          label="Lost to overspending"
+          value={formatNZD(impactReport.totals.lostToDips)}
+          sub={
+            impactReport.totals.periodsDipped + impactReport.totals.periodsOverspent > 0
+              ? `${impactReport.totals.periodsDipped + impactReport.totals.periodsOverspent} ${view === "weekly" ? "week" : "month"}s affected`
+              : "none — nicely done"
+          }
         />
       </div>
 
       <ChartCard title={`Savings over time (${timeline.windowLabel})`}>
         <p className="-mt-1 mb-3 text-xs text-slate-400">
-          <span className="font-medium text-slate-500 dark:text-slate-400">Recorded balance</span> is the money you've
-          actually set aside.{" "}
-          {timeline.hasRealized ? (
+          <span className="font-medium text-slate-500 dark:text-slate-400">Set aside</span> is money you've actually
+          banked — by hand plus the automatic savings that survived each period's spending.{" "}
+          {timeline.hasTarget ? (
             <>
-              <span className="font-medium text-slate-500 dark:text-slate-400">Budget-based savings</span> is how much of
-              your {view} goal your under-spending has covered, added up.
+              <span className="font-medium text-slate-500 dark:text-slate-400">Target</span> is where you'd be with no
+              overspending.
             </>
           ) : (
             <button type="button" onClick={onConfigureSettings} className="font-medium text-brand-600 hover:underline">
-              Set a {view} savings goal
+              Set an automatic {view} savings amount
             </button>
           )}
-          {!timeline.hasRealized && " to compare it against your budget."}
+          {!timeline.hasTarget && " to compare against a target."}
         </p>
-        <SavingsHistoryChart data={timeline.points} showRealized={timeline.hasRealized} />
+        <SavingsHistoryChart data={timeline.points} showTarget={timeline.hasTarget} />
+      </ChartCard>
+
+      <ChartCard title="When spending dipped into savings">
+        <SavingsImpactReport report={impactReport} />
       </ChartCard>
 
       <ChartCard title="Activity">

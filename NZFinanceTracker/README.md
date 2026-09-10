@@ -112,12 +112,13 @@ submitting to either store, since it can't be changed after a first release.
 
 ```
 convex/
-  schema.ts                  Table definitions: expenses, budgets, meta
+  schema.ts                  Table definitions: expenses, budgets, periodBudgets, meta
   expenses.ts                list/add/update/remove/importMany/clearAll/
                               seedSampleIfEmpty queries & mutations, retention cutoff
-  budgets.ts                 get/set queries & mutations (single shared budgets doc)
-  savings.ts                 list/add/update/remove savings entries + accrueScheduled job
-  crons.ts                   Scheduled jobs: purge expired expenses, accrue savings goals
+  budgets.ts                 get/set queries & mutations (single shared budgets doc — defaults + carve-out)
+  periodBudgets.ts           list/set/remove — per-week / per-month budget overrides
+  savings.ts                 list/add/update/remove savings entries + reconcileLegacyAutoEntries job
+  crons.ts                   Scheduled jobs: purge expired expenses, clear legacy auto savings entries
   constants.ts                DATA_RETENTION_MONTHS, EXPENSE_CATEGORIES (server-side copy)
 src/
   App.tsx                    Top-level layout, tabs, and modal wiring
@@ -134,14 +135,17 @@ src/
     currency.ts              NZD formatting and amount parsing
     date.ts                  NZ date formatting, week/month range helpers (Monday-first weeks)
     expenses.ts              Filtering, sorting, totals, grouping by category/day/week
+    periodBudget.ts          Per-period budget resolution + automatic-savings impact maths
     csv.ts                   CSV/JSON export, JSON import client-side validation
     id.ts                    Unique ID generation (import placeholder ids only)
   components/
     Header.tsx, Dashboard.tsx, SummaryCards.tsx
     ExpenseForm.tsx, ExpenseList.tsx, ExpenseItem.tsx
     ReportControls.tsx, WeeklyReport.tsx, MonthlyReport.tsx, ReportPieces.tsx
+    PeriodBudgetInput.tsx, PeriodSavingsSummary.tsx
     BudgetCard.tsx, BudgetSettings.tsx, DataManagement.tsx
     SavingsGoalCard.tsx, Savings.tsx, SavingsForm.tsx, SavingsEntryList.tsx
+    SavingsImpactReport.tsx
     EmptyState.tsx, ConfirmationDialog.tsx, Modal.tsx
     charts/
       SpendingTrendChart.tsx, CategoryDonutChart.tsx
@@ -171,9 +175,17 @@ src/
   `isSample` is only `true` on the expenses seeded on first launch, and is
   cleared the moment an expense is edited.
 
-- **`budgets`** — one document per user: `weekly` / `monthly` spending budgets,
-  `savingsWeekly` / `savingsMonthly` savings goals carved out of them, a
-  `startingBalance`, and an optional recurring `income` block (all nullable).
+- **`budgets`** — one document per user: `weekly` / `monthly` **default**
+  spending budgets (used to prefill each period's input), `savingsWeekly` /
+  `savingsMonthly` **automatic-savings amounts** carved out of every period's
+  budget (the effective spending limit is budget − this), a `startingBalance`,
+  and an optional recurring `income` block (all nullable).
+
+- **`periodBudgets`** — one document per week or month the user has given an
+  explicit budget for: `{ period: "weekly" | "monthly", periodStart, amount }`
+  (`periodStart` is the ISO Monday / 1st). Absence of a row means the period
+  falls back to the matching default in `budgets`. Setting a period's budget to
+  0 deletes its row.
 
 - **`savingsEntries`** — one document per movement in or out of savings,
   indexed by `date`:
@@ -190,11 +202,13 @@ src/
   ```
 
   `amount` is signed: positive is money added to savings, negative is a
-  withdrawal. `source` is `"manual"` for hand-recorded entries, or
-  `"auto-weekly"` / `"auto-monthly"` for contributions the `accrueScheduled`
-  cron drops in each period from the savings goal. Unlike `expenses`, savings
-  entries are **not** subject to the three-month retention window — the
-  "savings over time" history is meant to be long-lived.
+  withdrawal. `source` is `"manual"` for hand-recorded entries. The
+  `"auto-weekly"` / `"auto-monthly"` sources are **legacy** — automatic savings
+  is now derived each period rather than materialised as rows, and the
+  `reconcileLegacyAutoEntries` cron deletes any leftover auto rows. Unlike
+  `expenses`, savings entries are **not** subject to the three-month retention
+  window — the hand-recorded "money set aside" history is meant to be
+  long-lived.
 
 - **`meta`** — a single shared document: `{ sampleSeeded: boolean }`, so the
   sample data is only ever inserted once across all devices, not once per
@@ -203,8 +217,8 @@ src/
 `src/context/FinanceContext.tsx` maps each Convex document's `_id` to an
 `id` field so the rest of the app (built before Convex was added) didn't need
 to change — every component still calls `addExpense` / `updateExpense` /
-`deleteExpense` / `setBudgets` exactly as before, and gets live updates for
-free because `useQuery` is a real-time subscription.
+`deleteExpense` / `setBudgets` / `setPeriodBudget` exactly as before, and gets
+live updates for free because `useQuery` is a real-time subscription.
 
 ## Real-time sync
 
@@ -262,31 +276,61 @@ devices and is retained for a maximum of three months.
 - Every date range is clamped to `[retention cutoff, today]`, so a selected
   report period can never exceed the three months of available data.
 
-## Savings tracking
+## Per-period budgets and automatic savings
 
-The **Savings** tab tracks money actually set aside over time, separately from
-the per-period savings-goal progress shown on the Budget tab.
+The weekly (and monthly) budget is **entered per period**, not fixed. On the
+Budget tab, `PeriodBudgetInput` shows the selected period ("Week of 8 Sep") with
+a `$` field prefilled from `resolveGrossBudget` — the period's own
+`periodBudgets` row if it has one, otherwise the `budgets.weekly` / `.monthly`
+default. Saving writes a `periodBudgets` row; "Reset to default" (or entering 0)
+deletes it.
 
-- **Add to savings / Withdraw** — records a signed `savingsEntries` document.
-  Use it for one-off top-ups (a side-hustle payment, a tax refund) or for
-  dipping into savings. Every entry is editable and deletable.
-- **Automatic goal contributions** — a Convex cron
-  (`savings.accrueScheduled`, every 12 hours) adds one `auto-weekly` entry per
-  Monday and one `auto-monthly` entry per 1st for each user whose budget
-  carries a savings goal, so the balance keeps climbing without manual entry.
-  It's idempotent (one entry per period) and backfills at most the last
-  3 weeks / 1 month, so setting a goal doesn't retroactively invent months of
-  savings. Auto entries carry an "Auto" badge and can still be adjusted.
+A fixed slice of every period's budget — `budgets.savingsWeekly` /
+`savingsMonthly`, default $150/week — is **automatic savings**. The core maths
+lives in `computePeriodSavingsImpact` (`src/utils/periodBudget.ts`):
+
+- **effective (spendable) budget** = `max(0, budget − carveOut)`
+- **planned savings** = `min(carveOut, budget)`
+- **kept savings** = `clamp(budget − spent, 0, plannedSavings)` (reuses
+  `computeRealizedSavings` from `forecast.ts`)
+- **shortfall** = `planned − kept` — auto-savings eaten by overspending
+- **overspend** = `max(0, spent − budget)` — spending past even the savings slice
+- **status** = `on-track` → `dipped` → `overspent`
+
+Automatic savings is **derived on the client each period**, never stored as
+`savingsEntries` rows, so it stays correct as expenses are added, edited, or
+deleted. Weekly and monthly carve-outs are alternative lenses on the same
+money and are **never summed** — every derived figure follows the active
+report view.
+
+## Savings tab
+
+- **Add to savings / Withdraw** — records a signed `savingsEntries` document
+  (`source: "manual"`). Use it for money you set aside yourself — side-hustle
+  income, a windfall, a transfer — or for dipping into savings. Editable and
+  deletable.
+- **Current savings balance** = hand-recorded manual entries **+** Σ kept
+  automatic savings across the retention window (`getManualBalance` +
+  `buildSavingsImpactReport(...).totals.keptSavings`).
+- **"When spending dipped into savings"** (`SavingsImpactReport`) — walks every
+  week/month in the retention window that had a budget and lists the ones where
+  `status` is `dipped` or `overspent`, with per-period kept-vs-planned and
+  shortfall, plus window totals (planned, kept, lost to overspending, periods
+  affected).
 - **Savings over time chart** (`buildSavingsTimeline` in `src/utils/savings.ts`)
   plots two cumulative series over a bounded trailing window (last 26 weeks or
   12 months, following the report view):
-  - **Recorded balance** — the running sum of every savings entry.
-  - **Budget-based savings** — for each past period, `computeRealizedSavings`
-    (`min(goal, budget − actual spend)`) accumulated. Shows how much of the
-    goal your under-spending has actually covered. Only drawn when a matching
-    budget *and* savings goal are set.
-- **`clearAll`** also wipes `savingsEntries` along with expenses, budgets, and
-  recurring expenses.
+  - **Set aside** — manual entries + kept automatic savings, period by period.
+  - **Target (no overspend)** — manual entries + the full planned slice each
+    period. The gap between the two lines is money lost to overspending. Only
+    drawn when an automatic-savings amount is set.
+  - Because it depends on expense data, the derived portion only reaches back as
+    far as the three-month expense retention window; manual entries are unbounded.
+- The report tab shows a one-line `PeriodSavingsSummary` banner for the
+  selected period (budget · spent · auto-savings kept / planned, with a
+  warning tint when dipped/overspent).
+- **`clearAll`** also wipes `savingsEntries` and `periodBudgets` along with
+  expenses, budgets, and recurring expenses.
 
 ## Sample data
 

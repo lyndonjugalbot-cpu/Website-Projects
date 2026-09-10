@@ -68,13 +68,17 @@ export const clearAll = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    const [expenses, budgetDocs, recurringExpenses, savingsEntries, notes] = await Promise.all([
+    const [expenses, budgetDocs, periodBudgets, recurringExpenses, savingsEntries, notes] = await Promise.all([
       ctx.db
         .query("expenses")
         .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
         .query("budgets")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("periodBudgets")
         .withIndex("by_user", (q) => q.eq("userId", userId))
         .collect(),
       ctx.db
@@ -93,6 +97,7 @@ export const clearAll = mutation({
     await Promise.all([
       ...expenses.map((e) => ctx.db.delete(e._id)),
       ...budgetDocs.map((b) => ctx.db.delete(b._id)),
+      ...periodBudgets.map((p) => ctx.db.delete(p._id)),
       ...recurringExpenses.map((r) => ctx.db.delete(r._id)),
       ...savingsEntries.map((s) => ctx.db.delete(s._id)),
       ...notes.map(async (n) => {

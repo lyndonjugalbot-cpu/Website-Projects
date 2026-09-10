@@ -4,14 +4,17 @@ import { formatNZD } from "../utils/currency";
 import { getHighestSpendingDay, getLargestPurchase, groupSpendingByCategory, groupSpendingByDay } from "../utils/expenses";
 import { CategoryDonutChart } from "./charts/CategoryDonutChart";
 import { SpendingTrendChart } from "./charts/SpendingTrendChart";
+import { PeriodSavingsSummary } from "./PeriodSavingsSummary";
 import { ChartCard, ReportStat } from "./ReportPieces";
 
 interface WeeklyReportProps {
   expenses: Expense[];
   range: DateRange;
+  grossBudget: number | null;
+  carveOut: number | null;
 }
 
-export function WeeklyReport({ expenses, range }: WeeklyReportProps) {
+export function WeeklyReport({ expenses, range, grossBudget, carveOut }: WeeklyReportProps) {
   const dayTotals = groupSpendingByDay(expenses, range);
   const categoryTotals = groupSpendingByCategory(expenses);
   const highestDay = getHighestSpendingDay(expenses, range);
@@ -20,6 +23,8 @@ export function WeeklyReport({ expenses, range }: WeeklyReportProps) {
 
   return (
     <div className="flex flex-col gap-5">
+      <PeriodSavingsSummary view="weekly" grossBudget={grossBudget} carveOut={carveOut} spent={totalWeekly} />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <ReportStat label="Total weekly spending" value={formatNZD(totalWeekly)} />
         <ReportStat

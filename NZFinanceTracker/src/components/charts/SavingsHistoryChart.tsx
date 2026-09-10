@@ -17,13 +17,13 @@ import { EmptyState } from "../EmptyState";
 
 interface SavingsHistoryChartProps {
   data: SavingsTimelinePoint[];
-  showRealized: boolean;
+  showTarget: boolean;
 }
 
 const BALANCE_COLOR = "#2a78d6";
-const REALIZED_COLOR = "#0ca30c";
+const TARGET_COLOR = "#0ca30c";
 
-export function SavingsHistoryChart({ data, showRealized }: SavingsHistoryChartProps) {
+export function SavingsHistoryChart({ data, showTarget }: SavingsHistoryChartProps) {
   if (data.length === 0) {
     return (
       <EmptyState
@@ -76,18 +76,18 @@ export function SavingsHistoryChart({ data, showRealized }: SavingsHistoryChartP
           <Area
             type="monotone"
             dataKey="balance"
-            name="Recorded balance"
+            name="Set aside"
             stroke={BALANCE_COLOR}
             strokeWidth={2}
             fill="url(#savingsBalanceFill)"
             activeDot={{ r: 4, strokeWidth: 2, stroke: "#fcfcfb" }}
           />
-          {showRealized && (
+          {showTarget && (
             <Line
               type="monotone"
-              dataKey="realized"
-              name="Budget-based savings"
-              stroke={REALIZED_COLOR}
+              dataKey="target"
+              name="Target (no overspend)"
+              stroke={TARGET_COLOR}
               strokeWidth={2}
               strokeDasharray="5 4"
               dot={false}

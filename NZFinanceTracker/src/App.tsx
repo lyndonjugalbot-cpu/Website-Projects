@@ -13,6 +13,7 @@ import { Header } from "./components/Header";
 import { Modal } from "./components/Modal";
 import { MonthlyReport } from "./components/MonthlyReport";
 import { Notes } from "./components/Notes";
+import { PeriodBudgetInput } from "./components/PeriodBudgetInput";
 import { ReportControls } from "./components/ReportControls";
 import { Savings } from "./components/Savings";
 import { SavingsForm } from "./components/SavingsForm";
@@ -29,6 +30,7 @@ import type { Expense, ExpenseInput, Note, NoteInput, SavingsEntry, SavingsEntry
 import { formatNZD } from "./utils/currency";
 import { filterExpensesByRange, getTotalSpent } from "./utils/expenses";
 import { cancelNoteReminder, scheduleNoteReminder } from "./utils/notifications";
+import { getPeriodStartISO, resolveGrossBudget } from "./utils/periodBudget";
 
 type TabId = "report" | "expenses" | "budget" | "savings" | "forecast" | "notes" | "data";
 
@@ -47,6 +49,7 @@ function AppContent() {
   const {
     expenses,
     budgets,
+    periodBudgets,
     recurringExpenses,
     notes,
     isLoading,
@@ -56,6 +59,7 @@ function AppContent() {
     importExpenses,
     clearAllData,
     setBudgets,
+    setPeriodBudget,
     savingsEntries,
     addSavingsEntry,
     updateSavingsEntry,
@@ -90,8 +94,23 @@ function AppContent() {
     () => filterExpensesByRange(expenses, reportRange.range),
     [expenses, reportRange.range],
   );
-  const budgetAmount = reportRange.view === "weekly" ? budgets.weekly : budgets.monthly;
   const totalSpentInRange = getTotalSpent(rangeExpenses);
+
+  const selectedPeriodStartISO = getPeriodStartISO(reportRange.view, reportRange.range.start);
+  const explicitPeriodBudget = periodBudgets.find(
+    (pb) => pb.period === reportRange.view && pb.periodStart === selectedPeriodStartISO,
+  );
+  const grossBudgetForPeriod = resolveGrossBudget(
+    periodBudgets,
+    budgets,
+    reportRange.view,
+    selectedPeriodStartISO,
+  );
+  const carveOutForView = reportRange.view === "weekly" ? budgets.savingsWeekly : budgets.savingsMonthly;
+  const effectiveBudgetForPeriod =
+    grossBudgetForPeriod === null
+      ? null
+      : Math.max(0, grossBudgetForPeriod - Math.min(carveOutForView ?? 0, grossBudgetForPeriod));
 
   const openAddForm = () => {
     setEditingExpense(null);
@@ -237,7 +256,7 @@ function AppContent() {
           jumpToDate={reportRange.jumpToDate}
         />
 
-        <Dashboard expenses={rangeExpenses} budgetAmount={budgetAmount} onAddExpense={openAddForm} />
+        <Dashboard expenses={rangeExpenses} budgetAmount={effectiveBudgetForPeriod} onAddExpense={openAddForm} />
 
         <nav className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
           {TABS.map((tab) => (
@@ -260,9 +279,19 @@ function AppContent() {
         <section className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
           {activeTab === "report" &&
             (reportRange.view === "weekly" ? (
-              <WeeklyReport expenses={rangeExpenses} range={reportRange.range} />
+              <WeeklyReport
+                expenses={rangeExpenses}
+                range={reportRange.range}
+                grossBudget={grossBudgetForPeriod}
+                carveOut={carveOutForView}
+              />
             ) : (
-              <MonthlyReport expenses={rangeExpenses} range={reportRange.range} />
+              <MonthlyReport
+                expenses={rangeExpenses}
+                range={reportRange.range}
+                grossBudget={grossBudgetForPeriod}
+                carveOut={carveOutForView}
+              />
             ))}
 
           {activeTab === "expenses" && (
@@ -278,18 +307,34 @@ function AppContent() {
                   onClick={() => setIsBudgetModalOpen(true)}
                   className="rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  Configure budgets
+                  Configure defaults
                 </button>
               </div>
+              <PeriodBudgetInput
+                key={`${reportRange.view}:${selectedPeriodStartISO}`}
+                period={reportRange.view}
+                periodStartISO={selectedPeriodStartISO}
+                resolvedAmount={grossBudgetForPeriod}
+                isExplicit={explicitPeriodBudget !== undefined}
+                carveOut={carveOutForView}
+                onSave={(amount) =>
+                  setPeriodBudget({ period: reportRange.view, periodStart: selectedPeriodStartISO, amount })
+                }
+                onClear={() =>
+                  setPeriodBudget({ period: reportRange.view, periodStart: selectedPeriodStartISO, amount: 0 })
+                }
+              />
               <BudgetCard
                 view={reportRange.view}
-                budgets={budgets}
+                grossBudget={grossBudgetForPeriod}
+                carveOut={carveOutForView}
                 totalSpent={totalSpentInRange}
                 onConfigure={() => setIsBudgetModalOpen(true)}
               />
               <SavingsGoalCard
                 view={reportRange.view}
-                budgets={budgets}
+                grossBudget={grossBudgetForPeriod}
+                carveOut={carveOutForView}
                 totalSpent={totalSpentInRange}
                 onConfigure={() => setIsBudgetModalOpen(true)}
               />
@@ -300,6 +345,7 @@ function AppContent() {
             <Savings
               savingsEntries={savingsEntries}
               expenses={expenses}
+              periodBudgets={periodBudgets}
               budgets={budgets}
               view={reportRange.view}
               onAddDeposit={() => openAddSavings("deposit")}

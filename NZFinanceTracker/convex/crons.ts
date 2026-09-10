@@ -11,9 +11,9 @@ crons.interval(
 );
 
 crons.interval(
-  "accrue scheduled savings contributions",
+  "clear legacy auto savings entries",
   { hours: 12 },
-  internal.savings.accrueScheduled,
+  internal.savings.reconcileLegacyAutoEntries,
   {},
 );
 

@@ -60,9 +60,9 @@ export function SummaryCards({ expenses, budgetAmount }: SummaryCardsProps) {
 
   if (budgetAmount !== null) {
     cards.push({
-      label: "Remaining budget",
+      label: "Left to spend",
       value: formatNZD(remaining ?? 0),
-      sub: (remaining ?? 0) < 0 ? "Over budget" : undefined,
+      sub: (remaining ?? 0) < 0 ? "Over the spendable budget" : undefined,
       icon: PiggyBank,
       accent: (remaining ?? 0) < 0 ? "from-red-500 to-red-600" : "from-emerald-500 to-emerald-600",
     });

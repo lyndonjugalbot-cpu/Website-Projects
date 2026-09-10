@@ -8,6 +8,8 @@ import type {
   ExpenseInput,
   Note,
   NoteInput,
+  PeriodBudget,
+  PeriodBudgetInput,
   RecurringExpense,
   RecurringExpenseInput,
   SavingsEntry,
@@ -17,6 +19,7 @@ import type {
 interface FinanceContextValue {
   expenses: Expense[];
   budgets: Budgets;
+  periodBudgets: PeriodBudget[];
   recurringExpenses: RecurringExpense[];
   savingsEntries: SavingsEntry[];
   notes: Note[];
@@ -27,6 +30,7 @@ interface FinanceContextValue {
   importExpenses: (imported: Expense[]) => Promise<number>;
   clearAllData: () => void;
   setBudgets: (budgets: Budgets) => void;
+  setPeriodBudget: (input: PeriodBudgetInput) => void;
   addSavingsEntry: (input: SavingsEntryInput) => void;
   updateSavingsEntry: (id: string, input: SavingsEntryInput) => void;
   deleteSavingsEntry: (id: string) => void;
@@ -47,6 +51,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useConvexAuth();
   const expenseDocs = useQuery(api.expenses.list);
   const budgetsDoc = useQuery(api.budgets.get);
+  const periodBudgetDocs = useQuery(api.periodBudgets.list);
   const recurringExpenseDocs = useQuery(api.recurringExpenses.list);
   const savingsEntryDocs = useQuery(api.savings.list);
   const noteDocs = useQuery(api.notes.list);
@@ -58,6 +63,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const clearAllMutation = useMutation(api.expenses.clearAll);
   const seedSampleMutation = useMutation(api.expenses.seedSampleIfEmpty);
   const setBudgetsMutation = useMutation(api.budgets.set);
+  const setPeriodBudgetMutation = useMutation(api.periodBudgets.set);
   const addSavingsEntryMutation = useMutation(api.savings.add);
   const updateSavingsEntryMutation = useMutation(api.savings.update);
   const removeSavingsEntryMutation = useMutation(api.savings.remove);
@@ -92,6 +98,17 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         isSample: doc.isSample,
       })),
     [expenseDocs],
+  );
+
+  const periodBudgets = useMemo<PeriodBudget[]>(
+    () =>
+      (periodBudgetDocs ?? []).map((doc) => ({
+        id: doc._id,
+        period: doc.period,
+        periodStart: doc.periodStart,
+        amount: doc.amount,
+      })),
+    [periodBudgetDocs],
   );
 
   const recurringExpenses = useMemo<RecurringExpense[]>(
@@ -155,12 +172,14 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     () => ({
       expenses,
       budgets,
+      periodBudgets,
       recurringExpenses,
       savingsEntries,
       notes,
       isLoading:
         expenseDocs === undefined ||
         budgetsDoc === undefined ||
+        periodBudgetDocs === undefined ||
         recurringExpenseDocs === undefined ||
         savingsEntryDocs === undefined ||
         noteDocs === undefined,
@@ -189,6 +208,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       },
       setBudgets: (next) => {
         void setBudgetsMutation(next);
+      },
+      setPeriodBudget: (input) => {
+        void setPeriodBudgetMutation(input);
       },
       addSavingsEntry: (input) => {
         void addSavingsEntryMutation(input);
@@ -235,11 +257,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     [
       expenses,
       budgets,
+      periodBudgets,
       recurringExpenses,
       savingsEntries,
       notes,
       expenseDocs,
       budgetsDoc,
+      periodBudgetDocs,
       recurringExpenseDocs,
       savingsEntryDocs,
       noteDocs,
@@ -249,6 +273,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       importManyMutation,
       clearAllMutation,
       setBudgetsMutation,
+      setPeriodBudgetMutation,
       addSavingsEntryMutation,
       updateSavingsEntryMutation,
       removeSavingsEntryMutation,

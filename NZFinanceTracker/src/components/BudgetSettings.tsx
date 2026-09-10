@@ -42,17 +42,10 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
 
     const parsedWeeklyBudget = parseOrNull(weekly);
     const parsedMonthlyBudget = parseOrNull(monthly);
-    let parsedSavingsWeekly = parseOrNull(savingsWeekly);
-    let parsedSavingsMonthly = parseOrNull(savingsMonthly);
-
-    // A savings goal only makes sense carved out of a budget that exists, and can't exceed it.
-    if (parsedWeeklyBudget === null || (parsedSavingsWeekly ?? 0) > parsedWeeklyBudget) {
-      parsedSavingsWeekly = parsedWeeklyBudget === null ? null : Math.min(parsedSavingsWeekly ?? 0, parsedWeeklyBudget) || null;
-    }
-    if (parsedMonthlyBudget === null || (parsedSavingsMonthly ?? 0) > parsedMonthlyBudget) {
-      parsedSavingsMonthly =
-        parsedMonthlyBudget === null ? null : Math.min(parsedSavingsMonthly ?? 0, parsedMonthlyBudget) || null;
-    }
+    // Automatic savings is a fixed slice carved out of whatever budget you enter for a period;
+    // it stands on its own, independent of the default budgets above.
+    const parsedSavingsWeekly = parseOrNull(savingsWeekly);
+    const parsedSavingsMonthly = parseOrNull(savingsMonthly);
 
     const parsedIncomeAmount = parseOrNull(incomeAmount);
 
@@ -69,10 +62,13 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-4">
-        <p className={sectionTitleClass}>Budgets</p>
+        <p className={sectionTitleClass}>Default budgets</p>
+        <p className="-mt-2 text-xs text-slate-400">
+          These prefill each period on the Budget tab — change any single week or month there without touching the default.
+        </p>
         <div>
           <label htmlFor="weeklyBudget" className={labelClass}>
-            Weekly budget (NZD)
+            Default weekly budget (NZD)
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
@@ -91,7 +87,7 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
         </div>
         <div>
           <label htmlFor="monthlyBudget" className={labelClass}>
-            Monthly budget (NZD)
+            Default monthly budget (NZD)
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
@@ -112,13 +108,15 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
       </div>
 
       <div className="flex flex-col gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
-        <p className={sectionTitleClass}>Savings goal</p>
+        <p className={sectionTitleClass}>Automatic savings</p>
         <p className="-mt-2 text-xs text-slate-400">
-          Carved out of the matching budget above — your effective spending limit becomes budget minus goal.
+          A fixed slice moved to savings from whatever budget you enter for a period. Your effective spending limit
+          becomes budget minus this. If spending runs past that limit, the shortfall comes out of that period's
+          automatic savings and is flagged on the Savings tab.
         </p>
         <div>
           <label htmlFor="savingsWeekly" className={labelClass}>
-            Weekly savings goal (NZD)
+            Automatic savings per week (NZD)
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
@@ -128,17 +126,16 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
               inputMode="decimal"
               min="0"
               step="0.01"
-              disabled={!weekly}
               value={savingsWeekly}
               onChange={(e) => setSavingsWeekly(e.target.value)}
-              placeholder={weekly ? "e.g. 50.00" : "Set a weekly budget first"}
+              placeholder="e.g. 150.00"
               className={inputClass}
             />
           </div>
         </div>
         <div>
           <label htmlFor="savingsMonthly" className={labelClass}>
-            Monthly savings goal (NZD)
+            Automatic savings per month (NZD)
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
@@ -148,10 +145,9 @@ export function BudgetSettings({ budgets, onSave, onCancel }: BudgetSettingsProp
               inputMode="decimal"
               min="0"
               step="0.01"
-              disabled={!monthly}
               value={savingsMonthly}
               onChange={(e) => setSavingsMonthly(e.target.value)}
-              placeholder={monthly ? "e.g. 200.00" : "Set a monthly budget first"}
+              placeholder="e.g. 600.00"
               className={inputClass}
             />
           </div>
