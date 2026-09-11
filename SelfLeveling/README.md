@@ -4,7 +4,7 @@ A 66-day training program framed as **"the System"** from *Solo Leveling*: it
 issues a Daily Quest, you clear it for XP, level up, and climb E-Rank → S-Rank.
 Miss a day and the next one opens with a **Penalty Quest**. React
 ([SelfLeveling.jsx](SelfLeveling.jsx)) + Vite. Live at
-[selfleveling.vercel.app](https://selfleveling.vercel.app).
+[wots-selfleveling.web.app](https://wots-selfleveling.web.app).
 
 ## Run it
 

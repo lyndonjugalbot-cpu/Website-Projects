@@ -33,16 +33,16 @@ npm install
 npm run dev
 ```
 
-### Web deploy (Vercel)
+### Web deploy (Firebase Hosting)
+
+Firebase Hosting serves whatever's in `dist/` — no build-time env injection like
+Vercel, so set the Supabase vars locally before building:
 
 ```bash
-vercel env add VITE_SUPABASE_URL       # paste URL,  choose Production + Preview + Development
-vercel env add VITE_SUPABASE_ANON_KEY  # paste anon key, same environments
-vercel --prod
+cp .env.example .env.local      # paste your URL + anon key
+npm run build
+firebase deploy --only hosting
 ```
-
-(or add the two vars in the Vercel dashboard → Settings → Environment Variables,
-then redeploy).
 
 Until the keys are set the Account panel shows "Cloud sync isn't configured"
 and the app is local-only — nothing breaks.
