@@ -370,6 +370,24 @@ h1, h2, h3 {
   display: none;
 }
 
+.card__thumb {
+  margin: -24px -24px 18px;
+  aspect-ratio: 8 / 5;
+  overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+}
+.card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.4s var(--ease);
+}
+.card:hover .card__thumb img { transform: scale(1.03); }
+
 .card__top {
   display: flex;
   align-items: center;
@@ -407,6 +425,8 @@ h1, h2, h3 {
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 20px;
+  list-style: none;
+  padding: 0;
 }
 .card__tag {
   font-size: 0.75rem;

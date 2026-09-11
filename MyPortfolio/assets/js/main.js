@@ -11,10 +11,47 @@
 
   /**
    * type   — one of: "app" (full-stack), "site" (marketing), "tool" (utility/data)
+   * thumb  — screenshot in assets/img/thumbs/, or null
    * live   — public URL, or null
    * source — repo/subfolder URL, or null
    */
   const PROJECTS = [
+    {
+      name: "Wots Diagram Generator",
+      type: "tool",
+      category: "Diagramming tool",
+      blurb:
+        "A form-to-diagram generator for developers: describe entities, use cases, classes, or activity flows as plain lines of text and get a diagram back. Auto-laid-out with dagre, then fully reworkable on a React Flow canvas — drag nodes, redraw connections — and exportable straight to PNG or SVG.",
+      meta: "Personal tool · text in, editable diagram out",
+      tags: ["React", "Vite", "React Flow", "dagre", "Firebase Hosting"],
+      thumb: "assets/img/thumbs/diagrammaker.webp",
+      live: "https://wots-diagram-generator.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/DiagramMaker",
+    },
+    {
+      name: "Coaching Log & Metric Tracker",
+      type: "app",
+      category: "Coaching platform",
+      blurb:
+        "A coaching and metrics platform for tracking client sessions and health data over time — session logs, per-client metric history, and an agent self-service layer with profiles, passwords, and stats, all synced in real time.",
+      meta: "Client project · coaching workflow + live metrics",
+      tags: ["React", "Convex", "Real-time sync", "Firebase Hosting"],
+      thumb: "assets/img/thumbs/hrvtools.webp",
+      live: "https://hrvtools-app-28b2b.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/HRVTools",
+    },
+    {
+      name: "NZ Finance Tracker",
+      type: "app",
+      category: "Web + mobile app",
+      blurb:
+        "A responsive personal spending and budget tracker for New Zealand. Log daily purchases, browse months of history, and generate weekly or monthly reports with charts — synced in real time across every device via Convex. The same build ships as native iOS and Android apps through Capacitor.",
+      meta: "Personal product · real-time sync, native wrappers",
+      tags: ["React 19", "TypeScript", "Tailwind v4", "Convex", "Recharts", "Capacitor"],
+      thumb: "assets/img/thumbs/financetracker.webp",
+      live: "https://nz-finance-tracker.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/NZFinanceTracker",
+    },
     {
       name: "Wots TCG Vault NZ",
       type: "app",
@@ -23,30 +60,45 @@
         "A black-and-gold marketplace for buying and selling Pokémon cards, sealed product, and graded slabs across New Zealand — listings, orders, marketplace payments and seller payouts, disputes, and a buyer-protection inspection window.",
       meta: "Solo build · data model → payouts → admin tooling",
       tags: ["Next.js 15", "TypeScript", "Prisma", "PostgreSQL", "Stripe Connect", "NextAuth", "S3 / R2", "Resend"],
+      thumb: "assets/img/thumbs/tcgvault.webp",
       live: "https://wots-tcg-vault-nz.vercel.app",
       source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/WotsTCGVaultNZ",
     },
     {
-      name: "Seoul Stop Kmart",
+      name: "Self Leveling",
       type: "app",
-      category: "E-commerce",
+      category: "Training program",
       blurb:
-        "A Korean grocery storefront for Cebu, Philippines: product catalog, cart, and checkout with GCash / Maya / card via PayMongo, plus cash-on-delivery and bank transfer. Role-based admin dashboard with an in-store POS terminal, inventory ledger, and profit/loss reports.",
-      meta: "Client project · storefront + staff back office",
-      tags: ["Next.js 14", "TypeScript", "Tailwind", "Prisma", "PostgreSQL", "PayMongo", "Vercel Blob"],
-      live: "https://website-projects-nine.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/Website1",
+        "A 66-day training program framed as \"the System\" from Solo Leveling — a Daily Quest to clear for XP, stat growth across six tracks, rank-ups from E to S, and a Penalty Quest if you miss a day. Full dungeon/HUD theme, native iOS and Android wrappers, and optional cloud sync.",
+      meta: "Personal product · gamified habit engine",
+      tags: ["React", "Vite", "Capacitor", "Supabase", "Firebase Hosting"],
+      thumb: "assets/img/thumbs/selfleveling.webp",
+      live: "https://wots-selfleveling.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/SelfLeveling",
     },
     {
-      name: "NZ Finance Tracker",
+      name: "PyWots — Master Python",
       type: "app",
-      category: "Web + mobile app",
+      category: "Learning platform",
       blurb:
-        "A responsive personal spending and budget tracker for New Zealand. Log daily purchases, browse three months of history, and generate weekly or monthly reports with charts — synced in real time across every device via Convex, no login. The same build ships as native iOS and Android apps through Capacitor.",
-      meta: "Personal product · real-time sync, native wrappers",
-      tags: ["React 19", "TypeScript", "Tailwind v4", "Convex", "Recharts", "Capacitor", "date-fns"],
-      live: "https://nz-finance-tracker.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/NZFinanceTracker",
+        "A 100-day gamified course that teaches Python the same \"System\" way — daily lessons with real code graded in-browser via Pyodide, XP and rank-ups, a daily quest reminder, and progress synced to an account. Ships as a web app and native iOS/Android builds from the same codebase.",
+      meta: "Personal product · 100 days, real graded code",
+      tags: ["React", "Vite", "Pyodide", "Capacitor", "Supabase"],
+      thumb: "assets/img/thumbs/pywots.webp",
+      live: "https://pywots.vercel.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/PyWots",
+    },
+    {
+      name: "WOTS Creative Studio",
+      type: "site",
+      category: "Marketing site",
+      blurb:
+        "A portfolio site for a hand-drawn illustration and packaging design studio — original character art, mythology-grade series, and shelf-ready product packaging, built to make the point up front: every line sketched, inked, and colored by a real artist, no AI.",
+      meta: "Personal brand · static site, no build step",
+      tags: ["HTML / CSS / JS", "Responsive", "Vercel"],
+      thumb: "assets/img/thumbs/artstudio.webp",
+      live: "https://wots-creative-studio.vercel.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/WCS",
     },
     {
       name: "Virtual Bridge PH",
@@ -56,52 +108,21 @@
         "Marketing site for an offshore staffing agency placing Filipino talent with growing businesses — six service lines, a four-step hiring flow, and headline stats. Wired to an email enquiry form, an Upwork agency profile, plus a separate client portal with a payment page and a downloadable time tracker.",
       meta: "Client project · public site + client portal",
       tags: ["HTML / CSS / JS", "Responsive", "Email form", "Vercel"],
+      thumb: "assets/img/thumbs/vaagency.webp",
       live: "https://virtual-bridge-ph.vercel.app",
       source: null,
     },
     {
-      name: "SSKTool — Purchase Forecast",
+      name: "Web App Timer",
       type: "tool",
-      category: "Forecasting tool",
+      category: "Time tracker",
       blurb:
-        "Turns a POS \"Sales by Product\" export into a demand forecast and a supplier order recommendation for the coming month. Average daily demand with growth and seasonality factors, periodic-review reordering (reorder point, order-up-to level, pack rounding, MOQ), and ABC analysis. One engine behind two front ends: a 100%-in-browser web app and a stdlib-only Python CLI.",
-      meta: "Internal tool · JS port kept line-for-line with the Python model",
-      tags: ["Vanilla JS", "Python 3", "SpreadsheetML parsing", "CSV", "Vercel"],
-      live: "https://ssktoolv10.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/SSKTool",
-    },
-    {
-      name: "SSK Receipt Tracker",
-      type: "tool",
-      category: "Expense dashboard",
-      blurb:
-        "A small Flask app for logging store receipts and turning them into a monthly expense picture: three-field entry, date-range filters, spend-by-area rollups, spend-over-time buckets, headline stats with period-over-period change, edit / delete / undo, and CSV export. Light and dark, keyboard-navigable charts.",
-      meta: "Internal tool · deployed as a Python function on Vercel",
-      tags: ["Python", "Flask", "SQLite", "Chart rendering", "Vercel"],
-      live: "https://ssk-receipt-tracker.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/SSKReceiptTracker",
-    },
-    {
-      name: "AV Toys",
-      type: "site",
-      category: "Marketing site",
-      blurb:
-        "A bold one-page site for a custom 3D-printed, hand-painted anime-figure maker. Hand-built static HTML/CSS/JS with a Supabase-backed customer reviews system — photo upload, a moderation admin, and email notifications fired from a Supabase database webhook through a Vercel function.",
-      meta: "Client project · site + moderated reviews + handover docs",
-      tags: ["HTML / CSS / JS", "Supabase", "Storage + Auth", "Vercel Functions", "Resend"],
-      live: "https://gelo-printz.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/GeloPrintz",
-    },
-    {
-      name: "Smart Buzz Barbershop",
-      type: "site",
-      category: "Marketing site",
-      blurb:
-        "A static one-pager for a real barbershop in Onehunga, Auckland. Black-and-gold theme, scroll-reveal, count-up stats, a gallery lightbox, and a mobile slide-in nav. Real service prices transcribed from the shop's printed board; address, phone, and map pin wired to the real location.",
-      meta: "Client project · logo + photos in, deployable site out",
-      tags: ["HTML / CSS / JS", "IntersectionObserver", "Google Fonts", "Vercel"],
-      live: "https://smart-buzz-barber.vercel.app",
-      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/SmartBuzzBarber",
+        "A no-account browser time tracker: start a live timer per task or log entries by hand, with totals rolled up by day, week, and project — everything stored locally in the browser. Optional opt-in screenshot capture gives a visual log of a work session without any of it leaving the device.",
+      meta: "Personal tool · local-only, zero backend",
+      tags: ["Vanilla JS", "localStorage", "IndexedDB", "Firebase Hosting"],
+      thumb: "assets/img/thumbs/webapptimer.webp",
+      live: "https://wots-webapptimer.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/WebAppTimer",
     },
   ];
 
@@ -119,6 +140,18 @@
   function buildCard(p) {
     const li = el("li", "card reveal");
     li.dataset.type = p.type;
+
+    if (p.thumb) {
+      const thumb = el("div", "card__thumb");
+      const img = document.createElement("img");
+      img.src = p.thumb;
+      img.alt = p.name + " — screenshot";
+      img.loading = "lazy";
+      img.width = 640;
+      img.height = 400;
+      thumb.append(img);
+      li.append(thumb);
+    }
 
     const top = el("div", "card__top");
     top.append(el("span", "card__cat", p.category));
@@ -142,11 +175,11 @@
 
     const links = el("div", "card__links");
     if (p.live) {
-      const a = el("a", "card__link card__link--live", "Live ↗");
+      const a = el("a", "card__link card__link--live", "Access ↗");
       a.href = p.live;
       a.target = "_blank";
       a.rel = "noopener";
-      a.setAttribute("aria-label", "Open " + p.name + " (live site)");
+      a.setAttribute("aria-label", "Open " + p.name + " — opens in a new tab, switch back any time");
       links.append(a);
     }
     if (p.source) {
