@@ -13,7 +13,7 @@ assets/js/main.js       project data + grid render, filtering, reveal, nav, copy
 assets/img/             portrait.jpg (hero), magazine.jpg (About),
                         accenture.png / usc.png / yoobee.png (Background logos)
 originals/              untouched source photos (gitignored, not deployed)
-vercel.json             static config + cache headers
+firebase.json           static config + cache headers
 ```
 
 Sections: hero → Work (filterable project grid) → About → Stack → **Background**
@@ -64,8 +64,7 @@ before the first separator is bolded. No other file needs to change.
   (Virtual Bridge PH lives outside this repo, so it has no source link).
 - All eight projects link to a live deployment.
 
-## Deploy to Vercel
+## Deploy to Firebase Hosting
 
-Fully static, no framework. New Project &rarr; import the `Website-Projects`
-repo &rarr; set **Root Directory** to `MyPortfolio` &rarr; Framework Preset
-**Other** &rarr; Deploy. Or from this folder: `vercel deploy --prod`.
+Fully static, no framework. Project `hrvtools-app-28b2b`, site `wots-portfolio`.
+From this folder: `firebase deploy --only hosting`.
