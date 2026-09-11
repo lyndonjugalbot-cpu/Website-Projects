@@ -1,0 +1,32 @@
+{
+  "name": "selfleveling",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "ios:sync": "vite build && cap sync ios",
+    "ios:open": "cap open ios",
+    "ios:run": "vite build && cap run ios",
+    "android:sync": "vite build && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "vite build && cap run android",
+    "android:apk": "vite build && cap sync android && ./android/gradlew -p android assembleDebug && cp android/app/build/outputs/apk/debug/app-debug.apk public/selfleveling.apk"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/app": "^6.0.3",
+    "@capacitor/core": "^6.2.2",
+    "@capacitor/ios": "^6.2.2",
+    "@supabase/supabase-js": "^2.116.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.2",
+    "@vitejs/plugin-react": "^6.0.4",
+    "vite": "^8.2.0"
+  }
+}

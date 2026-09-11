@@ -1,0 +1,10 @@
+{
+  "appId": "app.wots.selfleveling",
+  "appName": "SelfLeveling",
+  "webDir": "dist",
+  "backgroundColor": "#0A0C1C",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#0A0C1C"
+  }
+}
