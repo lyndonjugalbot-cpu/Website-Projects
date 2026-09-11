@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>TCG Randomizer</title>
+<meta name="description" content="Tap to open a pack and reveal a random TCG card — built for live events." />
+<meta name="theme-color" content="#0b0b0f" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0b0f'/%3E%3Crect x='10' y='8' width='30' height='42' rx='4' fill='%23fbbf24' transform='rotate(-8 25 29)'/%3E%3Crect x='22' y='12' width='30' height='42' rx='4' fill='%23111116' stroke='%23fbbf24' stroke-width='2' transform='rotate(6 37 33)'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== LAUNCHER ===================== -->
+  <section id="screen-launcher" class="screen" aria-label="Pack opening screen">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-text">TCG<b>Randomizer</b></span>
+      </div>
+      <div class="topbar-right">
+        <span id="mode-badge" class="mode-badge">FREE MODE</span>
+        <button id="btn-admin-open" class="icon-btn" aria-label="Admin settings" title="Admin">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.4 13a1.8 1.8 0 0 0 .36 1.98l.05.05a2.2 2.2 0 1 1-3.1 3.1l-.05-.05a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.09 1.65V19.6a2.2 2.2 0 0 1-4.4 0v-.08a1.8 1.8 0 0 0-1.18-1.65 1.8 1.8 0 0 0-1.98.36l-.05.05a2.2 2.2 0 1 1-3.1-3.1l.05-.05a1.8 1.8 0 0 0 .36-1.98A1.8 1.8 0 0 0 1.6 11.9h-.1a2.2 2.2 0 0 1 0-4.4h.08a1.8 1.8 0 0 0 1.65-1.09 1.8 1.8 0 0 0-.36-1.98l-.05-.05a2.2 2.2 0 1 1 3.1-3.1l.05.05a1.8 1.8 0 0 0 1.98.36H8a1.8 1.8 0 0 0 1.09-1.65V-.1a2.2 2.2 0 0 1 4.4 0v.08A1.8 1.8 0 0 0 14.94 1.6a1.8 1.8 0 0 0 1.98-.36l.05-.05a2.2 2.2 0 1 1 3.1 3.1l-.05.05a1.8 1.8 0 0 0-.36 1.98V6.4a1.8 1.8 0 0 0 1.65 1.09h.08a2.2 2.2 0 0 1 0 4.4h-.08a1.8 1.8 0 0 0-1.79 1.11Z" transform="translate(0 2.1) scale(0.92)"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="launcher-body">
+      <p id="event-name" class="event-name">Demo Event</p>
+
+      <div class="stage">
+        <div id="pack" class="pack">
+          <div class="pack-face pack-front">
+            <div class="pack-shine"></div>
+            <span class="pack-logo">◆</span>
+            <span class="pack-label">TAP TO OPEN</span>
+          </div>
+        </div>
+        <div id="soldout-banner" class="soldout-banner" hidden>SOLD OUT</div>
+      </div>
+
+      <div class="cta-row">
+        <button id="btn-open" class="btn btn-primary btn-huge">Open Pack</button>
+        <p id="remaining-count" class="remaining-count">-- packs left</p>
+      </div>
+
+      <div class="recent-pulls">
+        <span class="recent-label">Recent pulls</span>
+        <div id="recent-strip" class="recent-strip"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAYMENT CONFIRM (paid mode) ===================== -->
+  <div id="modal-payment" class="modal-backdrop" hidden>
+    <div class="modal">
+      <h2>Confirm Payment</h2>
+      <p>Collect <span id="pay-amount" class="pay-amount">₱0</span> cash from the customer, then confirm to open the pack.</p>
+      <div class="modal-actions">
+        <button id="btn-pay-cancel" class="btn btn-ghost">Cancel</button>
+        <button id="btn-pay-confirm" class="btn btn-primary">Payment Received — Open</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== REVEAL OVERLAY ===================== -->
+  <section id="screen-reveal" class="screen reveal-overlay" aria-label="Card reveal" hidden>
+    <canvas id="confetti-canvas"></canvas>
+    <div class="reveal-stage">
+      <div id="reveal-pack" class="pack reveal-pack">
+        <div class="pack-face pack-front">
+          <div class="pack-shine"></div>
+          <span class="pack-logo">◆</span>
+        </div>
+      </div>
+
+      <div id="reveal-card" class="reveal-card" hidden>
+        <div class="reveal-card-inner">
+          <div id="reveal-card-art" class="reveal-card-art"></div>
+          <p id="reveal-card-name" class="reveal-card-name">Card Name</p>
+          <span id="reveal-card-rarity" class="rarity-chip">RARE</span>
+        </div>
+      </div>
+    </div>
+    <button id="btn-reveal-next" class="btn btn-primary btn-huge" hidden>Next Customer</button>
+  </section>
+
+  <!-- ===================== ADMIN: PIN GATE ===================== -->
+  <section id="screen-admin-lock" class="screen" aria-label="Admin PIN entry" hidden>
+    <div class="lock-card">
+      <h2>Admin Access</h2>
+      <p class="muted">Enter PIN to manage cards &amp; event settings.</p>
+      <div id="pin-dots" class="pin-dots">
+        <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
+      </div>
+      <p id="pin-error" class="pin-error" hidden>Incorrect PIN</p>
+      <div class="keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key key-ghost" data-key="cancel">Back</button>
+        <button class="key" data-key="0">0</button>
+        <button class="key key-ghost" data-key="del">⌫</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ADMIN DASHBOARD ===================== -->
+  <section id="screen-admin" class="screen admin" aria-label="Admin dashboard" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">◆</span><span class="brand-text">Admin</span></div>
+      <button id="btn-admin-close" class="btn btn-ghost">Done</button>
+    </header>
+
+    <div class="admin-body">
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="settings">Event</button>
+        <button class="admin-tab" data-tab="cards">Cards</button>
+        <button class="admin-tab" data-tab="history">History</button>
+        <button class="admin-tab" data-tab="security">Security</button>
+      </div>
+
+      <!-- Settings tab -->
+      <div id="tab-settings" class="admin-tab-panel active">
+        <div class="field-group">
+          <label>Mode</label>
+          <div class="segmented">
+            <button id="mode-free-btn" class="segment active" data-mode="free">Free</button>
+            <button id="mode-paid-btn" class="segment" data-mode="paid">Paid</button>
+          </div>
+          <p class="hint">Free mode gives away cards with no price shown. Paid mode requires a cash payment confirmation before each pack opens.</p>
+        </div>
+
+        <div class="field-group">
+          <label for="input-event-name">Event name</label>
+          <input id="input-event-name" type="text" placeholder="e.g. Grail Quest PH — Sept Meet" />
+        </div>
+
+        <div id="paid-fields" class="field-group">
+          <label for="input-price">Price per pack</label>
+          <div class="price-row">
+            <input id="input-currency" type="text" maxlength="3" class="currency-input" value="₱" />
+            <input id="input-price" type="number" min="0" step="1" placeholder="100" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Pack / Card-back Art</label>
+          <p class="hint">Shown as the sealed pack before opening. Leave blank to use the default holo design.</p>
+          <div class="back-art-row">
+            <div id="back-art-preview" class="back-art-preview"></div>
+            <div class="back-art-controls">
+              <input id="input-back-image-url" type="url" placeholder="Image URL" />
+              <div class="card-form-row">
+                <label class="file-btn">
+                  Upload
+                  <input id="input-back-image-file" type="file" accept="image/*" hidden />
+                </label>
+                <button id="btn-back-image-clear" type="button" class="btn btn-ghost">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Inventory</label>
+          <div class="stat-row">
+            <div class="stat"><span id="stat-remaining">0</span><small>remaining</small></div>
+            <div class="stat"><span id="stat-total">0</span><small>total</small></div>
+            <div class="stat"><span id="stat-sold">0</span><small>opened</small></div>
+          </div>
+          <button id="btn-restock" class="btn btn-secondary">Restock All Cards</button>
+        </div>
+      </div>
+
+      <!-- Cards tab -->
+      <div id="tab-cards" class="admin-tab-panel">
+        <form id="form-add-card" class="card-form">
+          <div class="card-form-row">
+            <input id="input-card-name" type="text" placeholder="Card name" required />
+            <select id="input-card-rarity">
+              <option value="common">Common</option>
+              <option value="rare">Rare</option>
+              <option value="epic">Epic</option>
+              <option value="legendary">Legendary</option>
+            </select>
+            <input id="input-card-qty" type="number" min="1" value="1" placeholder="Qty" required />
+          </div>
+          <div class="card-form-row">
+            <input id="input-card-image-url" type="url" placeholder="Image URL (optional)" />
+            <label class="file-btn">
+              Upload
+              <input id="input-card-image-file" type="file" accept="image/*" hidden />
+            </label>
+            <button type="submit" class="btn btn-primary">Add Card</button>
+          </div>
+        </form>
+
+        <div id="card-list" class="card-list"></div>
+      </div>
+
+      <!-- History tab -->
+      <div id="tab-history" class="admin-tab-panel">
+        <div class="history-header">
+          <span id="history-count" class="hint">0 pulls</span>
+          <button id="btn-clear-history" class="btn btn-ghost">Clear History</button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </div>
+
+      <!-- Security tab -->
+      <div id="tab-security" class="admin-tab-panel">
+        <div class="field-group">
+          <label for="input-new-pin">Change Admin PIN (4 digits)</label>
+          <div class="price-row">
+            <input id="input-new-pin" type="text" inputmode="numeric" maxlength="4" placeholder="1234" />
+            <button id="btn-save-pin" class="btn btn-secondary">Save PIN</button>
+          </div>
+        </div>
+        <div class="field-group danger-zone">
+          <label>Danger Zone</label>
+          <p class="hint">Erases all cards, history, and settings for both modes on this device.</p>
+          <button id="btn-reset-all" class="btn btn-danger">Reset Everything</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
