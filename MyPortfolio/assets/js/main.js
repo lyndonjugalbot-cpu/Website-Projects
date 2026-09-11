@@ -124,6 +124,18 @@
       live: "https://wots-webapptimer.web.app",
       source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/WebAppTimer",
     },
+    {
+      name: "TCG Randomizer",
+      type: "tool",
+      category: "Event tool",
+      blurb:
+        "An animated pack-opening randomizer built for live trading card game events. Runs a Free mode for casual pulls and a cash-Paid mode for paid draws, with a PIN-gated admin panel for loading the card pool, setting card-back art, and changing the PIN on site.",
+      meta: "Personal tool · live-event pack opening, PIN-gated admin",
+      tags: ["Vanilla JS", "localStorage", "Firebase Hosting"],
+      thumb: "assets/img/thumbs/tcgrandomizer.webp",
+      live: "https://wots-tcg-randomizer.web.app",
+      source: "https://github.com/lyndonjugalbot-cpu/Website-Projects/tree/main/TCGRandomizer",
+    },
   ];
 
   /* ---------- Render cards ------------------------------------------------- */
