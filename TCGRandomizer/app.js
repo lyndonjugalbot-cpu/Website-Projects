@@ -4,7 +4,7 @@
   var STORAGE_KEY = 'tcgRandomizerState_v1';
   var MAX_HISTORY = 50;
   var MAX_RECENT_SHOWN = 8;
-  var SPIN_MS = 5000;
+  var SPIN_MS = 7500;
   var BURST_MS = 320;
 
   var RARITY_META = {
