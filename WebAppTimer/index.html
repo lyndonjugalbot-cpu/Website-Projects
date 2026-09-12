@@ -36,10 +36,23 @@
           <span class="dot" aria-hidden="true"></span>
           <span class="clock" id="clock">00:00:00</span>
           <span class="running-task" id="runningTask"></span>
+          <span class="capture-dot" id="captureDot" hidden title="Screenshot capture active">📸</span>
+          <button id="resumeShareBtn" type="button" class="btn ghost" hidden>Resume screenshot sharing</button>
           <button id="pauseBtn" type="button" class="btn pause">Pause</button>
           <button id="stopBtn" type="button" class="btn stop">Stop &amp; save</button>
           <button id="discardBtn" type="button" class="btn ghost">Discard</button>
         </div>
+      </div>
+
+      <div class="capture-row" id="captureRow">
+        <label class="capture-toggle">
+          <input id="captureToggle" type="checkbox" />
+          <span>Capture desktop screenshots <span class="muted">(random moment every 5&ndash;10 min while the timer runs)</span></span>
+        </label>
+        <p class="hint">Your browser will ask you to pick a screen/window/tab to share, and will show its own
+          sharing indicator the whole time capture is on. Screenshots are saved only in this browser
+          (IndexedDB, never uploaded) &mdash; review or delete them from the log below.</p>
+        <p id="captureMsg" class="status err"></p>
       </div>
     </section>
 
@@ -133,6 +146,19 @@
       </div>
     </form>
   </dialog>
+
+  <!-- Screenshot review dialog -->
+  <dialog id="shotsDialog" class="edit-dialog shots-dialog">
+    <h3 id="shotsTitle">Screenshots</h3>
+    <div id="shotsGrid" class="shots-grid"></div>
+    <div class="actions">
+      <button id="shotsCloseBtn" type="button" class="btn ghost">Close</button>
+    </div>
+  </dialog>
+
+  <!-- Hidden capture rig: not shown, used to grab frames from the shared screen -->
+  <video id="captureVideo" autoplay muted playsinline hidden></video>
+  <canvas id="captureCanvas" hidden></canvas>
 
   <script type="module" src="app.js"></script>
 </body>

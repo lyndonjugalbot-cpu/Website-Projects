@@ -38,6 +38,171 @@ function save() {
   else localStorage.removeItem(K_RUNNING);
 }
 
+/* ---------- screenshot capture ----------
+ * Screenshots are grabbed from a getDisplayMedia() stream at a random point every
+ * 5-10 minutes while the timer runs, and stored as JPEG blobs in IndexedDB (not
+ * localStorage - images are too big for that). Each shot is tagged with an
+ * "owner": "run:<start>" while the timer is live, then reassigned to the saved
+ * entry's id on stop (or deleted on discard). */
+const K_CAPTURE = "wat.capture.v1";
+const SHOTS_DB = "wat-shots";
+const SHOTS_STORE = "shots";
+
+let captureEnabled = localStorage.getItem(K_CAPTURE) === "1";
+let mediaStream = null;
+let captureTimeoutId = null;
+let shotCounts = new Map(); // entryId -> count
+let shotUrls = []; // object URLs currently shown in the review dialog
+let currentShotsEntryId = null;
+
+function openShotsDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(SHOTS_DB, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(SHOTS_STORE, { keyPath: "id", autoIncrement: true }).createIndex("ownerId", "ownerId");
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function addShot(ownerId, blob) {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SHOTS_STORE, "readwrite");
+    tx.objectStore(SHOTS_STORE).add({ ownerId, ts: Date.now(), blob });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function getShots(ownerId) {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(SHOTS_STORE, "readonly").objectStore(SHOTS_STORE).index("ownerId").getAll(ownerId);
+    req.onsuccess = () => resolve(req.result.sort((a, b) => a.ts - b.ts));
+    req.onerror = () => reject(req.error);
+  });
+}
+async function getAllShotOwnerCounts() {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(SHOTS_STORE, "readonly").objectStore(SHOTS_STORE).index("ownerId").openCursor();
+    const counts = new Map();
+    req.onsuccess = () => {
+      const cur = req.result;
+      if (cur) { counts.set(cur.key, (counts.get(cur.key) || 0) + 1); cur.continue(); }
+      else resolve(counts);
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+async function reassignShots(oldOwnerId, newOwnerId) {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SHOTS_STORE, "readwrite");
+    const req = tx.objectStore(SHOTS_STORE).index("ownerId").openCursor(oldOwnerId);
+    req.onsuccess = () => {
+      const cur = req.result;
+      if (cur) { const val = cur.value; val.ownerId = newOwnerId; cur.update(val); cur.continue(); }
+    };
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function deleteShotsFor(ownerId) {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SHOTS_STORE, "readwrite");
+    const req = tx.objectStore(SHOTS_STORE).index("ownerId").openCursor(ownerId);
+    req.onsuccess = () => {
+      const cur = req.result;
+      if (cur) { cur.delete(); cur.continue(); }
+    };
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function deleteShot(id) {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SHOTS_STORE, "readwrite");
+    tx.objectStore(SHOTS_STORE).delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function clearAllShots() {
+  const db = await openShotsDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SHOTS_STORE, "readwrite");
+    tx.objectStore(SHOTS_STORE).clear();
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function refreshShotCounts() {
+  shotCounts = await getAllShotOwnerCounts();
+  renderLog();
+}
+
+function ownerId() {
+  return "run:" + running.start;
+}
+async function requestScreenShare() {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 1 } });
+    mediaStream = stream;
+    stream.getVideoTracks()[0].addEventListener("ended", () => {
+      mediaStream = null;
+      clearTimeout(captureTimeoutId);
+      renderTimer();
+    });
+    const video = $("#captureVideo");
+    video.srcObject = stream;
+    await video.play();
+    $("#captureMsg").textContent = "";
+    return true;
+  } catch {
+    mediaStream = null;
+    $("#captureMsg").textContent = "Screen sharing wasn't granted — this timer won't capture screenshots.";
+    return false;
+  }
+}
+function stopMediaStream() {
+  clearTimeout(captureTimeoutId);
+  captureTimeoutId = null;
+  if (mediaStream) {
+    mediaStream.getTracks().forEach((t) => t.stop());
+    mediaStream = null;
+  }
+}
+function scheduleNextCapture() {
+  clearTimeout(captureTimeoutId);
+  if (!running || isPaused() || !mediaStream) return;
+  const delay = 5 * 60000 + Math.random() * 5 * 60000; // 5-10 min
+  captureTimeoutId = setTimeout(async () => {
+    await captureFrame();
+    scheduleNextCapture();
+  }, delay);
+}
+async function captureFrame() {
+  if (!running || !mediaStream) return;
+  const video = $("#captureVideo");
+  if (!video.videoWidth) return;
+  const canvas = $("#captureCanvas");
+  const scale = Math.min(1, 1280 / video.videoWidth);
+  canvas.width = Math.round(video.videoWidth * scale);
+  canvas.height = Math.round(video.videoHeight * scale);
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.6));
+  if (blob) await addShot(ownerId(), blob);
+}
+async function beginCapture() {
+  if (!captureEnabled || !running) return;
+  const ok = await requestScreenShare();
+  if (ok) scheduleNextCapture();
+  renderTimer();
+}
+
 /* ---------- time helpers ---------- */
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -116,25 +281,36 @@ function startTimer() {
   running = { task, project: $("#projectName").value.trim(), start: now, accum: 0, segmentStart: now };
   save();
   renderTimer();
+  if (captureEnabled) beginCapture();
 }
 function pauseResume() {
   if (!running) return;
   if (running.segmentStart) {
     running.accum += Date.now() - running.segmentStart;
     running.segmentStart = null;
+    clearTimeout(captureTimeoutId);
   } else {
     running.segmentStart = Date.now();
+    scheduleNextCapture();
   }
   save();
   renderTimer();
 }
 function stopTimer(saveEntry) {
   if (!running) return;
+  const runOwner = ownerId();
+  stopMediaStream();
   if (saveEntry) {
     const ms = elapsedMs();
     if (ms >= 1000) {
-      entries.push({ id: uid(), task: running.task, project: running.project, start: running.start, end: running.start + ms });
+      const entry = { id: uid(), task: running.task, project: running.project, start: running.start, end: running.start + ms };
+      entries.push(entry);
+      reassignShots(runOwner, entry.id).then(refreshShotCounts);
+    } else {
+      deleteShotsFor(runOwner);
     }
+  } else {
+    deleteShotsFor(runOwner);
   }
   running = null;
   $("#taskName").value = "";
@@ -145,6 +321,8 @@ function stopTimer(saveEntry) {
 function renderTimer() {
   const box = $("#running");
   const startBtn = $("#startBtn");
+  const dot = $("#captureDot");
+  const resumeBtn = $("#resumeShareBtn");
   if (running) {
     box.hidden = false;
     startBtn.hidden = true;
@@ -153,12 +331,16 @@ function renderTimer() {
     $("#runningTask").textContent = running.project ? `${running.task} - ${running.project}` : running.task;
     updateClock();
     if (!tick) tick = setInterval(updateClock, 1000);
+    dot.hidden = !mediaStream;
+    resumeBtn.hidden = !(captureEnabled && !mediaStream && !isPaused());
   } else {
     box.hidden = true;
     startBtn.hidden = false;
     clearInterval(tick);
     tick = null;
     document.title = "WebAppTimer - Time Tracker";
+    dot.hidden = true;
+    resumeBtn.hidden = true;
   }
 }
 function updateClock() {
@@ -253,6 +435,7 @@ function deleteEntry(id) {
   entries = entries.filter((x) => x.id !== id);
   save();
   renderAll();
+  deleteShotsFor(id).then(refreshShotCounts);
 }
 function resumeEntry(id) {
   const e = entries.find((x) => x.id === id);
@@ -346,6 +529,7 @@ function renderLog() {
             <button class="icon-btn" data-act="resume" title="Start a new timer for this task">Resume</button>
             <button class="icon-btn" data-act="edit">Edit</button>
             <button class="icon-btn del" data-act="delete">Delete</button>
+            ${(shotCounts.get(e.id) || 0) > 0 ? `<button class="icon-btn" data-act="shots" title="Review screenshots">📸 ${shotCounts.get(e.id)}</button>` : ""}
           </div>
         </div>`
         )
@@ -441,12 +625,54 @@ function clearAll() {
   if (!confirm("Delete every entry and stop any running timer? This cannot be undone.")) return;
   entries = [];
   running = null;
+  stopMediaStream();
   save();
   renderTimer();
   renderAll();
+  clearAllShots();
+  shotCounts = new Map();
   $("#dataMsg").className = "status ok";
   $("#dataMsg").textContent = "All data cleared.";
 }
+
+/* ---------- screenshot review ---------- */
+function revokeShotUrls() {
+  shotUrls.forEach((u) => URL.revokeObjectURL(u));
+  shotUrls = [];
+}
+async function openShots(entryId) {
+  const e = entries.find((x) => x.id === entryId);
+  if (!e) return;
+  currentShotsEntryId = entryId;
+  const shots = await getShots(entryId);
+  revokeShotUrls();
+  $("#shotsTitle").textContent = `${e.task}${e.project ? " · " + e.project : ""} — ${dayLabel(e.start)}`;
+  $("#shotsGrid").innerHTML =
+    shots
+      .map((s) => {
+        const url = URL.createObjectURL(s.blob);
+        shotUrls.push(url);
+        return `<figure class="shot" data-id="${s.id}">
+        <a href="${url}" target="_blank" rel="noopener"><img src="${url}" alt="Screenshot at ${hhmm(s.ts)}" loading="lazy" /></a>
+        <figcaption>${hhmm(s.ts)}<button class="icon-btn del" data-act="delshot" data-id="${s.id}">Delete</button></figcaption>
+      </figure>`;
+      })
+      .join("") || `<p class="empty">No screenshots for this entry.</p>`;
+  $("#shotsDialog").showModal();
+}
+$("#shotsGrid").addEventListener("click", async (ev) => {
+  const btn = ev.target.closest('button[data-act="delshot"]');
+  if (!btn) return;
+  ev.preventDefault();
+  await deleteShot(Number(btn.dataset.id));
+  await refreshShotCounts();
+  if (currentShotsEntryId) openShots(currentShotsEntryId);
+});
+$("#shotsCloseBtn").addEventListener("click", () => $("#shotsDialog").close());
+$("#shotsDialog").addEventListener("close", () => {
+  revokeShotUrls();
+  currentShotsEntryId = null;
+});
 
 /* ---------- wire up ---------- */
 $("#startBtn").addEventListener("click", startTimer);
@@ -468,6 +694,7 @@ $("#log").addEventListener("click", (e) => {
   if (act === "edit") openEdit(id);
   else if (act === "delete") deleteEntry(id);
   else if (act === "resume") resumeEntry(id);
+  else if (act === "shots") openShots(id);
 });
 
 document.querySelectorAll(".chip").forEach((chip) => {
@@ -497,5 +724,25 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) upda
 // default manual date to today
 $("#mDate").value = dayKey(Date.now());
 
+/* ---------- capture toggle ---------- */
+if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+  $("#captureRow").hidden = true;
+} else {
+  const captureToggle = $("#captureToggle");
+  captureToggle.checked = captureEnabled;
+  captureToggle.addEventListener("change", () => {
+    captureEnabled = captureToggle.checked;
+    localStorage.setItem(K_CAPTURE, captureEnabled ? "1" : "0");
+    if (!captureEnabled) stopMediaStream();
+    renderTimer();
+  });
+}
+$("#resumeShareBtn").addEventListener("click", async () => {
+  const ok = await requestScreenShare();
+  if (ok) scheduleNextCapture();
+  renderTimer();
+});
+
 renderTimer();
 renderAll();
+refreshShotCounts();
