@@ -853,6 +853,11 @@ function Dungeon({ day, draft, setDraft, py, cleared, onClear, onHint, hinted })
               ))}
             </div>
           )}
+          {!out.error && !out.stdout && (!out.results || out.results.length === 0) && (
+            <div className="pw-muted" style={{ marginTop: 8, fontSize: 13 }}>
+              Ran with no output — add a print(...) to see something here.
+            </div>
+          )}
         </div>
       )}
 
