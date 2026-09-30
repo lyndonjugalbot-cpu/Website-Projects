@@ -10,8 +10,9 @@
     "ios": "npm run build && npx cap sync ios && npx cap open ios",
     "ios:sync": "npm run build && npx cap sync ios",
     "android:sync": "npm run build && npx cap sync android",
-    "android:apk": "npm run build && npx cap sync android && rm -f android/app/src/main/assets/public/pywots.apk && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk public/pywots.apk && echo \"APK -> public/pywots.apk ($(du -h public/pywots.apk | cut -f1))\"",
-    "assets": "npx @capacitor/assets generate"
+    "android:apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug && echo \"APK -> android/app/build/outputs/apk/debug/app-debug.apk\"",
+    "assets": "npx @capacitor/assets generate",
+    "test": "node --test supabase/tests/access.test.mjs supabase/tests/claim.test.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.1",
+    "@electric-sql/pglite": "^0.5.8",
     "@vitejs/plugin-react": "^6.0.4",
     "vite": "^8.2.0"
   }

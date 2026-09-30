@@ -10,9 +10,13 @@ import { SAVE_KEY } from "./src/lib/keys.js";
 import { isNative } from "./src/lib/platform.js";
 import {
   isConfigured, onAuthChange, currentUser, isAnon,
-  signInEmail, registerEmail, sendPasswordReset, signInWithProvider,
+  signInEmail, registerEmail, sendPasswordReset, signInWithProvider, updatePassword, oauthProviders,
   completeOAuthFromUrl, signOut, deleteAccount,
 } from "./src/lib/auth.js";
+import {
+  fetchAccess, redeemCode, claimOrder, isActive, daysLeft, formatDate,
+  claimHref, ETSY_LISTING_URL,
+} from "./src/lib/access.js";
 
 /* ================================================================== */
 /*  PyWots — a 100-day Solo-Leveling-style ascent from zero Python     */
@@ -23,6 +27,10 @@ import {
 /*  copy is the working truth; when Supabase is configured it syncs    */
 /*  to an account so progress follows the user to other devices and    */
 /*  the iOS app. With no keys set, everything still runs local-only.   */
+/*                                                                    */
+/*  Paid access: with Supabase configured, the app opens only for a    */
+/*  signed-in user with a redeemed Etsy code (SignInScreen →           */
+/*  RedeemScreen → the game). Buyers get codes on /claim (ClaimPage).  */
 /* ================================================================== */
 
 /* ----------------------------- dates ------------------------------ */
@@ -402,6 +410,19 @@ a,.pw-link{color:var(--cyan)}
   clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
 .pw-input:focus{border-color:var(--cyan);box-shadow:0 0 18px -6px rgba(56,225,255,.6)}
 .pw-oauth{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px}
+
+/* ---- sign in / redeem / claim ---- */
+.pw-gate{max-width:460px;padding-top:44px}
+.pw-codeinput{text-transform:uppercase;letter-spacing:.12em;font-size:18px;text-align:center}
+.pw-codeinput::placeholder{letter-spacing:.12em;color:#3a4677}
+.pw-coderow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;margin-top:8px;
+  background:#04060E;border:1px dashed rgba(255,194,75,.55)}
+.pw-codeval{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:.08em;color:var(--gold);user-select:all}
+.pw-details{margin-top:8px}
+.pw-details>summary{cursor:pointer;font-size:13px;list-style:none}
+.pw-details>summary::-webkit-details-marker{display:none}
+.pw-details>summary::before{content:"▸ ";color:var(--cyan)}
+.pw-details[open]>summary::before{content:"▾ "}
 
 /* ---- System summons (the "NOTIFICATION — will you accept?" screen) ---- */
 .pw-summon{position:fixed;inset:0;z-index:75;display:grid;place-items:center;padding:22px;
@@ -1144,7 +1165,7 @@ function countBosses(save) {
   return Object.keys(BOSS_DAYS).filter((d) => c[d] && c[d].boss).length;
 }
 
-function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
+function Hunter({ save, mutate, toast, resetAll, auth, access }) {
   const { level, into, need } = levelFromXP(save.xp || 0);
   const rank = rankFromBosses(countBosses(save));
   const earned = new Set(save.achievements || []);
@@ -1172,7 +1193,7 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
           <div className="pw-eyebrow">Hunter Rank</div>
           <div className="pw-display" style={{ fontSize: 52, color: "var(--cyan)", lineHeight: 1.1, textShadow: "var(--glow-cyan)" }}>{rank}</div>
           <div className="pw-muted" style={{ fontSize: 12 }}>
-            {countBosses(save)} / 7 Gates cleared{nextGate ? ` · next at Day ${nextGate}` : " · tower complete"}
+            {countBosses(save)} / {Object.keys(BOSS_DAYS).length} Gates cleared{nextGate ? ` · next at Day ${nextGate}` : " · tower complete"}
           </div>
         </Frame>
         <Frame style={{ flex: "2 1 320px" }}>
@@ -1225,27 +1246,7 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
         </div>
       </Frame>
 
-      <AccountPanel save={save} auth={auth} openAuth={openAuth} toast={toast} />
-
-      {!isNative && (
-        <Frame style={{ marginTop: 14 }}>
-          <div className="pw-phase" style={{ marginTop: 0 }}>Get the app</div>
-          <div className="pw-muted pw-read" style={{ fontSize: 13, marginBottom: 12 }}>
-            Install PyWots on your Android phone — the same app, runs offline, with the daily
-            System summons.
-          </div>
-          <a className="pw-btn primary" href="/pywots.apk" download="pywots.apk"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <AndroidGlyph /> Download for Android&nbsp;·&nbsp;APK
-          </a>
-          <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 10, lineHeight: 1.7 }}>
-            After it downloads, open the file. Android asks once to allow installs from your browser —
-            tap <b>Settings → Allow from this source</b>, then <b>Install</b>. Not a Play Store app,
-            so you may see a "scan" prompt; that's normal for a sideloaded APK.<br />
-            iPhone: build it in Xcode (see <code>CAPACITOR.md</code>) — Apple has no APK equivalent.
-          </div>
-        </Frame>
-      )}
+      <AccountPanel save={save} auth={auth} access={access} toast={toast} />
 
       <Frame style={{ marginTop: 14 }}>
         <div className="pw-phase" style={{ marginTop: 0 }}>Daily Quest Reminder</div>
@@ -1301,28 +1302,61 @@ function Hunter({ save, mutate, toast, resetAll, auth, openAuth }) {
 function useAuth() {
   const [user, setUser] = useState(isConfigured() ? undefined : null); // undefined = resolving
   const [syncState, setSyncState] = useState("off");
+  const [recovery, setRecovery] = useState(false); // arrived from a password-reset link
   useEffect(() => {
     if (!isConfigured()) return;
     let alive = true;
     currentUser().then((u) => { if (alive) setUser(u || null); });
-    const offAuth = onAuthChange((_e, session) => { if (alive) setUser(session?.user || null); });
+    const offAuth = onAuthChange((event, session) => {
+      if (!alive) return;
+      setUser(session?.user || null);
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+    });
     const offSync = onSyncState(setSyncState);
     return () => { alive = false; offAuth(); offSync(); };
   }, []);
-  const email = user && !isAnon(user) ? (user.email || null) : null;
-  return { user, email, isAnon: !user || isAnon(user), syncState, configured: isConfigured() };
+  const signedIn = Boolean(user) && !isAnon(user);
+  return {
+    user, signedIn, isAnon: !signedIn, email: signedIn ? user.email || null : null,
+    syncState, configured: isConfigured(), recovery, endRecovery: () => setRecovery(false),
+  };
+}
+
+/* The signed-in user's paid access. `active` is recomputed on every render
+   from the expiry, and the row is re-read whenever the app comes back to the
+   foreground (access may have run out, or a code was redeemed elsewhere). */
+function useAccess(auth) {
+  const uid = auth.signedIn ? auth.user.id : null;
+  const [s, setS] = useState({ status: "idle" }); // idle | loading | ready | error
+  const load = useCallback(async () => {
+    if (!uid) return;
+    setS((cur) => (cur.uid === uid && cur.status === "ready" ? cur : { status: "loading", uid }));
+    try {
+      const a = await fetchAccess(uid);
+      setS({ status: "ready", uid, ...a });
+    } catch (e) {
+      setS((cur) => (cur.uid === uid && cur.status === "ready" ? cur : { status: "error", uid, error: e?.message }));
+    }
+  }, [uid]);
+  useEffect(() => { if (uid) load(); else setS({ status: "idle" }); }, [uid, load]);
+  useEffect(() => {
+    const onShow = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => document.removeEventListener("visibilitychange", onShow);
+  }, [load]);
+  const ready = s.status === "ready" && s.uid === uid;
+  return {
+    ...s, ready,
+    active: ready && isActive(s.expiresAt),
+    everHad: ready && s.expiresAt != null,
+    reload: load,
+    grant: (expiresAt, plan) => setS({ status: "ready", uid, expiresAt, plan }),
+  };
 }
 
 function GBrand() {
   return (
     <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.6l6.2 5.2C41.4 34.9 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
-  );
-}
-function AndroidGlyph() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M6 9v8a1.5 1.5 0 0 0 1.5 1.5H8V21a1 1 0 0 0 2 0v-2.5h4V21a1 1 0 0 0 2 0v-2.5h.5A1.5 1.5 0 0 0 18 17V9H6zM4.5 9A1.5 1.5 0 0 0 3 10.5v4a1.5 1.5 0 0 0 3 0v-4A1.5 1.5 0 0 0 4.5 9zm15 0a1.5 1.5 0 0 0-1.5 1.5v4a1.5 1.5 0 0 0 3 0v-4A1.5 1.5 0 0 0 19.5 9zM15.6 3.2l1-1.7a.4.4 0 0 0-.7-.4l-1.1 1.8a6.9 6.9 0 0 0-5.6 0L8.1 1.1a.4.4 0 1 0-.7.4l1 1.7A6 6 0 0 0 6 8h12a6 6 0 0 0-2.4-4.8zM9.5 6.2a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6zm5 0a.8.8 0 1 1 0-1.6.8.8 0 0 1 0 1.6z" />
-    </svg>
   );
 }
 function AppleBrand() {
@@ -1331,7 +1365,27 @@ function AppleBrand() {
   );
 }
 
-function AuthSheet({ onClose, toast }) {
+/* A link that leaves the app. Inside the native app it opens in the in-app
+   browser instead of navigating the WebView away from PyWots. */
+function ExtLink({ href, children }) {
+  const external = /^https?:/.test(href);
+  const open = (e) => {
+    if (!isNative || !external) return;
+    e.preventDefault();
+    import("@capacitor/browser")
+      .then(({ Browser }) => Browser.open({ url: href }))
+      .catch(() => window.open(href, "_blank"));
+  };
+  return (
+    <a href={href} onClick={open} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>
+      {children}
+    </a>
+  );
+}
+
+/* Email + password (and Google / Apple when enabled). A successful sign-in
+   is picked up by useAuth, which moves the app past the sign-in screen. */
+function AuthForm() {
   const [mode, setMode] = useState("register"); // register | signin
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
@@ -1345,16 +1399,12 @@ function AuthSheet({ onClose, toast }) {
       if (mode === "register") {
         const u = await registerEmail(email.trim(), pw);
         if (u && !u.email_confirmed_at && u.confirmation_sent_at) {
-          setNote("Check your inbox to confirm the address. Your progress is already saved.");
-          toast("sys", "⟢ SYSTEM", "Confirmation email sent.");
-          return;
+          setNote("Check your inbox and tap the link to confirm your email, then sign in here.");
+          setMode("signin");
         }
-        toast("sys", "⟢ SYSTEM", "Account created. Progress will sync from now on.");
       } else {
         await signInEmail(email.trim(), pw);
-        toast("sys", "⟢ SYSTEM", "Signed in. Progress synced.");
       }
-      onClose();
     } catch (e) {
       setErr(e?.message || "Something went wrong.");
     } finally {
@@ -1370,69 +1420,220 @@ function AuthSheet({ onClose, toast }) {
 
   const forgot = async () => {
     setErr(""); setNote("");
-    try { await sendPasswordReset(email.trim()); setNote("Password reset email sent."); }
+    if (!email.trim()) { setErr("Enter your email above first."); return; }
+    try { await sendPasswordReset(email.trim()); setNote("If that email has an account, a reset link is on its way."); }
     catch (e) { setErr(e?.message || "Could not send reset email."); }
   };
 
   return (
-    <div className="pw-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <Frame style={{ width: "min(420px, 100%)" }}>
-        <div className="pw-row" style={{ justifyContent: "space-between" }}>
-          <div className="pw-display" style={{ fontSize: 16 }}>
-            {mode === "register" ? "Save your progress" : "Welcome back"}
+    <>
+      <div className="pw-display" style={{ fontSize: 16 }}>
+        {mode === "register" ? "Create your account" : "Welcome back, Hunter"}
+      </div>
+
+      <input className="pw-input" type="email" inputMode="email" autoComplete="email"
+        placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input className="pw-input" type="password"
+        autoComplete={mode === "register" ? "new-password" : "current-password"}
+        placeholder={mode === "register" ? "password (6+ characters)" : "password"}
+        value={pw} onChange={(e) => setPw(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" && email && pw) submit(); }} />
+
+      {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 8 }}>{err}</div>}
+      {note && <div style={{ color: "var(--ok)", fontSize: 12.5, marginTop: 8 }}>{note}</div>}
+
+      <button className="pw-btn primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !email || !pw}
+        onClick={submit}>
+        {busy ? "…" : mode === "register" ? "Create account" : "Sign in"}
+      </button>
+
+      {oauthProviders.length > 0 && (
+        <>
+          <div className="pw-row" style={{ gap: 8, margin: "12px 0 4px" }}>
+            <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
+            <span className="pw-eyebrow">or</span>
+            <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
           </div>
-          <button className="pw-btn" style={{ padding: "4px 10px" }} onClick={onClose}>✕</button>
-        </div>
-        <div className="pw-muted pw-read" style={{ fontSize: 12.5, marginTop: 6 }}>
-          {mode === "register"
-            ? "Your progress stays on this device and is yours. An account just lets it follow you to other devices and the iOS app."
-            : "Sign in to pull your progress onto this device."}
-        </div>
-
-        <input className="pw-input" type="email" inputMode="email" autoComplete="email"
-          placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="pw-input" type="password"
-          autoComplete={mode === "register" ? "new-password" : "current-password"}
-          placeholder="password" value={pw} onChange={(e) => setPw(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") submit(); }} />
-
-        {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 8 }}>{err}</div>}
-        {note && <div style={{ color: "var(--ok)", fontSize: 12.5, marginTop: 8 }}>{note}</div>}
-
-        <button className="pw-btn primary" style={{ width: "100%", marginTop: 12 }} disabled={busy || !email || !pw}
-          onClick={submit}>
-          {busy ? "…" : mode === "register" ? "Create account" : "Sign in"}
-        </button>
-
-        <div className="pw-row" style={{ gap: 8, margin: "12px 0 4px" }}>
-          <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
-          <span className="pw-eyebrow">or</span>
-          <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
-        </div>
-        <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("google")}>
-          <GBrand /> Continue with Google
-        </button>
-        <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("apple")}>
-          <AppleBrand /> Continue with Apple
-        </button>
-
-        <div className="pw-row" style={{ justifyContent: "space-between", marginTop: 12, fontSize: 12.5 }}>
-          <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }}
-            onClick={() => { setMode(mode === "register" ? "signin" : "register"); setErr(""); setNote(""); }}>
-            {mode === "register" ? "I already have an account" : "Create an account"}
-          </button>
-          {mode === "signin" && (
-            <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }} onClick={forgot}>
-              Forgot password?
+          {oauthProviders.includes("google") && (
+            <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("google")}>
+              <GBrand /> Continue with Google
             </button>
           )}
+          {oauthProviders.includes("apple") && (
+            <button className="pw-btn pw-oauth" disabled={busy} onClick={() => oauth("apple")}>
+              <AppleBrand /> Continue with Apple
+            </button>
+          )}
+        </>
+      )}
+
+      <div className="pw-row" style={{ justifyContent: "space-between", marginTop: 12, fontSize: 12.5 }}>
+        <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }}
+          onClick={() => { setMode(mode === "register" ? "signin" : "register"); setErr(""); setNote(""); }}>
+          {mode === "register" ? "I already have an account" : "Create an account"}
+        </button>
+        {mode === "signin" && (
+          <button className="pw-link" style={{ background: "none", border: 0, padding: 0 }} onClick={forgot}>
+            Forgot password?
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* Shared frame for the screens in front of the game: sign in, redeem, claim. */
+function GateShell({ title, sub, children }) {
+  return (
+    <div className="pw-wrap pw-gate">
+      <div style={{ textAlign: "center", marginBottom: 16 }}><Emblem size={104} /></div>
+      <h1 className="pw-h1" style={{ textAlign: "center", fontSize: 22 }}>{title}</h1>
+      {sub && <p className="pw-muted pw-read" style={{ textAlign: "center", margin: "8px 0 16px", fontSize: 14 }}>{sub}</p>}
+      {children}
+    </div>
+  );
+}
+
+function NeedACode({ lead }) {
+  return (
+    <Frame style={{ marginTop: 14 }}>
+      <div className="pw-phase" style={{ marginTop: 0 }}>Need a code?</div>
+      <div className="pw-read" style={{ fontSize: 13.5, lineHeight: 1.6 }}>
+        {lead} <ExtLink href={claimHref()}>Claim your code with your Etsy order number</ExtLink>.
+        {ETSY_LISTING_URL && <> Not bought it yet? <ExtLink href={ETSY_LISTING_URL}>Get 12 months on Etsy</ExtLink>.</>}
+      </div>
+    </Frame>
+  );
+}
+
+function SignInScreen() {
+  return (
+    <GateShell title="Enter the System" sub="Sign in, or create an account to redeem your access code.">
+      <Frame><AuthForm /></Frame>
+      <NeedACode lead="PyWots is a 12-month pass sold on Etsy. Bought one?" />
+    </GateShell>
+  );
+}
+
+/* Code input, used on the redeem screen and (compact) in Hunter ▸ Account. */
+function RedeemForm({ auth, access, onRedeemed, compact = false }) {
+  const [code, setCode] = useState(() => {
+    // ?redeem= (not ?code=, which Supabase's OAuth return uses)
+    try { return new URLSearchParams(window.location.search).get("redeem") || ""; } catch { return ""; }
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [done, setDone] = useState(null);
+
+  const submit = async () => {
+    setErr(""); setDone(null); setBusy(true);
+    const r = await redeemCode(auth.user.id, code);
+    setBusy(false);
+    if (!r.ok) { setErr(r.error); return; }
+    setCode("");
+    setDone(r);
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("redeem")) {
+        url.searchParams.delete("redeem");
+        window.history.replaceState(null, "", url.pathname + url.search);
+      }
+    } catch { /* ignore */ }
+    access.grant(r.expiresAt, r.plan);
+    onRedeemed?.(r);
+  };
+
+  return (
+    <div style={{ marginTop: compact ? 8 : 0 }}>
+      {!compact && <div className="pw-eyebrow">Access code</div>}
+      <input className="pw-input pw-codeinput" value={code} placeholder="PY12-XXXX-XXXX"
+        autoComplete="off" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+        onChange={(e) => setCode(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter" && code.trim() && !busy) submit(); }} />
+      {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 8 }}>{err}</div>}
+      {done && compact && (
+        <div style={{ color: "var(--ok)", fontSize: 12.5, marginTop: 8 }}>
+          Code redeemed: {done.durationDays} days added. Access now runs until {formatDate(done.expiresAt)}.
+        </div>
+      )}
+      <button className="pw-btn primary" style={{ width: compact ? undefined : "100%", marginTop: 12 }}
+        disabled={busy || !code.trim()} onClick={submit}>
+        {busy ? "Checking…" : compact ? "Add code" : "Redeem & enter"}
+      </button>
+      <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 10 }}>
+        Redeeming while you still have time left adds to it, so renewing early never wastes days.
+      </div>
+    </div>
+  );
+}
+
+function RedeemScreen({ auth, access, onUnlocked }) {
+  const [busy, setBusy] = useState(false);
+  const expired = access.everHad;
+  const doSignOut = async () => { setBusy(true); await signOut(); window.location.reload(); };
+  return (
+    <GateShell
+      title={expired ? "Your access has ended" : "Activate PyWots"}
+      sub={expired
+        ? <>Your 12 months ended on <b>{formatDate(access.expiresAt)}</b>. Your progress is saved on your account: redeem a new code to pick up where you left off.</>
+        : "Enter the access code from your Etsy order to unlock the 100-day Tower."}
+    >
+      <Frame><RedeemForm auth={auth} access={access} onRedeemed={onUnlocked} /></Frame>
+      <NeedACode lead="Bought PyWots on Etsy?" />
+      <div className="pw-row pw-muted" style={{ justifyContent: "center", gap: 8, marginTop: 18, fontSize: 12.5, flexWrap: "wrap" }}>
+        <span>Signed in as {auth.email}</span>
+        <span>·</span>
+        <button className="pw-link" style={{ background: "none", border: 0, padding: 0, fontSize: 12.5 }} disabled={busy} onClick={doSignOut}>
+          Sign out
+        </button>
+      </div>
+    </GateShell>
+  );
+}
+
+/* Couldn't read the entitlement and there's no cached copy (first open, offline). */
+function AccessError({ onRetry }) {
+  return (
+    <GateShell title="Can't reach the System" sub="PyWots needs a connection the first time you open it on a device, to check your access.">
+      <div style={{ textAlign: "center" }}>
+        <button className="pw-btn primary" onClick={onRetry}>Try again</button>
+      </div>
+    </GateShell>
+  );
+}
+
+/* After following a password-reset link: the user is signed in on a
+   recovery session and picks a new password. */
+function NewPasswordSheet({ onDone }) {
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [ok, setOk] = useState(false);
+  const save = async () => {
+    setErr(""); setBusy(true);
+    try { await updatePassword(pw); setOk(true); setTimeout(onDone, 1200); }
+    catch (e) { setErr(e?.message || "Couldn't update the password."); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="pw-overlay">
+      <Frame style={{ width: "min(400px, 100%)" }}>
+        <div className="pw-display" style={{ fontSize: 16 }}>Set a new password</div>
+        <input className="pw-input" type="password" autoComplete="new-password" placeholder="new password (6+ characters)"
+          value={pw} onChange={(e) => setPw(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && pw.length >= 6) save(); }} />
+        {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 8 }}>{err}</div>}
+        {ok && <div style={{ color: "var(--ok)", fontSize: 12.5, marginTop: 8 }}>Password updated.</div>}
+        <div className="pw-row" style={{ gap: 8, marginTop: 12 }}>
+          <button className="pw-btn primary" disabled={busy || pw.length < 6 || ok} onClick={save}>Save password</button>
+          <button className="pw-btn" disabled={busy} onClick={onDone}>Later</button>
         </div>
       </Frame>
     </div>
   );
 }
 
-function AccountPanel({ save, auth, openAuth, toast }) {
+function AccountPanel({ save, auth, access, toast }) {
   const [busy, setBusy] = useState(false);
 
   if (!auth.configured) {
@@ -1440,8 +1641,8 @@ function AccountPanel({ save, auth, openAuth, toast }) {
       <Frame style={{ marginTop: 14 }}>
         <div className="pw-phase" style={{ marginTop: 0 }}>Account</div>
         <div className="pw-muted pw-read" style={{ fontSize: 13 }}>
-          Cloud sync isn't set up for this build — progress is saved on this device only.
-          See <code>supabase/README.md</code> to enable accounts.
+          Accounts aren't set up for this build, so there's no sign-in or access check and
+          progress is saved on this device only. See <code>supabase/README.md</code>.
         </div>
       </Frame>
     );
@@ -1469,48 +1670,155 @@ function AccountPanel({ save, auth, openAuth, toast }) {
   };
 
   const doDelete = async () => {
-    if (!window.confirm("Delete your account and all its data? This cannot be undone.")) return;
+    if (!window.confirm("Delete your account and all its data? This cannot be undone, and any access time left on it is lost.")) return;
     setBusy(true);
     try { await deleteAccount(); window.location.reload(); }
     catch (e) { toast("sys", "⟢ SYSTEM", e?.message || "Delete failed."); setBusy(false); }
   };
 
   const syncLabel = { synced: "Synced", syncing: "Syncing…", error: "Sync error — will retry", off: "Local only" }[auth.syncState] || "";
+  const left = access.active ? daysLeft(access.expiresAt) : 0;
 
   return (
-    <Frame style={{ marginTop: 14 }} tone={auth.email ? undefined : "gold"}>
+    <Frame style={{ marginTop: 14 }} tone={access.active && left <= 14 ? "gold" : undefined}>
       <div className="pw-phase" style={{ marginTop: 0 }}>Account</div>
+      <div className="pw-row" style={{ gap: 8 }}>
+        <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
+        <div>
+          <div style={{ fontSize: 13 }}>{auth.email}</div>
+          <div className="pw-row" style={{ gap: 6, fontSize: 11 }} >
+            <span className={`pw-syncdot ${auth.syncState}`} /> <span className="pw-muted">{syncLabel}</span>
+          </div>
+        </div>
+      </div>
 
-      {auth.isAnon ? (
-        <>
-          <div className="pw-read" style={{ fontSize: 13 }}>
-            You're playing as a <b>guest</b>. Progress is saved on this device and is yours —
-            create an account to sync it to other devices and the iOS app.
+      <div style={{ marginTop: 14 }}>
+        <div className="pw-eyebrow">PyWots access</div>
+        <div className="pw-read" style={{ fontSize: 13.5, marginTop: 4 }}>
+          {access.active
+            ? <>Active until <b>{formatDate(access.expiresAt)}</b> · {left} day{left === 1 ? "" : "s"} left</>
+            : "No active access."}
+          {access.offline && <span className="pw-muted"> (offline: last known)</span>}
+        </div>
+        <details className="pw-details">
+          <summary className="pw-link">Add a code to extend</summary>
+          <RedeemForm auth={auth} access={access} compact
+            onRedeemed={(r) => toast("sys", "⟢ SYSTEM", `Access extended to ${formatDate(r.expiresAt)}.`)} />
+          <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 6 }}>
+            Need one? <ExtLink href={claimHref()}>Claim a code</ExtLink>
+            {ETSY_LISTING_URL && <> · <ExtLink href={ETSY_LISTING_URL}>Buy 12 months on Etsy</ExtLink></>}
           </div>
-          <button className="pw-btn primary" style={{ marginTop: 10 }} onClick={openAuth}>
-            Create account / Sign in
-          </button>
-        </>
-      ) : (
-        <>
-          <div className="pw-row" style={{ gap: 8 }}>
-            <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
-            <div>
-              <div style={{ fontSize: 13 }}>{auth.email}</div>
-              <div className="pw-row" style={{ gap: 6, fontSize: 11 }} >
-                <span className={`pw-syncdot ${auth.syncState}`} /> <span className="pw-muted">{syncLabel}</span>
-              </div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-            <button className="pw-btn" disabled={busy} onClick={() => store.resync(SAVE_KEY).then(() => toast("sys", "⟢ SYSTEM", "Synced."))}>Sync now</button>
-            <button className="pw-btn" disabled={busy} onClick={exportData}>Export data</button>
-            <button className="pw-btn" disabled={busy} onClick={doSignOut}>Sign out</button>
-            <button className="pw-btn danger" disabled={busy} onClick={doDelete}>Delete account</button>
-          </div>
-        </>
-      )}
+        </details>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+        <button className="pw-btn" disabled={busy} onClick={() => store.resync(SAVE_KEY).then(() => toast("sys", "⟢ SYSTEM", "Synced."))}>Sync now</button>
+        <button className="pw-btn" disabled={busy} onClick={exportData}>Export data</button>
+        <button className="pw-btn" disabled={busy} onClick={doSignOut}>Sign out</button>
+        <button className="pw-btn danger" disabled={busy} onClick={doDelete}>Delete account</button>
+      </div>
     </Frame>
+  );
+}
+
+/* ============================ /claim ======================= */
+/* Public page (no sign-in): Etsy order number → access codes. Rendered by
+   src/main.jsx instead of the app when the path is /claim. */
+function CodeRow({ code }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1500); }
+    catch { /* clipboard blocked: the code is still selectable */ }
+  };
+  return (
+    <div className="pw-coderow">
+      <span className="pw-codeval">{code}</span>
+      <button className="pw-btn" style={{ padding: "5px 12px", fontSize: 13 }} onClick={copy}>{copied ? "Copied" : "Copy"}</button>
+    </div>
+  );
+}
+
+export function ClaimPage() {
+  const [receiptId, setReceiptId] = useState("");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [codes, setCodes] = useState(null);
+
+  const submit = async () => {
+    setErr(""); setBusy(true);
+    const r = await claimOrder(receiptId.trim(), email.trim());
+    setBusy(false);
+    if (r.ok) setCodes(r.codes);
+    else setErr(r.error);
+  };
+
+  let body;
+  if (!isConfigured()) {
+    body = (
+      <GateShell title="Claim your access" sub="Claiming isn't available on this build. Please message us on Etsy and we'll send your code." />
+    );
+  } else if (codes) {
+    const many = codes.length > 1;
+    body = (
+      <GateShell title={many ? "Your access codes" : "Your access code"} sub={`Thanks for buying PyWots. Each code unlocks 12 months.`}>
+        <Frame>
+          {codes.map((c) => <CodeRow key={c.code} code={c.code} />)}
+          <div className="pw-read" style={{ color: "var(--gold)", fontSize: 13, marginTop: 12 }}>
+            Save {many ? "these codes" : "this code"} now: {many ? "they're" : "it's"} only shown once. Redeem within a year.
+          </div>
+          {many && (
+            <div className="pw-muted pw-read" style={{ fontSize: 13, marginTop: 8 }}>
+              Each code works once, on any account: redeem one yourself and gift the rest.
+            </div>
+          )}
+          <a className="pw-btn primary" href={`/?redeem=${encodeURIComponent(codes[0].code)}`}
+            style={{ display: "block", textAlign: "center", marginTop: 14, textDecoration: "none" }}>
+            Continue to PyWots →
+          </a>
+        </Frame>
+        <p className="pw-muted pw-read" style={{ textAlign: "center", fontSize: 12.5, marginTop: 14 }}>
+          Next: create your account, then redeem {many ? "a code" : "the code"}.
+        </p>
+      </GateShell>
+    );
+  } else {
+    body = (
+      <GateShell title="Claim your access" sub="Enter your Etsy order details to get your PyWots access code.">
+        <Frame>
+          <div className="pw-eyebrow">Etsy order number</div>
+          <input className="pw-input" inputMode="numeric" autoComplete="off" placeholder="e.g. 3141592653"
+            value={receiptId} onChange={(e) => setReceiptId(e.target.value)} />
+          <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 6 }}>
+            In Etsy under You → Purchases, or in your order confirmation email.
+          </div>
+          <div className="pw-eyebrow" style={{ marginTop: 16 }}>Email on your Etsy account</div>
+          <input className="pw-input" type="email" inputMode="email" autoComplete="email" placeholder="you@email.com"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && receiptId.trim() && !busy) submit(); }} />
+          <div className="pw-muted pw-read" style={{ fontSize: 12, marginTop: 6 }}>
+            Only used to confirm the order is yours.
+          </div>
+          {err && <div style={{ color: "var(--bad)", fontSize: 12.5, marginTop: 10 }}>{err}</div>}
+          <button className="pw-btn primary" style={{ width: "100%", marginTop: 14 }}
+            disabled={busy || !receiptId.trim()} onClick={submit}>
+            {busy ? "Checking your order…" : "Get my code"}
+          </button>
+        </Frame>
+        <p className="pw-muted pw-read" style={{ textAlign: "center", fontSize: 12.5, marginTop: 14 }}>
+          Already have a code? <a href="/">Open PyWots</a>, sign in and redeem it.
+        </p>
+      </GateShell>
+    );
+  }
+
+  return (
+    <div className="pw-app">
+      <style>{CSS}</style>
+      <link rel="stylesheet" href={FONT_LINK} />
+      <Backdrop />
+      {body}
+    </div>
   );
 }
 
@@ -1567,10 +1875,12 @@ export default function PyWots() {
   const [toasts, setToasts] = useState([]);
   const [booting, setBooting] = useState(true);
   const [burst, setBurst] = useState(null); // {title, sub}
-  const [authOpen, setAuthOpen] = useState(false);
   const [summon, setSummon] = useState(false);
   const py = usePyodide();
   const auth = useAuth();
+  const access = useAccess(auth);
+  // With accounts configured, the game only opens for a signed-in user with active access.
+  const locked = auth.configured && !(auth.signedIn && access.active);
   const prevLevel = useRef(null);
   const prevRank = useRef(null);
 
@@ -1652,7 +1962,7 @@ export default function PyWots() {
   // the System summons — shown when opened from the reminder, or on the
   // first open of a new day with today's Gate still uncleared.
   useEffect(() => {
-    if (!save || !save.answers || booting) return;
+    if (!save || !save.answers || booting || locked) return;
     if (typeof window !== "undefined" && window.__pywotsSummon) {
       window.__pywotsSummon = false;
       setSummon(true);
@@ -1663,7 +1973,7 @@ export default function PyWots() {
     const doneToday = !!save.completed?.[cur]?.dungeon;
     const remindOn = save.reminder?.enabled !== false;
     if (remindOn && save.summonedOn !== today && !doneToday) setSummon(true);
-  }, [save, booting]);
+  }, [save, booting, locked]);
 
   useEffect(() => {
     const h = () => setSummon(true);
@@ -1676,7 +1986,7 @@ export default function PyWots() {
   // can't wake a closed tab; the iOS app does that.
   const webFiredRef = useRef(null);
   useEffect(() => {
-    if (isNative || !save || !save.answers) return;
+    if (isNative || !save || !save.answers || locked) return;
     const r = save.reminder || {};
     if (r.enabled === false) return;
     const hour = r.hour ?? 9;
@@ -1702,7 +2012,7 @@ export default function PyWots() {
     const iv = setInterval(tick, 30000);
     tick();
     return () => clearInterval(iv);
-  }, [save?.reminder, save?.answers]);
+  }, [save?.reminder, save?.answers, locked]);
 
   const closeSummon = (accepted) => {
     setSummon(false);
@@ -1710,14 +2020,17 @@ export default function PyWots() {
     if (accepted) { setTab("today"); setViewDay((save && save.day) || 1); }
   };
 
-  // soft, one-time nudge to create an account — only after there's progress
-  // worth protecting (Day 3 cleared) and only for guests.
+  // once a day in the last two weeks of access, a nudge to renew
   useEffect(() => {
-    if (!save || !save.answers || !auth.configured || !auth.isAnon) return;
-    if (save.promptedLink || !save.completed?.[3]?.dungeon) return;
-    toast("sys", "⟢ SYSTEM", "Your progress lives only on this device. Open Hunter ▸ Account to save it to an account.");
-    mutate((s) => ({ ...s, promptedLink: true }));
-  }, [save, auth.configured, auth.isAnon, toast, mutate]);
+    if (booting || !access.active) return;
+    const left = daysLeft(access.expiresAt);
+    if (left > 14) return;
+    const key = "pywots:renewNudge";
+    const today = dayStr();
+    try { if (localStorage.getItem(key) === today) return; localStorage.setItem(key, today); } catch { /* ignore */ }
+    toast("ach", "⟢ ACCESS",
+      `Your access ends in ${left} day${left === 1 ? "" : "s"}. Add a code in Hunter ▸ Account to keep climbing; new time stacks on top.`);
+  }, [booting, access.active, access.expiresAt, toast]);
 
   const finishAssessment = (answers) => {
     const fresh = {
@@ -1770,14 +2083,35 @@ export default function PyWots() {
           <span>{burst.sub}</span>
         </div>
       )}
+      {auth.recovery && !booting && <NewPasswordSheet onDone={auth.endRecovery} />}
     </>
   );
 
-  if (save === undefined) {
-    return <div className="pw-app">{chrome}
+  const loadingScreen = (
+    <div className="pw-app">{chrome}
       <div className="pw-wrap" style={{ paddingTop: 100, textAlign: "center", color: "var(--dim)" }}>Loading the System…</div>
-    </div>;
+    </div>
+  );
+
+  // The gate: sign in → redeem a code → the game.
+  if (auth.configured) {
+    if (auth.user === undefined) return loadingScreen;
+    if (!auth.signedIn) return <div className="pw-app">{chrome}<SignInScreen /></div>;
+    if (access.status === "error" && !access.ready) {
+      return <div className="pw-app">{chrome}<AccessError onRetry={access.reload} /></div>;
+    }
+    if (!access.ready) return loadingScreen;
+    if (!access.active) {
+      return (
+        <div className="pw-app">{chrome}
+          <RedeemScreen auth={auth} access={access}
+            onUnlocked={(r) => toast("sys", "⟢ SYSTEM", `Access granted until ${formatDate(r.expiresAt)}. The Tower is open.`)} />
+        </div>
+      );
+    }
   }
+
+  if (save === undefined) return loadingScreen;
   if (save === null) {
     return <div className="pw-app">{chrome}<Assessment onDone={finishAssessment} /></div>;
   }
@@ -1821,17 +2155,11 @@ export default function PyWots() {
           <span className="pw-row pw-status-streak" style={{ gap: 4, fontFamily: "var(--display)", fontSize: 13 }}>
             🔥 {save.streak || 0}
           </span>
-          {auth.configured && (
-            auth.isAnon ? (
-              <button className="pw-acct" style={{ flex: "none" }} onClick={() => setAuthOpen(true)} title="Save your progress">
-                <span className="pw-syncdot" /> Guest
-              </button>
-            ) : (
-              <button className="pw-acct" style={{ flex: "none" }} onClick={() => setTab("hunter")} title={auth.email || "Account"}>
-                <span className={`pw-syncdot ${auth.syncState}`} />
-                <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
-              </button>
-            )
+          {auth.signedIn && (
+            <button className="pw-acct" style={{ flex: "none" }} onClick={() => setTab("hunter")} title={auth.email || "Account"}>
+              <span className={`pw-syncdot ${auth.syncState}`} />
+              <span className="pw-avatar">{(auth.email || "?")[0].toUpperCase()}</span>
+            </button>
           )}
         </div>
       </div>
@@ -1840,9 +2168,7 @@ export default function PyWots() {
         <Today save={save} viewDay={viewDay} setViewDay={setViewDay} py={py} mutate={mutate} toast={toast} />
       )}
       {tab === "path" && <Path save={save} setViewDay={setViewDay} setTab={setTab} />}
-      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} openAuth={() => setAuthOpen(true)} />}
-
-      {authOpen && <AuthSheet onClose={() => setAuthOpen(false)} toast={toast} />}
+      {tab === "hunter" && <Hunter save={save} mutate={mutate} toast={toast} resetAll={resetAll} auth={auth} access={access} />}
 
       {!booting && summon && (
         <SystemSummons

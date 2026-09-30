@@ -4,9 +4,10 @@ import { createClient } from "@supabase/supabase-js";
    Row Level Security is what protects the data, so the service_role key must
    never appear in client code.
 
-   When these are unset (no .env.local, no Vercel env), `configured` is false and
-   the whole app falls back to local-only storage — exactly how it behaved before
-   accounts existed. That keeps `npm run dev` working with zero setup. */
+   When these are set, PyWots requires an account and a redeemed access code
+   (see src/lib/access.js). When they're unset (no .env.local, no Vercel env),
+   `configured` is false and the app runs open and local-only, with no sign-in
+   and no access check. That keeps `npm run dev` working with zero setup. */
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -25,25 +26,14 @@ export const supabase = configured
     })
   : null;
 
-/* Anonymous sign-in gives every user a real, durable account on first launch,
-   before any signup form. Progress is server-side from day one; linking an email
-   later (`supabase.auth.updateUser`) upgrades the same user id, so nothing is
-   lost. Enable it under Authentication -> Providers -> Anonymous sign-ins. */
+/* Resolves to the signed-in user, or null. There are no anonymous sessions:
+   PyWots is paid, so everyone signs in before the app opens. */
 let sessionPromise = null;
 
 export function ensureSession() {
   if (!supabase) return Promise.resolve(null);
   if (sessionPromise) return sessionPromise;
-  sessionPromise = (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) return session.user;
-    const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.warn("PyWots: anonymous sign-in failed, staying local.", error.message);
-      return null;
-    }
-    return data.user;
-  })();
+  sessionPromise = supabase.auth.getSession().then(({ data: { session } }) => session?.user ?? null);
   return sessionPromise;
 }
 

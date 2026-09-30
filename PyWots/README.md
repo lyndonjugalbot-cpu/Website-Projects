@@ -24,8 +24,8 @@ npm run ios      # build + sync + open the iOS project in Xcode
 |------|------------|
 | `PyWots.jsx` | The whole app — one React component. Game loop, screens (Today / Tower / Hunter), XP/rank/streak/penalty logic, the Pyodide runner, radar chart, achievements, the account/auth UI. |
 | `curriculum.js` | All content + game math. Days 1–10 fully authored (teaching cards + guided lessons + a graded Dungeon). Days 11–100 mapped to concrete topics in `TOPIC_MAP`, kept playable by `PRACTICE` — a bank of real graded problems per stat. |
-| `src/lib/` | `supabase.js` (client + anon session), `persistence.js` (local-first store), `auth.js` (email / Google / Apple), `native-bridge.js` (iOS-only), `platform.js`, `keys.js`. |
-| `supabase/` | `schema.sql` + `README.md` — the profiles table, RLS, triggers, `delete_user()`, and setup steps. |
+| `src/lib/` | `supabase.js` (client), `persistence.js` (local-first store), `auth.js` (email / Google / Apple), `access.js` (paid access: read, redeem, claim), `native-bridge.js` (native-only), `platform.js`, `keys.js`. |
+| `supabase/` | `schema.sql` (profiles + paid-access tables, RLS, functions), `functions/` (the `claim` and `etsy-oauth` edge functions), `tests/` (`npm test`), and `README.md` with the setup steps. |
 | `capacitor.config.json`, `ios/` | The iOS shell. |
 | `src/main.jsx`, `index.html`, `vite.config.js` | Vite scaffold. |
 
@@ -39,30 +39,40 @@ printed. A 4-second trace-based watchdog stops runaway loops.
 
 Pin/bump the runtime with `PYODIDE_VERSION` in `PyWots.jsx`.
 
-### Accounts & sync (optional)
+### Accounts & paid access
 
-Local-first. With **no** env vars the app runs exactly as before — per-device,
-offline, `localStorage` (or `@capacitor/preferences` on iOS), key
-`pywots:save:v1`. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` and it
-also:
+With **no** env vars the app runs open and local-only: per-device, offline,
+`localStorage` (or `@capacitor/preferences` natively), key `pywots:save:v1`.
+That's what `npm run dev` does out of the box.
 
-- creates an **anonymous** account on first launch (no signup wall),
-- syncs the save blob to Postgres on a debounce; **local unsynced changes always
-  win**, so an offline device never loses work,
-- lets the user **register** (email / Google / Apple) to carry that progress to
-  other devices and the iOS app — email links onto the same anonymous user in
-  place,
-- exposes **Export data** and **Delete account** (App Store requirement) on the
-  Hunter → Account panel.
+Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` and PyWots becomes the paid
+app sold on Etsy (12 months per code):
 
-Full setup: **`supabase/README.md`**. iOS specifics: **`CAPACITOR.md`**.
+- **Sign in first.** Email + password, plus Google / Apple if listed in
+  `VITE_OAUTH_PROVIDERS`. No guest mode.
+- **Redeem a code.** A signed-in user without active access gets the redeem
+  screen. `redeem_access_code()` (in `schema.sql`) checks the code server-side and
+  adds 365 days; time stacks when renewing early. When access runs out the app
+  shows the renew screen, and progress stays on the account.
+- **Claim a code.** `/claim` turns an Etsy order number into codes via the
+  `claim` edge function, which checks the order with Etsy's API.
+- The save syncs to Postgres on a debounce; **local unsynced changes win**, so an
+  offline device never loses work, and progress from before sign-in carries into
+  the account.
+- Hunter → Account shows access status, takes another code, and has **Export
+  data** and **Delete account** (App Store requirement).
+
+The lock is client-side: the curriculum ships in the bundle. What the server
+enforces is that codes are real, single-use and can't be minted or self-granted.
+
+Tests: `npm test` runs the SQL in PGlite (codes, redeeming, RLS) and the claim
+flow with Etsy faked out.
+
+Full setup: **`supabase/README.md`**. Native specifics: **`CAPACITOR.md`**.
 
 ## Before shipping
 
-- **Remove the "Testing controls"** block on the Hunter screen (unlock day,
-  +200 XP, age progress, reset).
 - Author days 11–100 (guided lessons) into `curriculum.js` following the day
   shape documented at the top of that file. The topic map and objectives are
   already there.
-- Rank is client-state only. If anything is ever paywalled, gate it server-side
-  (a column the client can't write, set by a Stripe / RevenueCat webhook).
+

@@ -7,16 +7,18 @@ import { SAVE_KEY } from "./keys.js";
    Auth helpers. Every function is a no-op-ish when Supabase isn't
    configured, so the app runs local-only with zero setup.
 
-   Model: anonymous session by default (see supabase.js `ensureSession`).
-   "Register" either links an email onto the current anonymous user
-   (progress kept, same id) or, if already a full user, is a normal sign
-   up. Google / Apple go through OAuth on web and native plugins on iOS.
+   Model: when Supabase is configured, PyWots is paid, so everyone signs
+   in (email + password, or Google / Apple if enabled) before the app
+   opens. Local progress from before sign-in is carried into the account
+   by persistence.js (an unsynced local save wins over an empty row).
 ------------------------------------------------------------------- */
 
 export function isConfigured() { return configured; }
 
+/* The locally stored session's user (no network call), so a signed-in
+   player who opens PyWots offline isn't bounced to the sign-in screen. */
 export function currentUser() {
-  return supabase ? supabase.auth.getUser().then(({ data }) => data.user) : Promise.resolve(null);
+  return supabase ? supabase.auth.getSession().then(({ data }) => data.session?.user ?? null) : Promise.resolve(null);
 }
 
 export function isAnon(user) {
@@ -39,20 +41,17 @@ export async function signInEmail(email, password) {
   return data.user;
 }
 
-/* Register: if the current user is anonymous, link the email onto it so
-   the guest's progress carries over on the same id. Otherwise create a
-   fresh account. */
+/* Returns the new user. If the project requires email confirmation, the
+   user comes back unconfirmed and without a session: the UI asks them to
+   check their inbox, then sign in. */
 export async function registerEmail(email, password) {
   if (!supabase) throw new Error("Accounts are not configured.");
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user && isAnon(user)) {
-    const { data, error } = await supabase.auth.updateUser({ email, password });
-    if (error) throw error;
-    return data.user; // may need email confirmation depending on project settings
-  }
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email, password,
+    options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+  });
   if (error) throw error;
-  await store.resync(SAVE_KEY);
+  if (data.session) await store.resync(SAVE_KEY);
   return data.user;
 }
 
@@ -62,6 +61,20 @@ export async function sendPasswordReset(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) throw error;
 }
+
+/* After following a reset link the user has a recovery session; this sets
+   the new password on it. */
+export async function updatePassword(password) {
+  if (!supabase) throw new Error("Accounts are not configured.");
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
+/* Google / Apple buttons only show for providers listed in
+   VITE_OAUTH_PROVIDERS (e.g. "google,apple") once they're enabled in
+   Supabase; otherwise the button would just error. */
+export const oauthProviders = (import.meta.env.VITE_OAUTH_PROVIDERS || "")
+  .split(",").map((s) => s.trim().toLowerCase()).filter((p) => p === "google" || p === "apple");
 
 /* --------------------------- google / apple -------------------- */
 export async function signInWithProvider(provider) {
@@ -83,15 +96,8 @@ export async function signInWithProvider(provider) {
     return null;
   }
 
-  // Web: redirect flow. For an anonymous user, link the identity so the
-  // row (and progress) is kept; fall back to a plain OAuth sign-in.
+  // Web: redirect flow.
   const redirectTo = window.location.origin;
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user && isAnon(user)) {
-    const { error } = await supabase.auth.linkIdentity({ provider, options: { redirectTo } });
-    if (!error) return null; // browser navigates away
-    console.warn("PyWots: linkIdentity unavailable, using OAuth sign-in.", error.message);
-  }
   const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
   if (error) throw error;
   return null; // browser navigates away; session resolves on return

@@ -6,22 +6,22 @@ Supabase backend — they can't drift. Fix a bug once, `cap sync`, ship.
 
 ---
 
-# Android — the APK
+# Android
 
-Unlike iOS, Android lets you hand someone an installable file. `public/pywots.apk`
-is a **debug-signed** build served from the site; the Hunter screen has a
-**Download for Android** button pointing at `/pywots.apk`.
+The Android app is no longer offered as a download from the website (PyWots is a
+paid, sign-in app now; the web app works on Android phones in the browser). The
+Capacitor project in `android/` still builds, for testing or a future Play Store
+release.
 
-## Build / refresh the APK
+## Build an APK
 
 ```bash
 npm run android:apk
 ```
 
-That runs `vite build` → `cap sync android` → `gradlew assembleDebug`, then copies
-the result to `public/pywots.apk`. Re-run it after any web change and redeploy so
-the download stays current. (The script deletes the copied-in `pywots.apk` from
-the Android assets before Gradle runs, so the APK doesn't nest a copy of itself.)
+That runs `vite build` → `cap sync android` → `gradlew assembleDebug` and leaves
+the debug-signed APK at `android/app/build/outputs/apk/debug/app-debug.apk`.
+Install it on a test device with `adb install -r <that path>`.
 
 Toolchain used here: Homebrew `android-commandlinetools` at
 `/opt/homebrew/share/android-commandlinetools`, `openjdk@21`, SDK platform
@@ -33,9 +33,6 @@ JDK 17/21.
 
 - Debug signing = fine for sideloading, not for the Play Store. For Play, add a
   release keystore and `./gradlew bundleRelease` (`.aab`).
-- Installing: the user opens the `.apk`, allows "install unknown apps" for their
-  browser once, taps Install. Play Protect may show a "scan" prompt — normal for
-  a sideloaded app.
 - `minSdk 24` (Android 7.0+). Deep-link scheme `pywots://` and
   `POST_NOTIFICATIONS` are in `AndroidManifest.xml`.
 - Not yet tested on a physical Android device — the APK builds, signs, and

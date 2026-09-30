@@ -15,3 +15,7 @@ ios/DerivedData
 **/DerivedData
 **/xcuserdata
 *.xcuserstate
+
+# Supabase CLI local state
+supabase/.temp
+!.env.example
