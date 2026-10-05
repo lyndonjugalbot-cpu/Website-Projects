@@ -8,7 +8,7 @@ folder as it is to any static host (Vercel, Netlify, Firebase, Cloudflare Pages)
 index.html             markup, SEO meta, LocalBusiness schema
 assets/css/styles.css  theme tokens, layout, animations, responsive rules
 assets/js/main.js      nav, scroll reveal, build filters, quote form, open/closed status
-assets/img/            logo (web size), round nav mark, favicons, Open Graph image
+assets/img/            logos, nav mark, favicons, Open Graph image
 ```
 
 ## Design
@@ -20,6 +20,19 @@ assets/img/            logo (web size), round nav mark, favicons, Open Graph ima
   glow on the cards, a spinning-fan illustration, a film-grain overlay, a brand marquee and the big wordmark in the footer.
 - **Sections:** Hero → Brands → Featured builds (filterable) → Services → Process → About → Quote + Visit → Footer.
 - **Mobile:** full-screen menu, plus a fixed Call / Quote / Directions bar once you scroll past the hero.
+
+## Logo files
+
+| File | What it is | Used for |
+|------|------------|----------|
+| `logo-light.jpg` | The client's logo exactly as supplied (black "PC", white background) | schema.org `logo`, light backgrounds |
+| `logo.webp` | Reversed version for dark backgrounds: white background removed, black "PC" and tagline turned white, blue untouched | Hero |
+| `logo-mark.png` | Just the "P" emblem, transparent | Nav, footer |
+| `favicon.png`, `apple-touch-icon.png` | The emblem, square | Browser tab, home screen |
+| `og-image.jpg` | Reversed logo on black with a blue glow, 1200×630 | Link previews on Facebook, Messenger, etc. |
+
+I made the reversed logo from the supplied one. If the client's designer has an official
+dark-background version, drop it in as `logo.webp` (same proportions) and the other logo files stay as they are.
 
 ## Content sources
 
