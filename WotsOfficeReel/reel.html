@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1080" />
+<title>Wots Office Reel</title>
+<!--
+  Wots Office: Facebook Reel (1080x1920, 33 s).
+
+  This page is a seekable animation. Every frame is a pure function of the
+  time t: render.mjs calls window.renderAt(t) for each frame and screenshots
+  the page. Open it in a browser to preview: it plays in real time; add
+  ?t=12.5 to freeze on one moment.
+
+  Copy lives in the markup below; timings live in the data-* attributes and
+  in TIMELINE. If you change a scene's length, move the scenes after it and
+  the beat grid in music.py (120 BPM, so 1 bar = 2 s).
+-->
+<style>
+  @font-face { font-family: "Space Grotesk"; src: url(assets/fonts/SpaceGrotesk.woff2) format("woff2"); font-weight: 300 700; font-display: block; }
+  @font-face { font-family: "Inter"; src: url(assets/fonts/Inter.woff2) format("woff2"); font-weight: 100 900; font-display: block; }
+
+  :root {
+    --bg: #07090f;
+    --text: #f5f5f7;
+    --muted: #a3abbd;
+    --faint: #6c7489;
+    --blue: #0a84ff;
+    --sky: #5e9bff;
+    --violet: #5e5ce6;
+    --card: rgba(255, 255, 255, 0.055);
+    --card-line: rgba(255, 255, 255, 0.11);
+    --grad: linear-gradient(120deg, #7fb2ff 0%, #0a84ff 45%, #7a6cff 100%);
+    --display: "Space Grotesk", system-ui, sans-serif;
+    --body: "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--body); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+
+  /* ---------- background ---------- */
+  .bg-grid {
+    position: absolute; inset: -120px;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 90px 90px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 85%);
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(110px); will-change: transform; }
+  .blob--a { width: 900px; height: 900px; background: #0a84ff; opacity: 0.32; }
+  .blob--b { width: 800px; height: 800px; background: #5e5ce6; opacity: 0.30; }
+  .blob--c { width: 520px; height: 520px; background: #22d3ee; opacity: 0.14; }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%); }
+
+  /* ---------- shared ---------- */
+  .scene { position: absolute; inset: 0; will-change: transform, opacity; }
+  .center { position: absolute; left: 90px; right: 90px; text-align: center; }
+  .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .display { font-family: var(--display); font-weight: 700; letter-spacing: -0.035em; line-height: 0.98; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-family: var(--display); font-weight: 600; font-size: 30px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--sky);
+  }
+  .eyebrow::before { content: ""; width: 44px; height: 3px; border-radius: 2px; background: var(--grad); }
+  .lead { font-size: 44px; line-height: 1.3; color: var(--muted); font-weight: 500; letter-spacing: -0.01em; }
+  [data-in] { will-change: transform, opacity; }
+
+  .chip-url {
+    position: absolute; top: 232px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 26px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--card-line);
+    font-family: var(--display); font-weight: 600; font-size: 28px; letter-spacing: 0.01em; color: #dfe6f5;
+    backdrop-filter: blur(10px);
+  }
+  .chip-url i { width: 12px; height: 12px; border-radius: 50%; background: #34c759; box-shadow: 0 0 14px #34c759; }
+
+  /* ---------- 1. hook ---------- */
+  .hook-title { top: 400px; font-size: 168px; }
+  .search {
+    position: absolute; left: 110px; right: 110px; top: 850px; height: 128px;
+    display: flex; align-items: center; gap: 26px; padding: 0 40px;
+    border-radius: 999px; background: #fff; color: #1d1d1f;
+    box-shadow: 0 30px 80px rgba(10,132,255,0.35), 0 0 0 10px rgba(255,255,255,0.08);
+    font-size: 50px; font-weight: 500;
+  }
+  .search svg { flex: none; }
+  .caret { display: inline-block; width: 4px; height: 56px; background: var(--blue); margin-left: 4px; vertical-align: middle; }
+  .results { position: absolute; left: 150px; right: 150px; top: 1020px; }
+  .result {
+    display: flex; align-items: center; gap: 24px; margin-bottom: 22px;
+    padding: 24px 30px; border-radius: 26px; background: var(--card); border: 1px solid var(--card-line);
+  }
+  .result b { flex: none; width: 54px; height: 54px; border-radius: 14px; background: rgba(255,255,255,0.12); }
+  .result span { display: block; height: 18px; border-radius: 9px; background: rgba(255,255,255,0.16); }
+  .result span + span { margin-top: 12px; width: 55%; background: rgba(255,255,255,0.09); }
+  .result div { flex: 1; }
+  .hook-sub { top: 1400px; font-size: 46px; color: var(--text); font-weight: 600; }
+
+  /* ---------- 2. brand ---------- */
+  .wordmark { top: 600px; font-size: 168px; }
+  .wordmark .ch { display: inline-block; }
+  .underline { position: absolute; left: 50%; top: 800px; width: 520px; height: 10px; margin-left: -260px; border-radius: 5px; background: var(--grad); transform-origin: 50% 50%; box-shadow: 0 0 30px rgba(10,132,255,0.6); }
+  .tagline { top: 880px; font-size: 84px; line-height: 1.08; }
+  .brand-line { top: 1120px; }
+  .pin {
+    position: absolute; left: 50%; top: 1290px; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 14px; white-space: nowrap;
+    padding: 18px 34px; border-radius: 999px; border: 1px solid var(--card-line); background: var(--card);
+    font-size: 36px; font-weight: 600; color: #dfe6f5;
+  }
+
+  /* ---------- 3. services ---------- */
+  .sec-head { top: 330px; }
+  .sec-head h2 { margin-top: 26px; font-size: 128px; }
+  .cards { position: absolute; left: 110px; right: 110px; top: 640px; }
+  .card {
+    display: flex; align-items: center; gap: 40px;
+    padding: 44px 46px; margin-bottom: 34px; border-radius: 44px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035));
+    border: 1px solid var(--card-line);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+  }
+  .icon {
+    flex: none; width: 132px; height: 132px; border-radius: 36px; display: grid; place-items: center;
+    background: var(--grad); box-shadow: 0 16px 40px rgba(10,132,255,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+  .card h3 { font-family: var(--display); font-weight: 700; font-size: 62px; letter-spacing: -0.02em; }
+  .card p { margin-top: 10px; font-size: 35px; line-height: 1.32; color: var(--muted); }
+
+  /* ---------- 4. showcase ---------- */
+  .work-head { top: 330px; }
+  .work-head h2 { font-size: 112px; margin-top: 22px; }
+  .site-label { position: absolute; left: 90px; right: 90px; top: 1498px; height: 150px; text-align: center; }
+  .site-label .lbl { position: absolute; left: 0; right: 0; top: 0; }
+  .site-label strong { display: block; font-family: var(--display); font-size: 58px; letter-spacing: -0.02em; }
+  .site-label em { display: block; margin-top: 8px; font-style: normal; font-size: 34px; color: var(--muted); font-weight: 500; }
+  .phone {
+    position: absolute; left: 50%; top: 560px; width: 420px; height: 900px; margin-left: -210px;
+    border-radius: 70px; background: #0b0d12;
+    box-shadow: 0 0 0 2px #3a4152, 0 0 0 11px #12161f, 0 0 0 13px #2a3040, 0 50px 140px rgba(10,132,255,0.38), 0 30px 70px rgba(0,0,0,0.6);
+  }
+  .screen { position: absolute; inset: 13px; border-radius: 58px; overflow: hidden; background: #000; }
+  .island { position: absolute; top: 18px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; z-index: 5; }
+  .site { position: absolute; inset: 0; overflow: hidden; }
+  .site .bar { position: absolute; left: 0; right: 0; top: 0; height: 62px; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 8px 40px 0 44px; font: 600 21px/1 var(--body); }
+  .site .bar .dots { display: flex; gap: 6px; align-items: center; }
+  .site .bar .dots i { display: block; width: 26px; height: 12px; border-radius: 4px; border: 2px solid currentColor; opacity: 0.85; }
+  .site img { position: absolute; left: 0; top: 62px; width: 100%; display: block; }
+  .site .shade { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 3; }
+
+  /* ---------- 5. how it works ---------- */
+  .steps { position: absolute; left: 130px; right: 110px; top: 680px; }
+  .rail { position: absolute; left: 56px; top: 60px; width: 6px; height: 640px; border-radius: 3px; background: var(--grad); transform-origin: 50% 0; opacity: 0.85; }
+  .step { position: relative; display: flex; gap: 46px; align-items: flex-start; margin-bottom: 120px; }
+  .num {
+    flex: none; width: 118px; height: 118px; border-radius: 50%; display: grid; place-items: center;
+    font-family: var(--display); font-weight: 700; font-size: 56px;
+    background: #0d1220; border: 3px solid transparent;
+    background-image: linear-gradient(#0d1220, #0d1220), var(--grad); background-origin: border-box; background-clip: padding-box, border-box;
+    box-shadow: 0 0 40px rgba(10,132,255,0.45);
+  }
+  .step h3 { font-family: var(--display); font-weight: 700; font-size: 64px; letter-spacing: -0.02em; margin-top: 6px; }
+  .step p { margin-top: 10px; font-size: 37px; line-height: 1.32; color: var(--muted); max-width: 640px; }
+
+  /* ---------- 6. CTA ---------- */
+  .cta-title { top: 420px; font-size: 156px; }
+  .cta-btn {
+    position: absolute; left: 50%; top: 860px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 26px; white-space: nowrap;
+    padding: 40px 64px; border-radius: 999px; background: var(--grad);
+    font-family: var(--display); font-weight: 700; font-size: 66px; letter-spacing: -0.01em; color: #fff;
+    box-shadow: 0 30px 90px rgba(10,132,255,0.55), inset 0 2px 0 rgba(255,255,255,0.35);
+  }
+  .ripple { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.8); opacity: 0; pointer-events: none; }
+  .cursor { position: absolute; left: 0; top: 0; width: 72px; height: 72px; z-index: 20; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5)); }
+  .cta-sub { top: 1090px; font-size: 48px; font-weight: 600; color: var(--text); }
+  .cta-contact { top: 1180px; font-size: 36px; color: var(--muted); line-height: 1.5; }
+  .cta-mark { top: 1360px; }
+  .cta-mark b { font-family: var(--display); font-size: 56px; letter-spacing: -0.03em; }
+  .cta-mark span { display: block; margin-top: 8px; font-size: 32px; color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- background -->
+  <div class="bg-grid" id="grid"></div>
+  <div class="blob blob--a" id="blobA"></div>
+  <div class="blob blob--b" id="blobB"></div>
+  <div class="blob blob--c" id="blobC"></div>
+  <div class="vignette"></div>
+
+  <!-- persistent URL chip (scenes 2-5) -->
+  <div class="chip-url" id="chip"><i></i>wotsoffice.co.nz</div>
+
+  <!-- 1. HOOK  0-4 s -->
+  <section class="scene" data-from="0" data-to="4" data-exit="up">
+    <h1 class="center display hook-title">
+      <span data-in="0.15" data-fx="pop" style="display:inline-block">No website</span><br />
+      <span data-in="0.45" data-fx="pop" style="display:inline-block" class="grad">yet?</span>
+    </h1>
+    <div class="search" data-in="1.05" data-fx="up">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+      <span id="typed"></span><span class="caret" id="caret"></span>
+    </div>
+    <div class="results">
+      <div class="result" data-in="2.35" data-fx="up"><b></b><div><span></span><span></span></div></div>
+      <div class="result" data-in="2.5" data-fx="up"><b></b><div><span></span><span></span></div></div>
+      <div class="result" data-in="2.65" data-fx="up"><b></b><div><span></span><span></span></div></div>
+    </div>
+    <p class="center hook-sub" data-in="2.9" data-fx="up">Your customers are searching. <span class="grad">Be the one they find.</span></p>
+  </section>
+
+  <!-- 2. BRAND  4-8 s -->
+  <section class="scene" data-from="4" data-to="8" data-exit="scale">
+    <h1 class="center display wordmark" id="wordmark">Wots Office</h1>
+    <div class="underline" data-in="4.6" data-fx="grow"></div>
+    <p class="center display tagline">
+      <span data-in="4.95" data-fx="up" style="display:inline-block">Code that clicks.</span><br />
+      <span data-in="5.3" data-fx="up" style="display:inline-block" class="grad">Apps that connect.</span>
+    </p>
+    <p class="center lead brand-line" data-in="5.85" data-fx="up">Websites &amp; ad design<br />for growing businesses</p>
+    <div class="pin" data-in="6.3" data-fx="pop-x">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5e9bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      Onehunga, Auckland
+    </div>
+  </section>
+
+  <!-- 3. SERVICES  8-13 s -->
+  <section class="scene" data-from="8" data-to="13" data-exit="left">
+    <div class="center sec-head">
+      <span class="eyebrow" data-in="8.1" data-fx="fade">What we do</span>
+      <h2 class="display" data-in="8.2" data-fx="up">Done <span class="grad">for you</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card" data-in="8.6" data-fx="right">
+        <div class="icon"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M2.5 8.5h19"/><circle cx="5.6" cy="6.3" r=".5" fill="#fff"/><circle cx="7.6" cy="6.3" r=".5" fill="#fff"/><path d="M6 12.5h7M6 15.5h4"/><rect x="15" y="11.5" width="4" height="5" rx="1"/></svg></div>
+        <div><h3>Websites</h3><p>Fast, mobile-first sites that turn visitors into customers.</p></div>
+      </div>
+      <div class="card" data-in="9.5" data-fx="right">
+        <div class="icon"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5v3a1 1 0 0 0 1 1h2.5L13 19V5L6.5 9.5H4a1 1 0 0 0-1 1z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/></svg></div>
+        <div><h3>Ad design</h3><p>Scroll-stopping social ads and graphics for your brand.</p></div>
+      </div>
+      <div class="card" data-in="10.4" data-fx="right">
+        <div class="icon"><svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><rect x="8.6" y="6" width="2.6" height="2.6" rx=".6"/><rect x="12.8" y="6" width="2.6" height="2.6" rx=".6"/><rect x="8.6" y="10.2" width="2.6" height="2.6" rx=".6"/><rect x="12.8" y="10.2" width="2.6" height="2.6" rx=".6"/></svg></div>
+        <div><h3>Web apps</h3><p>Bookings, ordering and custom tools that save you time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. SHOWCASE  13-23 s -->
+  <section class="scene" data-from="13" data-to="23" data-exit="down">
+    <div class="center work-head">
+      <span class="eyebrow" data-in="13.1" data-fx="fade">Made by Wots Office</span>
+      <h2 class="display" data-in="13.2" data-fx="up">Recent <span class="grad">work</span></h2>
+    </div>
+    <div class="phone" id="phone" data-in="13.35" data-fx="rise">
+      <div class="screen" id="screen">
+        <div class="island"></div>
+        <!-- sites are injected from SITES below -->
+      </div>
+    </div>
+    <div class="site-label" id="labels"></div>
+  </section>
+
+  <!-- 5. HOW IT WORKS  23-28 s -->
+  <section class="scene" data-from="23" data-to="28" data-exit="up">
+    <div class="center sec-head">
+      <span class="eyebrow" data-in="23.1" data-fx="fade">How it works</span>
+      <h2 class="display" data-in="23.2" data-fx="up">Simple as <span class="grad">1, 2, 3</span></h2>
+    </div>
+    <div class="steps">
+      <div class="rail" data-in="23.6" data-fx="rail" data-dur="2.4"></div>
+      <div class="step" data-in="23.6" data-fx="right">
+        <div class="num">1</div>
+        <div><h3>Book a chat</h3><p>Tell us about your business and goals.</p></div>
+      </div>
+      <div class="step" data-in="24.6" data-fx="right">
+        <div class="num">2</div>
+        <div><h3>See your preview</h3><p>We design your site. You try it on your phone.</p></div>
+      </div>
+      <div class="step" data-in="25.6" data-fx="right">
+        <div class="num">3</div>
+        <div><h3>Go live</h3><p>We launch it on your own web address.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CTA  28-33 s -->
+  <section class="scene" data-from="28" data-to="99" data-exit="none">
+    <h1 class="center display cta-title">
+      <span data-in="28.1" data-fx="pop" style="display:inline-block">Let's build</span><br />
+      <span data-in="28.4" data-fx="pop" style="display:inline-block" class="grad">yours.</span>
+    </h1>
+    <div class="cta-btn" id="ctaBtn" data-in="28.85" data-fx="pop-x">
+      wotsoffice.co.nz
+      <svg width="62" height="62" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+    <div class="ripple" id="ripple"></div>
+    <p class="center cta-sub" data-in="29.3" data-fx="up">Book an appointment online</p>
+    <p class="center cta-contact" data-in="29.55" data-fx="up">lyndon@wotsoffice.co.nz<br />Onehunga, Auckland</p>
+    <div class="center cta-mark" data-in="29.85" data-fx="up">
+      <b>Wots Office</b>
+      <span>Code that clicks. Apps that connect.</span>
+    </div>
+    <svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M5 2.5v17.2l4.6-4.3 3 6.6 3-1.4-3-6.4h6.2z" fill="#fff" stroke="#0b0d12" stroke-width="1.3" stroke-linejoin="round"/></svg>
+  </section>
+</div>
+
+<script>
+  // ---- the four showcase sites (screenshots in assets/work/) ----
+  const SITES = [
+    { img: "assets/work/barber.jpg",  name: "Smart Buzz Barbershop",    kind: "Barbershop · Onehunga, Auckland", bar: "#191610", ink: "#fff" },
+    { img: "assets/work/pcmotoh.jpg", name: "PCMOTOH Computer Trading", kind: "Custom PC builds & repairs",      bar: "#040404", ink: "#fff" },
+    { img: "assets/work/dino.jpg",    name: "DinoMart",                 kind: "Online collectibles store",       bar: "#f5f1e5", ink: "#1d1d1f" },
+    { img: "assets/work/avtoys.jpg",  name: "AV Toys",                  kind: "Custom 3D-printed figures",       bar: "#2e0e0f", ink: "#fff" },
+  ];
+  const SHOW_START = 13.6;   // first site appears
+  const SHOW_EACH = 2.3;     // seconds per site
+  const SCREEN_W = 394;      // .screen inner width (420 - 2*13)
+  const SHOT_W = 780;        // screenshot pixel width (390 css px @2x)
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // ---- easing ----
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const prog = (t, a, d) => clamp((t - a) / d);
+  const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+  const outQuint = (x) => 1 - Math.pow(1 - x, 5);
+  const inOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const inCubic = (x) => x * x * x;
+  const outBack = (x, s = 1.55) => 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
+  const lerp = (a, b, x) => a + (b - a) * x;
+
+  // ---- build dynamic bits ----
+  const screen = $("#screen");
+  const labels = $("#labels");
+  SITES.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "site";
+    el.innerHTML = `<div class="bar" style="background:${s.bar};color:${s.ink}"><span>9:41</span><span class="dots"><i></i></span></div><img src="${s.img}" alt=""><div class="shade"></div>`;
+    screen.appendChild(el);
+    const lb = document.createElement("div");
+    lb.className = "lbl";
+    lb.innerHTML = `<strong>${s.name}</strong><em>${s.kind}</em>`;
+    labels.appendChild(lb);
+  });
+
+  const wm = $("#wordmark");
+  wm.innerHTML = [...wm.textContent].map((c) => (c === " " ? " " : `<span class="ch">${c}</span>`)).join("");
+
+  const TYPED = "barber near me";
+
+  // ---- the frame function ----
+  function renderAt(t) {
+    // background drift
+    $("#blobA").style.transform = `translate(${-260 + 140 * Math.sin(t * 0.35)}px, ${120 + 160 * Math.cos(t * 0.27)}px)`;
+    $("#blobB").style.transform = `translate(${520 + 160 * Math.cos(t * 0.3)}px, ${1080 + 170 * Math.sin(t * 0.22)}px)`;
+    $("#blobC").style.transform = `translate(${640 + 220 * Math.sin(t * 0.5 + 1)}px, ${520 + 300 * Math.sin(t * 0.18)}px)`;
+    $("#grid").style.transform = `translate(${(t * 9) % 90}px, ${(t * 14) % 90}px)`;
+
+    // scenes: visibility + exit
+    $$(".scene").forEach((sc) => {
+      const from = +sc.dataset.from, to = +sc.dataset.to, ex = sc.dataset.exit;
+      const visible = t >= from - 0.001 && t < to;
+      sc.style.display = visible ? "block" : "none";
+      if (!visible) return;
+      const e = ex === "none" ? 0 : inCubic(prog(t, to - 0.42, 0.42));
+      let tf = "";
+      if (ex === "up") tf = `translateY(${-110 * e}px)`;
+      if (ex === "down") tf = `translateY(${140 * e}px)`;
+      if (ex === "left") tf = `translateX(${-220 * e}px)`;
+      if (ex === "scale") tf = `scale(${1 - 0.12 * e})`;
+      sc.style.transform = tf;
+      sc.style.opacity = String(1 - e);
+      sc.style.filter = e > 0 ? `blur(${10 * e}px)` : "none";
+    });
+
+    // element entrances
+    $$("[data-in]").forEach((el) => {
+      const a = +el.dataset.in, fx = el.dataset.fx, d = +(el.dataset.dur || (fx === "pop" || fx === "pop-x" ? 0.55 : 0.6));
+      const x = prog(t, a, d);
+      let o = outCubic(x), tf = "";
+      switch (fx) {
+        case "pop": tf = `translateY(${70 * (1 - outCubic(x))}px) scale(${lerp(0.7, 1, outBack(x))})`; o = clamp(x * 2.5); break;
+        case "pop-x": tf = `translateX(-50%) scale(${lerp(0.6, 1, outBack(x))})`; o = clamp(x * 2.5); break;
+        case "up": tf = `translateY(${60 * (1 - outQuint(x))}px)`; break;
+        case "right": tf = `translateX(${260 * (1 - outQuint(x))}px)`; o = clamp(x * 2); break;
+        case "rise": tf = `translateY(${700 * (1 - outQuint(x))}px) rotate(${-8 * (1 - outQuint(x))}deg)`; o = clamp(x * 3); break;
+        case "grow": tf = `scaleX(${outQuint(x)})`; o = clamp(x * 4); break;
+        case "rail": tf = `scaleY(${inOutCubic(x)})`; o = x > 0 ? 0.85 : 0; break;
+        case "fade": default: tf = `translateY(${16 * (1 - outCubic(x))}px)`; break;
+      }
+      el.style.opacity = String(o);
+      el.style.transform = tf;
+    });
+
+    // scene 1: typing
+    const n = Math.floor(clamp((t - 1.45) / 0.8) * TYPED.length);
+    $("#typed").textContent = TYPED.slice(0, n);
+    $("#caret").style.opacity = t < 1.45 || t > 2.3 ? (Math.floor(t * 2.2) % 2 ? 0 : 1) : 1;
+
+    // scene 2: wordmark letters
+    $$(".ch", wm).forEach((c, i) => {
+      const x = prog(t, 4.08 + i * 0.035, 0.55);
+      c.style.opacity = String(clamp(x * 2.5));
+      c.style.transform = `translateY(${110 * (1 - outQuint(x))}px) rotate(${10 * (1 - outQuint(x))}deg)`;
+    });
+
+    // URL chip: scenes 2-5
+    const chipIn = outCubic(prog(t, 4.4, 0.5)), chipOut = inCubic(prog(t, 27.55, 0.4));
+    $("#chip").style.opacity = String(chipIn * (1 - chipOut));
+    $("#chip").style.transform = `translateX(-50%) translateY(${-30 * (1 - chipIn) - 30 * chipOut}px)`;
+
+    // scene 4: phone float + sites
+    const ph = $("#phone");
+    if (t >= 13) {
+      const floatY = 10 * Math.sin((t - 13) * 1.6);
+      ph.style.transform = (ph.style.transform || "") + ` translateY(${floatY}px)`;
+    }
+    const sites = $$(".site", screen), lbls = $$(".lbl", labels);
+    const scale = SCREEN_W / SHOT_W;
+    sites.forEach((el, i) => {
+      const s0 = SHOW_START + i * SHOW_EACH, s1 = s0 + SHOW_EACH;
+      // slide in (first site is already there when the phone rises)
+      const inX = i === 0 ? 1 : outQuint(prog(t, s0 - 0.05, 0.5));
+      // pushed out by the next site
+      const outX = i === sites.length - 1 ? 0 : outQuint(prog(t, s1 - 0.05, 0.5));
+      el.style.display = t < s0 - 0.06 && i > 0 ? "none" : "block";
+      el.style.transform = `translateX(${(1 - inX) * 100 - outX * 35}%)`;
+      el.style.zIndex = String(i + 1);
+      $(".shade", el).style.opacity = String(outX * 0.6);
+      // scroll down the page while it's on screen
+      const sc = inOutCubic(prog(t, s0 + 0.35, SHOW_EACH + 0.1));
+      const imgH = 3600 * scale;
+      const maxScroll = imgH - 900;
+      $("img", el).style.transform = `translateY(${-Math.min(maxScroll, 820) * sc}px)`;
+      // label
+      const li = outCubic(prog(t, s0 + (i === 0 ? 0 : 0.05), 0.45));
+      const lo = i === sites.length - 1 ? 0 : outCubic(prog(t, s1 - 0.1, 0.3));
+      lbls[i].style.opacity = String(li * (1 - lo));
+      lbls[i].style.transform = `translateY(${30 * (1 - li) - 30 * lo}px)`;
+    });
+
+    // scene 6: cursor clicks the button
+    const btn = $("#ctaBtn"), cur = $("#cursor"), rip = $("#ripple");
+    const bx = 600, by = 935; // click point on the button
+    const mv = inOutCubic(prog(t, 30.15, 0.85));
+    const cx = lerp(1000, bx, mv), cy = lerp(1560, by, mv);
+    const press = t >= 31.05 && t < 31.3 ? 0.86 : 1;
+    cur.style.opacity = String(clamp((t - 30.1) * 4) * (1 - clamp((t - 32.3) * 3)));
+    cur.style.transform = `translate(${cx - 14}px, ${cy - 8}px) scale(${press})`;
+    const rp = prog(t, 31.1, 0.7);
+    rip.style.left = bx + "px"; rip.style.top = by + "px";
+    rip.style.opacity = String(rp > 0 && rp < 1 ? 0.9 * (1 - rp) : 0);
+    rip.style.transform = `scale(${1 + 9 * outCubic(rp)})`;
+    if (t >= 28.85) {
+      const bump = t >= 31.05 && t < 31.45 ? 0.96 + 0.04 * outBack(prog(t, 31.15, 0.3)) : 1;
+      const glow = 0.45 + 0.2 * Math.sin((t - 29) * 3.2);
+      btn.style.transform += ` scale(${bump})`;
+      btn.style.boxShadow = `0 30px 90px rgba(10,132,255,${glow}), 0 0 0 ${t > 31.1 ? 14 * (1 - clamp((t - 31.1) / 0.8)) : 0}px rgba(255,255,255,0.18), inset 0 2px 0 rgba(255,255,255,0.35)`;
+    }
+  }
+  window.renderAt = renderAt;
+
+  // Ready once fonts and screenshots have loaded.
+  window.reelReady = Promise.all([
+    document.fonts.ready,
+    ...$$("img").map((im) => (im.complete ? Promise.resolve() : new Promise((r) => { im.onload = im.onerror = r; }))),
+  ]);
+  window.REEL_DURATION = 33;
+
+  // Browser preview: play in real time, or freeze with ?t=12.5
+  if (!navigator.webdriver) {
+    const fixed = new URLSearchParams(location.search).get("t");
+    window.reelReady.then(() => {
+      if (fixed !== null) return renderAt(+fixed);
+      const t0 = performance.now();
+      const tick = () => { renderAt(((performance.now() - t0) / 1000) % window.REEL_DURATION); requestAnimationFrame(tick); };
+      tick();
+    });
+  } else {
+    renderAt(0);
+  }
+</script>
+</body>
+</html>
