@@ -151,6 +151,7 @@
   .site .bar .dots { display: flex; gap: 6px; align-items: center; }
   .site .bar .dots i { display: block; width: 26px; height: 12px; border-radius: 4px; border: 2px solid currentColor; opacity: 0.85; }
   .site img { position: absolute; left: 0; top: 62px; width: 100%; display: block; }
+  .site img.clip { height: calc(100% - 62px); object-fit: cover; object-position: top; }
   .site .shade { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 3; }
 
   /* ---------- 5. how it works ---------- */
@@ -312,7 +313,11 @@
 </div>
 
 <script>
-  // ---- the four showcase sites (screenshots in assets/work/) ----
+  // ---- the four showcase sites ----
+  // Each site is either a full-page screenshot that the phone scrolls through
+  //   { img: "assets/work/x.jpg", ... }
+  // or a phone screen recording made into frames by prep_clip.sh
+  //   { clip: "x", frames: 96, ... }   (frames live in out/clips/x/, made by render.mjs)
   const SITES = [
     { img: "assets/work/barber.jpg",  name: "Smart Buzz Barbershop",    kind: "Barbershop · Onehunga, Auckland", bar: "#191610", ink: "#fff" },
     { img: "assets/work/pcmotoh.jpg", name: "PCMOTOH Computer Trading", kind: "Custom PC builds & repairs",      bar: "#040404", ink: "#fff" },
@@ -338,12 +343,15 @@
   const lerp = (a, b, x) => a + (b - a) * x;
 
   // ---- build dynamic bits ----
+  const CLIP_FPS = 30;
+  const clipFrame = (s, k) => `out/clips/${s.clip}/${String(clamp(k, 0, s.frames - 1) + 1).padStart(4, "0")}.jpg`;
   const screen = $("#screen");
   const labels = $("#labels");
   SITES.forEach((s, i) => {
     const el = document.createElement("div");
     el.className = "site";
-    el.innerHTML = `<div class="bar" style="background:${s.bar};color:${s.ink}"><span>9:41</span><span class="dots"><i></i></span></div><img src="${s.img}" alt=""><div class="shade"></div>`;
+    const src = s.clip ? clipFrame(s, 0) : s.img;
+    el.innerHTML = `<div class="bar" style="background:${s.bar};color:${s.ink}"><span>9:41</span><span class="dots"><i></i></span></div><img${s.clip ? ' class="clip"' : ""} src="${src}" alt=""><div class="shade"></div>`;
     screen.appendChild(el);
     const lb = document.createElement("div");
     lb.className = "lbl";
@@ -358,6 +366,7 @@
 
   // ---- the frame function ----
   function renderAt(t) {
+    const loading = [];
     // background drift
     $("#blobA").style.transform = `translate(${-260 + 140 * Math.sin(t * 0.35)}px, ${120 + 160 * Math.cos(t * 0.27)}px)`;
     $("#blobB").style.transform = `translate(${520 + 160 * Math.cos(t * 0.3)}px, ${1080 + 170 * Math.sin(t * 0.22)}px)`;
@@ -436,10 +445,17 @@
       el.style.zIndex = String(i + 1);
       $(".shade", el).style.opacity = String(outX * 0.6);
       // scroll down the page while it's on screen
-      const sc = inOutCubic(prog(t, s0 + 0.35, SHOW_EACH + 0.1));
-      const imgH = 3600 * scale;
-      const maxScroll = imgH - 900;
-      $("img", el).style.transform = `translateY(${-Math.min(maxScroll, 820) * sc}px)`;
+      const s = SITES[i], im = $("img", el);
+      if (s.clip) {
+        // play the recording from the moment this site comes into view
+        const shown = i === 0 ? SHOW_START - 0.3 : s0 - 0.05;
+        const src = clipFrame(s, Math.floor(Math.max(0, t - shown) * CLIP_FPS));
+        if (!im.src.endsWith(src)) { im.src = src; loading.push(im.decode().catch(() => {})); }
+      } else {
+        const sc = inOutCubic(prog(t, s0 + 0.35, SHOW_EACH + 0.1));
+        const maxScroll = 3600 * scale - 900;
+        im.style.transform = `translateY(${-Math.min(maxScroll, 820) * sc}px)`;
+      }
       // label
       const li = outCubic(prog(t, s0 + (i === 0 ? 0 : 0.05), 0.45));
       const lo = i === sites.length - 1 ? 0 : outCubic(prog(t, s1 - 0.1, 0.3));
@@ -465,6 +481,8 @@
       btn.style.transform += ` scale(${bump})`;
       btn.style.boxShadow = `0 30px 90px rgba(10,132,255,${glow}), 0 0 0 ${t > 31.1 ? 14 * (1 - clamp((t - 31.1) / 0.8)) : 0}px rgba(255,255,255,0.18), inset 0 2px 0 rgba(255,255,255,0.35)`;
     }
+    // resolves once any newly swapped clip frames have decoded
+    return Promise.all(loading);
   }
   window.renderAt = renderAt;
 

@@ -39,7 +39,10 @@ The soundtrack (`music.py`) is synthesised from scratch: a 120 BPM beat that dro
 ## Editing and re-rendering
 
 - **Words, colours, layout:** `reel.html`. Each scene is a `<section>` with its start/end times (`data-from` / `data-to`), and each animated element has its entrance time in `data-in`. Open the file in a browser to preview it in real time, or add `?t=12.5` to the URL to freeze on one moment. (It needs to be served over HTTP: `npx serve .`)
-- **Showcase sites:** `SITES` near the bottom of `reel.html`, and the screenshots in `assets/work/` (390 px wide pages captured at 2×, cropped to 780×3600).
+- **Showcase sites:** `SITES` near the bottom of `reel.html`. Each site is either a full-page screenshot in `assets/work/` (390 px wide pages captured at 2×, cropped to 780×3600) that the phone scrolls through, or a phone screen recording:
+  1. `./prep_clip.sh recording.mp4 cafe 2 1.5 150 120` takes 3.2 s of the recording from 2 s in, plays it at 1.5× speed, cuts 150 px of status/address bar off the top and 120 px of toolbar off the bottom, and saves `assets/work/cafe.mp4`. It prints the frame count.
+  2. In `SITES`, use `{ clip: "cafe", frames: 96, name: "…", kind: "…", bar: "#…", ink: "#fff" }`. `bar`/`ink` colour the fake status bar to match the site's header.
+  3. `render.mjs` unpacks the clip into `out/clips/cafe/` before rendering.
 - **Music:** `music.py`. If you move a scene, move its sound effects too (the times are listed near the end).
 
 ```bash
