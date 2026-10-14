@@ -12,11 +12,11 @@ A 33-second vertical promo for [wotsoffice.co.nz](https://wotsoffice.co.nz), rea
 | Time | Scene | On screen |
 |---|---|---|
 | 0–4 s | Hook | "No website yet?" A search bar types *barber near me* and results pop up. "Your customers are searching. Be the one they find." |
-| 4–8 s | Brand | **Wots Office** · *Code that clicks. Apps that connect.* · Websites & ad design for growing businesses · Onehunga, Auckland |
+| 4–8 s | Brand | **Wots Office** · *Code that clicks. Apps that connect.* · Websites & ad design for growing businesses · Philippines \| New Zealand |
 | 8–13 s | What we do | Websites · Ad design · Web apps |
 | 13–23 s | Recent work | A phone scrolls through four real builds: Smart Buzz Barbershop, PCMOTOH, DinoMart, AV Toys |
 | 23–28 s | How it works | 1. Book a chat · 2. See your preview · 3. Go live on your own web address |
-| 28–33 s | Call to action | "Let's build yours." A cursor clicks **wotsoffice.co.nz →** · Book an appointment online · lyndon@wotsoffice.co.nz |
+| 28–33 s | Call to action | "Let's build yours." A cursor clicks **wotsoffice.co.nz →** · Book an appointment online · lyndon@wotsoffice.co.nz · Philippines \| New Zealand |
 
 Headlines, the URL and the call to action stay inside Facebook's Reels safe area, clear of the top bar, the caption at the bottom and the like/comment buttons on the right.
 
@@ -30,11 +30,11 @@ The soundtrack (`music.py`) is synthesised from scratch: a 120 BPM beat that dro
 
 > No website yet? Your customers are already searching. 🔎
 >
-> Wots Office builds fast, mobile-first websites, scroll-stopping ad designs and handy web apps for growing businesses, right here in Onehunga, Auckland.
+> Wots Office builds fast, mobile-first websites, scroll-stopping ad designs and handy web apps for growing businesses in the Philippines and New Zealand.
 >
 > 👉 Book an appointment at wotsoffice.co.nz
 >
-> #WotsOffice #Auckland #Onehunga #SmallBusinessNZ #WebDesign #NZBusiness
+> #WotsOffice #WebDesign #SmallBusiness #Philippines #NewZealand
 
 ## Editing and re-rendering
 
