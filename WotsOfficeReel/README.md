@@ -12,7 +12,7 @@ A 33-second vertical promo for [wotsoffice.co.nz](https://wotsoffice.co.nz), rea
 | Time | Scene | On screen |
 |---|---|---|
 | 0–4 s | Hook | "No website yet?" A search bar types *barber near me* and results pop up. "Your customers are searching. Be the one they find." |
-| 4–8 s | Brand | **Wots Office** · *Code that clicks. Apps that connect.* · Websites & ad design for growing businesses · Philippines \| New Zealand |
+| 4–8 s | Brand | The glowing W logo opens out on the beat drop and a light sweeps across it · **Wots Office** · *Code that clicks. Apps that connect.* · Websites & ad design for growing businesses · Philippines \| New Zealand |
 | 8–13 s | What we do | Websites · Ad design · Web apps |
 | 13–23 s | Recent work | Phone screen recordings of three real sites: Wots Office (wotsoffice.co.nz), Happy Picks (happypicks.ph), PCMOTOH Computer Trading |
 | 23–28 s | How it works | 1. Book a chat · 2. See your preview · 3. Go live on your own web address |
@@ -43,6 +43,7 @@ The soundtrack (`music.py`) is synthesised from scratch: a 120 BPM beat that dro
   1. `./prep_clip.sh recording.mp4 cafe 2 1.5 150 120` takes 4 s (or `CLIP_LEN`) of the recording from 2 s in, plays it at 1.5× speed, cuts 150 px of status/address bar off the top and 120 px of toolbar off the bottom, and saves `assets/work/cafe.mp4`. It prints the frame count.
   2. In `SITES`, use `{ clip: "cafe", frames: 96, name: "…", kind: "…", bar: "#…", ink: "#fff" }`. `bar`/`ink` colour the fake status bar to match the site's header.
   3. `render.mjs` unpacks the clip into `out/clips/cafe/` before rendering.
+- **Logo:** `assets/brand/logo-hero.png` (with the blueprint lines) and `logo-mark.png` (end card) are cut from the brand mockup `assets/brand/mockup.png` by `python3 make_logo.py`. They're transparent PNGs where brightness is opacity, so they glow over the dark background with no box.
 - **Music:** `music.py`. If you move a scene, move its sound effects too (the times are listed near the end).
 
 ```bash
