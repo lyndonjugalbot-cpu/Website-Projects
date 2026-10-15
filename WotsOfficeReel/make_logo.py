@@ -1,7 +1,8 @@
-"""Cuts the Wots Office logo out of the brand mockup (assets/brand/mockup.png).
+"""Cuts the brand art out of the brand mockup (assets/brand/mockup.png).
 
     python3 make_logo.py   -> assets/brand/logo-hero.png  (logo + blueprint lines, brand scene)
                               assets/brand/logo-mark.png  (just the W mark, end card)
+                              assets/brand/devices.jpg    (laptop/tablet/phone scene, brand scene)
 
 The mockup's navy background is pulled down towards black and the edges are
 feathered to black. Then each pixel's brightness becomes its opacity ("unscreen"),
@@ -16,7 +17,7 @@ from PIL import Image, ImageFilter
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "assets", "brand", "mockup.png")
 OUT = os.path.join(HERE, "assets", "brand")
-BLACK = np.array([0, 16, 44], dtype=float)  # navy behind the logo -> black
+BLACK = np.array([2, 22, 58], dtype=float)  # navy behind the logo -> black
 
 
 def cut(box, feather, name):
@@ -36,5 +37,9 @@ def cut(box, feather, name):
     print("wrote", name, w, "x", h)
 
 
-cut((0, 215, 941, 700), (60, 45), "logo-hero.png")
-cut((10, 235, 931, 690), (40, 30), "logo-mark.png")
+cut((0, 150, 941, 528), (60, 40), "logo-hero.png")
+cut((150, 170, 805, 520), (24, 22), "logo-mark.png")
+
+# The device scene is a photo, so it is cropped as-is; reel.html fades its top edge.
+Image.open(SRC).convert("RGB").crop((0, 1130, 941, 1672)).save(os.path.join(OUT, "devices.jpg"), quality=92)
+print("wrote devices.jpg")

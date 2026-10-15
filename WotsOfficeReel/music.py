@@ -2,7 +2,7 @@
 
 Everything is synthesised here with numpy, so the audio is ours to use (no
 licensing). 120 BPM: one bar = 2 s, which lines up with the scene cuts in
-reel.html (hook 0-4, brand 4-8, services 8-13, work 13-23, steps 23-28, CTA 28-33).
+reel.html (hook 0-4, brand 4-10, work 10-25, steps 25-30, CTA 30-35).
 
     python3 music.py            -> out/music.wav (stereo, 44.1 kHz, 33 s)
 """
@@ -12,7 +12,7 @@ import wave
 import numpy as np
 
 SR = 44100
-DUR = 33.0
+DUR = 35.0
 BPM = 120
 BEAT = 60 / BPM
 BAR = 4 * BEAT
@@ -125,11 +125,11 @@ ARP = [0, 1, 2, 3, 2, 1, 3, 2]
 for b in range(bars):
     t0 = b * BAR
     chord = PROG[b % 4]
-    step = BEAT / 2 if t0 < 13 else BEAT / 4  # 8ths, then 16ths for the showcase
+    step = BEAT / 2 if t0 < 10 else BEAT / 4  # 8ths, then 16ths for the showcase
     count = int(BAR / step)
     for k in range(count):
         st = t0 + k * step
-        if 27.0 <= st < 28.0:
+        if 29.0 <= st < 30.0:
             continue  # breath before the CTA
         m = chord[ARP[k % 8]] + 12
         n = int(0.32 * SR)
@@ -137,7 +137,7 @@ for b in range(bars):
         f = mtof(m)
         sig = (2 * ((t * f) % 1) - 1) * 0.6 + np.sin(2 * np.pi * f * t)
         sig *= np.exp(-t * 14) * np.minimum(1, t * 800)
-        place(pluck, sig, st, 0.7 if st < 13 else 0.55)
+        place(pluck, sig, st, 0.7 if st < 10 else 0.55)
 pluck = fft_filter(pluck, lo=250, hi=4200, slope=2)
 
 # ---------------------------------------------------------------- drums
@@ -173,9 +173,9 @@ duck = np.ones(N)  # sidechain envelope for pads/bass/plucks
 for b in range(2, bars):
     for q in range(4):
         st = b * BAR + q * BEAT
-        if st >= 32.0:
+        if st >= 34.0:
             break
-        if 27.0 <= st < 28.0 and q >= 2:
+        if 29.0 <= st < 30.0 and q >= 2:
             continue
         place(drums, K, st, 0.45)
         i = int(st * SR)
@@ -190,7 +190,7 @@ for b in range(2, bars):
             place(drums, C, st, 0.26)
 # snare-ish roll into the CTA
 for k in range(8):
-    place(drums, C, 27.0 + k * BEAT / 4, 0.12 + 0.05 * k)
+    place(drums, C, 29.0 + k * BEAT / 4, 0.12 + 0.05 * k)
 # ticking hats in the intro
 for k in range(8):
     place(drums, H, k * BEAT, 0.05)
@@ -241,21 +241,21 @@ def click():
 
 place(sfx, riser(1.6), 2.4, 0.22)
 place(sfx, impact(), 4.0, 0.32)
-place(sfx, riser(1.0), 27.0, 0.2)
-place(sfx, impact(), 28.0, 0.3)
-for ts in (3.6, 7.6, 12.6, 22.6):
+place(sfx, riser(1.0), 29.0, 0.2)
+place(sfx, impact(), 30.0, 0.3)
+for ts in (3.6, 9.6, 24.6):  # scene exits
     place(sfx, whoosh(), ts - 0.05, 0.22)
 TYPED = "barber near me"
 for k in range(1, len(TYPED) + 1):  # one key click per typed character (reel.html: 1.45 s + 0.8 s)
     place(sfx, tick(), 1.45 + k * 0.8 / len(TYPED) - 0.02, 0.35)
 for ts in (0.15, 0.45):
     place(sfx, pop(520), ts, 0.25)
-for ts in (8.6, 9.5, 10.4, 23.6, 24.6, 25.6):
+for ts in (6.15, 6.25, 6.35, 6.45, 6.55, 25.6, 26.6, 27.6):  # service cards, then the three steps
     place(sfx, pop(760), ts, 0.22)
-for ts in (13.6, 16.7, 19.8):  # showcase site changes (reel.html SHOW_START / SHOW_EACH)
+for ts in (10.6, 13.45, 16.3, 19.15, 22.0):  # showcase item changes (reel.html SHOW_START / SHOW_EACH)
     place(sfx, whoosh(0.35), ts - 0.05, 0.14)
-place(sfx, click(), 31.05, 0.6)
-place(sfx, pop(980), 31.1, 0.2)
+place(sfx, click(), 33.05, 0.6)
+place(sfx, pop(980), 33.1, 0.2)
 
 # ---------------------------------------------------------------- mix
 pads = reverb(pads * duck, 2.2, 0.35)
@@ -264,7 +264,7 @@ bass = bass * duck
 music = pads + bass + pluck + drums
 # end: let the last chord ring out
 t = t_axis(N)
-fade = np.where(t > 31.6, np.clip(1 - (t - 31.6) / 1.4, 0, 1) ** 1.5, 1)
+fade = np.where(t > 33.6, np.clip(1 - (t - 33.6) / 1.4, 0, 1) ** 1.5, 1)
 music *= fade
 
 L = music + sfx
