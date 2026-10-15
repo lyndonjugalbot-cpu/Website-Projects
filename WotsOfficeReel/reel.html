@@ -319,13 +319,12 @@
   // or a phone screen recording made into frames by prep_clip.sh
   //   { clip: "x", frames: 96, ... }   (frames live in out/clips/x/, made by render.mjs)
   const SITES = [
-    { img: "assets/work/barber.jpg",  name: "Smart Buzz Barbershop",    kind: "Barbershop · Onehunga, Auckland", bar: "#191610", ink: "#fff" },
-    { img: "assets/work/pcmotoh.jpg", name: "PCMOTOH Computer Trading", kind: "Custom PC builds & repairs",      bar: "#040404", ink: "#fff" },
-    { img: "assets/work/dino.jpg",    name: "DinoMart",                 kind: "Online collectibles store",       bar: "#f5f1e5", ink: "#1d1d1f" },
-    { img: "assets/work/avtoys.jpg",  name: "AV Toys",                  kind: "Custom 3D-printed figures",       bar: "#2e0e0f", ink: "#fff" },
+    { clip: "wotsoffice", frames: 120, name: "Wots Office",              kind: "Our own site · wotsoffice.co.nz",      bar: "#fff", ink: "#1d1d1f" },
+    { clip: "happypicks", frames: 120, name: "Happy Picks",              kind: "Trading card shop · Philippines",      bar: "#fff", ink: "#1d1d1f" },
+    { clip: "pcmotoh",    frames: 120, name: "PCMOTOH Computer Trading", kind: "Custom PC builds · Cebu, Philippines", bar: "#fff", ink: "#1d1d1f" },
   ];
   const SHOW_START = 13.6;   // first site appears
-  const SHOW_EACH = 2.3;     // seconds per site
+  const SHOW_EACH = 3.1;     // seconds per site (3 sites fill 13.6-22.9 s)
   const SCREEN_W = 394;      // .screen inner width (420 - 2*13)
   const SHOT_W = 780;        // screenshot pixel width (390 css px @2x)
 

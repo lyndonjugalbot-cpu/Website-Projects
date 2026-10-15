@@ -252,7 +252,7 @@ for ts in (0.15, 0.45):
     place(sfx, pop(520), ts, 0.25)
 for ts in (8.6, 9.5, 10.4, 23.6, 24.6, 25.6):
     place(sfx, pop(760), ts, 0.22)
-for ts in (13.6, 15.9, 18.2, 20.5):
+for ts in (13.6, 16.7, 19.8):  # showcase site changes (reel.html SHOW_START / SHOW_EACH)
     place(sfx, whoosh(0.35), ts - 0.05, 0.14)
 place(sfx, click(), 31.05, 0.6)
 place(sfx, pop(980), 31.1, 0.2)
