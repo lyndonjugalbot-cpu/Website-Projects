@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import {
   STATS, RANKS, PROGRAM_DAYS, ASSESSMENT, BOSS_DAYS, isBossDay,
   startingStats, levelFromXP, xpForLevel, rankFromBosses,
@@ -32,6 +32,11 @@ import {
 /*  signed-in user with a redeemed Etsy code (SignInScreen →           */
 /*  RedeemScreen → the game). Buyers get codes on /claim (ClaimPage).  */
 /* ================================================================== */
+
+/* Game Mode (src/game/) is its own chunk: its code and art only load once
+   someone presses the Game mode button. */
+const GameMode = lazy(() => import("./src/game/GameMode.jsx"));
+const GAME_MODE_KEY = "pywots:gameMode";
 
 /* ----------------------------- dates ------------------------------ */
 const dayStr = (d = new Date()) => {
@@ -171,6 +176,17 @@ img,svg,video{max-width:100%}
 /* iOS zooms the page when a focused field is under 16px and doesn't reliably
    zoom back out — keep every text field at 16px. */
 input,textarea,select{font-size:16px}
+
+/* ---- game mode button + loader ---- */
+.pw-gamebtn{flex:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:#1a1205;padding:7px 12px;border-radius:999px;border:1px solid #ffe2a0;
+  background:linear-gradient(180deg,#ffd978,#ffb02e);box-shadow:0 0 14px rgba(255,194,75,.45)}
+.pw-gamebtn:hover{filter:brightness(1.08)}
+.pw-gamebtn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+@media (max-width:560px){.pw-gamebtn-label{display:none}.pw-gamebtn{padding:7px 9px;font-size:13px}}
+.pw-gm-loading{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;background:#05060F}
 
 /* ---- layout ---- */
 .pw-app{position:relative;z-index:1;min-height:100vh;width:100%;overflow-x:clip}
@@ -475,7 +491,7 @@ a,.pw-link{color:var(--cyan)}
 `;
 
 /* ========================= graphics ========================= */
-function Emblem({ size = 132, word = true }) {
+export function Emblem({ size = 132, word = true }) {
   return (
     <div className="pw-emblem" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
       <svg viewBox="0 0 120 120" width={size} height={size} role="img" aria-label="PyWots emblem">
@@ -585,7 +601,7 @@ function Bar({ value }) {
 }
 
 /* -------------------------- radar chart ------------------------ */
-function Radar({ stats }) {
+export function Radar({ stats }) {
   const size = 250, cx = size / 2, cy = size / 2, R = 92;
   const ids = STATS.map((s) => s.id);
   const maxV = Math.max(20, ...ids.map((k) => stats[k] || 0));
@@ -667,7 +683,7 @@ function CodeEditor({ value, onChange, disabled }) {
 }
 
 /* ------------------------- lesson cards ----------------------- */
-function LessonCard({ lesson, done, onDone }) {
+export function LessonCard({ lesson, done, onDone, onWrong }) {
   const [picked, setPicked] = useState(null);
   const [seq, setSeq] = useState([]);
   const [checked, setChecked] = useState(false);
@@ -703,7 +719,7 @@ function LessonCard({ lesson, done, onDone }) {
         <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
           <button className="pw-btn" onClick={() => { setSeq([]); setChecked(false); }}>Reset</button>
           <button className="pw-btn primary" disabled={seq.length !== target.length}
-            onClick={() => { setChecked(true); if (seq.every((v, i) => v === i)) onDone(); }}>Check</button>
+            onClick={() => { setChecked(true); if (seq.every((v, i) => v === i)) onDone(); else onWrong?.(); }}>Check</button>
         </div>
         {checked && (
           <div style={{ marginTop: 10, color: correct ? "var(--ok)" : "var(--bad)", fontSize: 13 }}>
@@ -734,7 +750,7 @@ function LessonCard({ lesson, done, onDone }) {
               : checked && i === lesson.answer ? "right" : "";
             return (
               <button key={i} className={`pw-choice ${cls}`} disabled={done}
-                onClick={() => { setPicked(i); setChecked(true); if (i === lesson.answer) onDone(); }}>
+                onClick={() => { setPicked(i); setChecked(true); if (i === lesson.answer) onDone(); else onWrong?.(); }}>
                 {c}
               </button>
             );
@@ -763,7 +779,7 @@ function LessonCard({ lesson, done, onDone }) {
           : checked && i === lesson.answer ? "right" : "";
         return (
           <button key={i} className={`pw-choice ${cls}`} disabled={done}
-            onClick={() => { setPicked(i); setChecked(true); if (i === lesson.answer) onDone(); }}>
+            onClick={() => { setPicked(i); setChecked(true); if (i === lesson.answer) onDone(); else onWrong?.(); }}>
             {String(o).split("\n").map((ln, k) => <div key={k}>{ln}</div>)}
           </button>
         );
@@ -779,7 +795,7 @@ function LessonCard({ lesson, done, onDone }) {
 }
 
 /* -------------------------- dungeon --------------------------- */
-function Dungeon({ day, draft, setDraft, py, cleared, onClear, onHint, hinted }) {
+export function Dungeon({ day, draft, setDraft, py, cleared, onClear, onHint, hinted, onResult }) {
   const [out, setOut] = useState(null);
   const [busy, setBusy] = useState(false);
   const d = day.dungeon;
@@ -791,6 +807,7 @@ function Dungeon({ day, draft, setDraft, py, cleared, onClear, onHint, hinted })
     const res = await py.run(draft, submit ? d.tests : []);
     setOut(res);
     setBusy(false);
+    onResult?.(res, submit);
     if (submit && !res.error && res.results.length > 0 && res.results.every((r) => r.ok)) {
       onClear();
     }
@@ -932,17 +949,17 @@ const PHASES = [
   [31, "Craft"], [41, "Objects"], [51, "Mastery"],
   [61, "Applied"], [71, "Algorithms"], [81, "Idioms"], [91, "Shipping"],
 ];
-const phaseFor = (day) => {
+export const phaseFor = (day) => {
   let name = "Foundations";
   for (const [d, n] of PHASES) if (day >= d) name = n;
   return name;
 };
 
-function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
+/* The day's progress + reward rules, shared by the classic Today screen and
+   Game Mode so both grant XP, stats, streaks and achievements identically. */
+export function useDayActions({ save, viewDay, mutate, toast }) {
   const day = useMemo(() => dayContent(viewDay), [viewDay]);
   const rec = save.completed?.[viewDay] || { lessons: [], dungeon: false, boss: false };
-  const [codex, setCodex] = useState(viewDay === (save.day || 1));
-  useEffect(() => { setCodex(viewDay === (save.day || 1)); }, [viewDay]); // eslint-disable-line
   const draft = save.drafts?.[viewDay] ?? day.dungeon.starter;
   const setDraft = (v) => mutate((s) => ({ ...s, drafts: { ...(s.drafts || {}), [viewDay]: v } }));
   const hinted = !!save.hintDays?.[viewDay];
@@ -1019,6 +1036,20 @@ function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
   };
 
   const revealHint = () => mutate((s) => ({ ...s, hintDays: { ...(s.hintDays || {}), [viewDay]: true } }));
+
+  return {
+    day, rec, draft, setDraft, hinted, lessonsDone, dungeonDone, dayCleared,
+    isCurrent, isReplay, markLesson, clearDungeon, revealHint,
+  };
+}
+
+function Today({ save, viewDay, setViewDay, py, mutate, toast }) {
+  const {
+    day, rec, draft, setDraft, hinted, lessonsDone, dungeonDone, dayCleared,
+    isCurrent, isReplay, markLesson, clearDungeon, revealHint,
+  } = useDayActions({ save, viewDay, mutate, toast });
+  const [codex, setCodex] = useState(viewDay === (save.day || 1));
+  useEffect(() => { setCodex(viewDay === (save.day || 1)); }, [viewDay]); // eslint-disable-line
 
   return (
     <div className="pw-wrap">
@@ -1160,7 +1191,7 @@ function Path({ save, setViewDay, setTab }) {
 }
 
 /* ========================== hunter ======================== */
-function countBosses(save) {
+export function countBosses(save) {
   const c = save.completed || {};
   return Object.keys(BOSS_DAYS).filter((d) => c[d] && c[d].boss).length;
 }
@@ -1876,6 +1907,13 @@ export default function PyWots() {
   const [booting, setBooting] = useState(true);
   const [burst, setBurst] = useState(null); // {title, sub}
   const [summon, setSummon] = useState(false);
+  const [gameMode, setGameModeState] = useState(() => {
+    try { return localStorage.getItem(GAME_MODE_KEY) === "1"; } catch { return false; }
+  });
+  const setGameMode = useCallback((on) => {
+    setGameModeState(on);
+    try { localStorage.setItem(GAME_MODE_KEY, on ? "1" : "0"); } catch { /* private mode */ }
+  }, []);
   const py = usePyodide();
   const auth = useAuth();
   const access = useAccess(auth);
@@ -2129,7 +2167,7 @@ export default function PyWots() {
     <div className="pw-app">
       {chrome}
 
-      <div className="pw-toast">
+      {!gameMode && <div className="pw-toast">
         {toasts.map((t) => (
           <div key={t.id} className="pw-toastcard"
             style={{ borderColor: t.kind === "ach" ? "var(--gold)" : "var(--cyan)" }}>
@@ -2138,7 +2176,17 @@ export default function PyWots() {
             <div className="pw-read" style={{ marginTop: 3 }}>{t.body}</div>
           </div>
         ))}
-      </div>
+      </div>}
+
+      {gameMode && (
+        <Suspense fallback={<div className="pw-gm-loading"><Emblem size={110} /><div className="pw-eyebrow">Loading Game Mode…</div></div>}>
+          <GameMode
+            save={save} mutate={mutate} toast={toast} toasts={toasts} py={py} auth={auth}
+            viewDay={viewDay} setViewDay={setViewDay}
+            onExit={() => setGameMode(false)}
+          />
+        </Suspense>
+      )}
 
       <div className="pw-status">
         <div className="pw-statusrow">
@@ -2155,6 +2203,9 @@ export default function PyWots() {
           <span className="pw-row pw-status-streak" style={{ gap: 4, fontFamily: "var(--display)", fontSize: 13 }}>
             🔥 {save.streak || 0}
           </span>
+          <button className="pw-gamebtn" onClick={() => setGameMode(true)} title="Play PyWots as an MMORPG">
+            <span aria-hidden="true">⚔</span><span className="pw-gamebtn-label">Game mode</span>
+          </button>
           {auth.signedIn && (
             <button className="pw-acct" style={{ flex: "none" }} onClick={() => setTab("hunter")} title={auth.email || "Account"}>
               <span className={`pw-syncdot ${auth.syncState}`} />
