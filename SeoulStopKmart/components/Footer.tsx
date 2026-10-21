@@ -47,6 +47,17 @@ export function Footer() {
       <div className="border-t border-white/10 px-4 py-5 text-xs text-neutral-500 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {STORE_NAME}. All rights reserved.</p>
+          <p>
+            Some product photos from{" "}
+            <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-neutral-300">
+              Open Food Facts
+            </a>{" "}
+            contributors (
+            <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer" className="underline hover:text-neutral-300">
+              CC BY-SA
+            </a>
+            ).
+          </p>
           <Link href="/admin/login" className="hover:text-neutral-300">Staff login</Link>
         </div>
       </div>

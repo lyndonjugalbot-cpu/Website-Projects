@@ -12,8 +12,9 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:import-products": "tsx prisma/import-products.ts",
+    "db:apply-photos": "tsx prisma/apply-photos.ts",
     "db:studio": "prisma studio",
-    "vercel-build": "prisma migrate deploy && ([ \"$IMPORT_CATALOG\" != \"1\" ] || tsx prisma/import-products.ts --remove-demo) && next build"
+    "vercel-build": "prisma migrate deploy && ([ \"$IMPORT_CATALOG\" != \"1\" ] || tsx prisma/import-products.ts --remove-demo) && ([ \"$APPLY_PHOTOS\" != \"1\" ] || tsx prisma/apply-photos.ts) && next build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

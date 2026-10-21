@@ -404,8 +404,13 @@ npx tsx prisma/import-products.ts --remove-demo # also delete the demo products 
 - Services and supplies (cooking charge, cups, takeout box, ice bag…) are
   **POS-only**: no stock count, always sellable, never shown on or purchasable
   from the website.
-- Imported products use a placeholder photo — upload real ones from
-  `/admin/products`.
+- Imported products start with a placeholder photo. `npm run db:apply-photos`
+  attaches ~450 real photos (matched by barcode from
+  [Open Food Facts](https://world.openfoodfacts.org), CC BY-SA — the footer
+  credits them, keep that credit). Files live in `public/products/photos/`, the
+  barcode → file list in `prisma/data/product-photos.json`. It only replaces
+  placeholders, never a photo uploaded in the admin. Everything else: upload
+  from `/admin/products`.
 
 ### Demo products
 
