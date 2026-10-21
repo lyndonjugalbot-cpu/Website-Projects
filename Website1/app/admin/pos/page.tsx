@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Forbidden } from "@/components/admin/Forbidden";
 import { POSTerminal } from "@/components/admin/pos/POSTerminal";
+import { ShiftPanel } from "@/components/admin/pos/ShiftPanel";
 import { prisma } from "@/lib/prisma";
 import { formatCentavosAsPHP } from "@/lib/money";
 import { formatManilaDateTime, todayInManila, manilaDayStartUtc, manilaDayEndUtc } from "@/lib/timezone";
@@ -28,6 +29,10 @@ export default async function POSPage() {
     <div>
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Point of Sale</h1>
       <p className="mt-1 text-sm text-neutral-500">Search or scan a product to add it to the current sale.</p>
+
+      <div className="mt-6">
+        <ShiftPanel />
+      </div>
 
       <div className="mt-6">
         <POSTerminal cashierName={session.user.name || session.user.email || "Staff"} role={session.user.role} />

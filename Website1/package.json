@@ -11,8 +11,9 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:import-products": "tsx prisma/import-products.ts",
     "db:studio": "prisma studio",
-    "vercel-build": "prisma migrate deploy && next build"
+    "vercel-build": "prisma migrate deploy && ([ \"$IMPORT_CATALOG\" != \"1\" ] || tsx prisma/import-products.ts --remove-demo) && next build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

@@ -35,6 +35,8 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  employee Employee?
 }
 
 enum ProductCategory {
@@ -73,6 +75,16 @@ model Product {
   // Unique barcode/SKU for POS lookup (hardware scanners emit this as
   // keystrokes). Optional — not every product needs one.
   barcode           String?         @unique
+  // Extra scannable codes for the same product (some items ship with more
+  // than one barcode). The POS matches these as well as `barcode`.
+  altBarcodes       String[]        @default([])
+  // The store's own product group from the POS import (e.g. "Ramen",
+  // "Soju", "Toys") — finer-grained than the storefront `category` enum,
+  // and used for the group filter on the register screen.
+  groupName         String?
+  // True for in-store-only items (services, cups, takeout boxes…) that
+  // must never appear on, or be bought through, the online storefront.
+  posOnly           Boolean         @default(false)
   imageUrl          String
   stock             Int             @default(0)
   // Below this quantity, the product surfaces in the admin "low stock" view.
@@ -251,6 +263,11 @@ model Employee {
   position          String?
   dailyRateCentavos Int
   isActive          Boolean  @default(true)
+  // Optional link to this person's staff login, so payslips can pull their
+  // clocked hours from TimeEntry. Unlinked employees are paid on manually
+  // entered hours as before.
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId            String?  @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -284,4 +301,91 @@ model Payslip {
   createdAt          DateTime @default(now())
 
   @@index([employeeId])
+}
+
+// One shift on the time clock. clockOut/hoursWorked stay null while the
+// person is still clocked in. hoursWorked is computed once, at time-out
+// (or when a manager corrects the entry), and is what payslips sum.
+model TimeEntry {
+  id           String    @id @default(cuid())
+  userId       String
+  userName     String // snapshot, survives the User being edited/deactivated
+  clockIn      DateTime  @default(now())
+  clockOut     DateTime?
+  hoursWorked  Float?
+  note         String?
+  // Set when a manager manually creates/corrects the entry.
+  editedByName String?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, clockIn])
+  @@index([clockIn])
+}
+
+// A cashier's till count for one shift: what was in the drawer and in GCash
+// when they started, and what they counted when they finished. At close the
+// system snapshots what it *expected* (opening + that cashier's cash/GCash
+// POS sales since opening) so the variance is fixed in time.
+model CashSession {
+  id                      String    @id @default(cuid())
+  userId                  String
+  cashierName             String
+  openedAt                DateTime  @default(now())
+  openingCashCentavos     Int
+  openingGcashCentavos    Int
+  closedAt                DateTime?
+  closingCashCentavos     Int?
+  closingGcashCentavos    Int?
+  expectedCashCentavos    Int?
+  expectedGcashCentavos   Int?
+  note                    String?
+  createdAt               DateTime  @default(now())
+
+  @@index([userId, openedAt])
+  @@index([openedAt])
+}
+
+// Supplier delivery receipts logged by staff (ported from SSKReceiptTracker):
+// a receipt name, an amount and a date. These are stock purchases — the
+// cost is already counted in profit through each product's cost when it
+// sells — so they are deliberately NOT subtracted from profit again.
+model DeliveryReceipt {
+  id             String   @id @default(cuid())
+  receiptName    String
+  receiptNumber  String?
+  amountCentavos Int
+  date           DateTime
+  note           String?
+  createdByName  String?
+  createdAt      DateTime @default(now())
+
+  @@index([date])
+}
+
+enum BillRecurrence {
+  NONE
+  MONTHLY
+}
+
+// A bill to pay (rent, electricity, loan instalment…). Shown on the bills
+// calendar and flagged in the admin once it is within reminderDaysBefore of
+// its due date. Paid bills count as operating expenses in profit, dated by
+// paidAt. Marking a MONTHLY bill paid creates next month's bill.
+model Bill {
+  id                 String         @id @default(cuid())
+  name               String
+  amountCentavos     Int
+  dueDate            DateTime
+  recurrence         BillRecurrence @default(NONE)
+  reminderDaysBefore Int            @default(3)
+  isPaid             Boolean        @default(false)
+  paidAt             DateTime?
+  paidAmountCentavos Int?
+  paidByName         String?
+  note               String?
+  createdByName      String?
+  createdAt          DateTime       @default(now())
+
+  @@index([dueDate])
+  @@index([paidAt])
 }

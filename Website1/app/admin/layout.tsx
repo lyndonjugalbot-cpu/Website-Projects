@@ -1,5 +1,8 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { headers } from "next/headers";
+import { authOptions, roleAtLeast } from "@/lib/auth";
+import { getBillAlert } from "@/lib/bills-server";
+import { isPosHost } from "@/lib/pos-host";
 import { AdminShell } from "@/components/admin/AdminShell";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -12,8 +15,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return <div className="min-h-screen bg-neutral-50">{children}</div>;
   }
 
+  const posOnly = isPosHost(headers().get("host"));
+  // Bill reminders are for the people who pay the bills, and not shown on
+  // the cashiers' POS-only link.
+  const billAlert = !posOnly && roleAtLeast(session.user.role, "MANAGER") ? await getBillAlert() : null;
+
   return (
-    <AdminShell user={{ name: session.user.name ?? "", email: session.user.email ?? "", role: session.user.role }}>
+    <AdminShell
+      user={{ name: session.user.name ?? "", email: session.user.email ?? "", role: session.user.role }}
+      posOnly={posOnly}
+      billAlert={billAlert}
+    >
       {children}
     </AdminShell>
   );

@@ -31,6 +31,7 @@ export default function AdminLoginPage() {
       return;
     }
 
+    // On the POS hostname middleware turns "/admin" into the register.
     router.push(searchParams.get("callbackUrl") || "/admin");
     router.refresh();
   }

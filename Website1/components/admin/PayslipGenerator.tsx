@@ -33,6 +33,8 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payslips, setPayslips] = useState(initialPayslips);
+  const [clockNote, setClockNote] = useState<string | null>(null);
+  const [isLoadingHours, setIsLoadingHours] = useState(false);
 
   // activeEmployees is a new array every render, so this only re-runs when
   // the underlying set of active ids actually changes (e.g. an employee was
@@ -59,6 +61,33 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
     0
   );
   const previewNetPayCentavos = regularPayCentavos + holidayBonusTotalCentavos + adjustmentsTotalCentavos;
+
+  // Pulls the employee's completed time-clock shifts for the chosen period.
+  async function useClockedHours() {
+    setClockNote(null);
+    setIsLoadingHours(true);
+    try {
+      const qs = new URLSearchParams({ employeeId, start: periodStart, end: periodEnd });
+      const res = await fetch(`/api/admin/timesheets/hours?${qs}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not load clocked hours");
+      if (!data.linked) {
+        setClockNote("This employee isn't linked to a time-clock login yet — link one in the Employees table above.");
+      } else if (data.shifts === 0) {
+        setClockNote("No completed shifts found in this period.");
+      } else {
+        setHoursWorkedInput(String(data.hours));
+        setClockNote(
+          `${data.hours} hrs from ${data.shifts} shift${data.shifts === 1 ? "" : "s"}.` +
+            (data.openShifts > 0 ? ` ${data.openShifts} shift(s) have no time-out and weren't counted — fix them on Timesheets.` : "")
+        );
+      }
+    } catch (err) {
+      setClockNote(err instanceof Error ? err.message : "Could not load clocked hours");
+    } finally {
+      setIsLoadingHours(false);
+    }
+  }
 
   function addHoliday() {
     setHolidays([...holidays, { label: "", percentInput: "" }]);
@@ -170,6 +199,18 @@ export function PayslipGenerator({ employees, initialPayslips }: { employees: Em
                   required
                 />
               </label>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={useClockedHours}
+                disabled={isLoadingHours || !employeeId}
+                className="rounded-full border border-neutral-200 px-4 py-1.5 text-sm font-medium text-neutral-700 hover:border-neutral-400 disabled:opacity-50"
+              >
+                {isLoadingHours ? "Checking…" : "Use clocked hours"}
+              </button>
+              {clockNote && <span className="text-xs text-neutral-600">{clockNote}</span>}
             </div>
 
             {selectedEmployee && (

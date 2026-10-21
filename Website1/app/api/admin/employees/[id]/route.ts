@@ -7,6 +7,7 @@ const patchSchema = z.object({
   position: z.string().trim().max(100).optional().or(z.literal("")),
   dailyRateCentavos: z.number().int().min(1, "Daily rate must be greater than 0").optional(),
   isActive: z.boolean().optional(),
+  userId: z.string().min(1).nullable().optional(),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -22,14 +23,21 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid update" }, { status: 400 });
   }
 
-  const employee = await prisma.employee.update({
-    where: { id: params.id },
-    data: {
-      ...(parsed.data.position !== undefined ? { position: parsed.data.position || null } : {}),
-      ...(parsed.data.dailyRateCentavos !== undefined ? { dailyRateCentavos: parsed.data.dailyRateCentavos } : {}),
-      ...(parsed.data.isActive !== undefined ? { isActive: parsed.data.isActive } : {}),
-    },
-  });
-
-  return NextResponse.json({ employee });
+  try {
+    const employee = await prisma.employee.update({
+      where: { id: params.id },
+      data: {
+        ...(parsed.data.position !== undefined ? { position: parsed.data.position || null } : {}),
+        ...(parsed.data.dailyRateCentavos !== undefined ? { dailyRateCentavos: parsed.data.dailyRateCentavos } : {}),
+        ...(parsed.data.isActive !== undefined ? { isActive: parsed.data.isActive } : {}),
+        ...(parsed.data.userId !== undefined ? { userId: parsed.data.userId } : {}),
+      },
+    });
+    return NextResponse.json({ employee });
+  } catch (err) {
+    if ((err as { code?: string }).code === "P2002") {
+      return NextResponse.json({ error: "That login is already linked to another employee" }, { status: 400 });
+    }
+    throw err;
+  }
 }

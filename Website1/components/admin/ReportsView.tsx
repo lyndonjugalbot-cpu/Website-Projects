@@ -116,12 +116,12 @@ export function ReportsView({ initialFilters }: { initialFilters: Pick<Filters, 
               <Kpi label="Units sold" value={String(report.unitsSold)} formula="Sum of item quantities" />
               <Kpi label="Gross sales" value={formatCentavosAsPHP(report.grossSalesCentavos)} formula="Sum of item selling prices" />
               <Kpi label="Discounts" value={formatCentavosAsPHP(report.discountsCentavos)} formula="Sum of order-level discounts" />
-              <Kpi label="Refunds" value={formatCentavosAsPHP(report.refundsCentavos)} formula="Sum of totals on REFUNDED orders" />
+              <Kpi label="Voided / refunded" value={formatCentavosAsPHP(report.refundsCentavos)} formula="Sales voided or refunded — excluded from sales above" />
               <Kpi label="Delivery income" value={formatCentavosAsPHP(report.deliveryIncomeCentavos)} formula="Sum of delivery fees collected" />
               <Kpi
                 label="Net sales"
                 value={formatCentavosAsPHP(report.netSalesCentavos)}
-                formula="Gross sales − discounts + delivery income − refunds"
+                formula="Gross sales − discounts + delivery income"
                 highlight
               />
               <Kpi
@@ -137,7 +137,7 @@ export function ReportsView({ initialFilters }: { initialFilters: Pick<Filters, 
               />
               <Kpi label="Gross margin" value={`${report.grossProfitMarginPercent.toFixed(1)}%`} formula="Gross profit ÷ net sales" />
               <Kpi label="Payment processing fees" value={formatCentavosAsPHP(report.paymentProcessingFeesCentavos)} formula="Not tracked yet — see README" />
-              <Kpi label="Operating expenses" value={formatCentavosAsPHP(report.operatingExpensesCentavos)} formula="Sum of expenses logged in range" />
+              <Kpi label="Operating expenses" value={formatCentavosAsPHP(report.operatingExpensesCentavos)} formula={`Expenses ${formatCentavosAsPHP(report.loggedExpensesCentavos)} + paid bills ${formatCentavosAsPHP(report.billsPaidCentavos)} + payslips ${formatCentavosAsPHP(report.payrollCentavos)}`} />
               <Kpi
                 label="Net profit / loss"
                 value={formatCentavosAsPHP(report.netProfitCentavos)}

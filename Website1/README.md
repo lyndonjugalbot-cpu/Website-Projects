@@ -94,6 +94,7 @@ you set in `.env`).
 
 ```bash
 npm run db:studio    # Prisma Studio, a GUI for browsing/editing the database
+npm run db:import-products   # load the store's real catalog (see "Seed data")
 npm run build         # production build
 npm run lint          # ESLint
 ```
@@ -188,6 +189,27 @@ before making changes.
 
 ## Point of sale (POS)
 
+### Separate POS link
+
+The register can be opened from its own link (e.g. `https://pos.yourdomain.com`)
+that shows only the POS: the storefront and the other admin pages redirect to
+the register, and the header shows just "POS". It's the same Vercel project
+and database as the store, so sales and stock stay shared. The full admin
+(including `/admin/pos`) still works on the main domain.
+
+To set it up on Vercel, open the project → **Settings → Domains** and add a
+second domain to the same project:
+
+- **Custom domain:** add `pos.yourdomain.com` — anything starting with `pos.`
+  is recognised automatically.
+- **No custom domain yet:** add a free alias such as
+  `seoulstopkmart-pos.vercel.app`, then set the `POS_HOSTNAMES` env var to that
+  hostname and redeploy.
+
+Leave `NEXTAUTH_URL` pointing at the main store domain. Sign-in cookies are
+per-domain, so staff sign in separately on the POS link. Locally, open
+`http://pos.localhost:3000` to see the POS-only view.
+
 `/admin/pos` is a register screen for in-store sales, built on the exact
 same `Product`/`Order`/`OrderItem` tables as the online store (see
 "Shared inventory" below) — there's no separate "POS product" or "POS sale"
@@ -214,6 +236,45 @@ data model.
   at any time. Voiding requires a reason, restores the stock it deducted
   (as a `CANCELLATION` movement in the ledger), and marks the order
   `CANCELLED` / `REFUNDED`.
+
+## Staff & admin tools
+
+### In the POS (every signed-in staff member)
+
+- **Time clock** — *Time in* / *Time out* buttons at the top of `/admin/pos`.
+  Total hours are computed automatically at time-out. You can't time in twice.
+  A shift left open for more than 16 hours is flagged "Missed time-out" for a
+  manager to fix instead of producing a 30-hour shift.
+- **Cash drawer** — the cashier enters their drawer cash and GCash balance at
+  the start of the shift and counts both again at the end (a one-click confirm
+  guards against typos). At close the system freezes what it *expected*
+  (opening + that cashier's cash/GCash POS sales since they started, voided
+  sales excluded) so managers can see over/short on **Cash counts**. It's a
+  *blind* count: the expected figure is never sent to the register.
+- **Deliveries** (`/admin/pos/deliveries`) — the delivery-receipt tracker from
+  the earlier SSKReceiptTracker app: log a receipt name, amount and date, filter
+  by range, see totals / biggest supplier / spend over time, export CSV. Staff
+  can log and view; editing or deleting is manager-only. Delivery receipts are
+  **not** subtracted from profit (that stock's cost is counted when it sells).
+
+### Admin (Manager and Owner)
+
+- **Timesheets** — everyone's shifts, per-person hour totals, fix a forgotten
+  time-out, add a missed shift.
+- **Cash counts** — start/end counts per cashier with expected vs counted.
+- **Payroll** — the payslip generator. Link an employee to their staff login
+  and **Use clocked hours** fills the hours from their time-clock shifts in the
+  pay period; holidays, bonuses and deductions work as before.
+- **Bills** — add a bill (name, amount, due date, optionally monthly). Bills are
+  plotted on a month calendar, colour-coded overdue / due soon / upcoming /
+  paid, and a banner shows across the admin when one is overdue or inside its
+  reminder window. Marking a monthly bill paid creates next month's. *Add to my
+  calendar (.ics)* exports unpaid bills with reminders to Google/Apple Calendar.
+  Reminders are in-app only — nothing is emailed or texted.
+- **Profit** — total running profit since the first sale, with today / last 7
+  days / this month, a running-profit chart and the full breakdown:
+  `net profit = net sales − cost of goods sold − (expenses + bills paid + payslips)`.
+  Reports uses the same costs, so the two pages always agree.
 
 ## Shared inventory & the stock ledger
 
@@ -319,11 +380,38 @@ to Vercel — see "Deploying to Vercel" above.
 
 ## Seed data
 
-`prisma/seed.ts` creates a small set of **demo** Korean-grocery-style
-products (generic descriptions, locally-generated placeholder images under
-`public/products/`) so the storefront isn't empty on first run — this is
-not real inventory. Add your actual catalog via `/admin/products` once
-you're ready; delete or edit the demo products from the same screen.
+### The real catalog
+
+`prisma/data/products-master.csv` is the store's real product list
+(~1,040 items, exported from the previous POS: name, group, barcode(s),
+cost, price, stock). Load it with:
+
+```bash
+npm run db:import-products                      # import / refresh
+npx tsx prisma/import-products.ts --dry-run     # preview, changes nothing
+npx tsx prisma/import-products.ts --remove-demo # also delete the demo products below
+```
+
+- **Safe to re-run.** Existing products only get their name/price/cost/
+  barcodes/group refreshed — **live stock is never touched** unless you pass
+  `--reset-stock`. Every stock set writes a row to the stock ledger.
+- Each product keeps the store's own group (Ramen, Soju, Toys…) for the POS
+  group filter, and is mapped to the nearest storefront category.
+- Items with more than one barcode keep the extras in `altBarcodes`; the
+  register matches any of them.
+- Cost `0` in the export is stored as *unknown* (not free), so profit reports
+  flag those products instead of overstating margin.
+- Services and supplies (cooking charge, cups, takeout box, ice bag…) are
+  **POS-only**: no stock count, always sellable, never shown on or purchasable
+  from the website.
+- Imported products use a placeholder photo — upload real ones from
+  `/admin/products`.
+
+### Demo products
+
+`prisma/seed.ts` creates a small set of **demo** products so a fresh
+checkout isn't empty. Running `npm run db:seed` re-creates them, so skip it
+(or re-run the import with `--remove-demo`) once the real catalog is loaded.
 
 ## Branding
 

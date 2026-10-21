@@ -9,17 +9,20 @@ export type Employee = {
   position: string | null;
   dailyRateCentavos: number;
   isActive: boolean;
+  userId: string | null;
 };
 
 export function EmployeeManager({
   initialEmployees,
+  users,
   onChange,
 }: {
   initialEmployees: Employee[];
+  users: { id: string; name: string }[];
   onChange?: (employees: Employee[]) => void;
 }) {
   const [employees, setEmployees] = useState(initialEmployees);
-  const [form, setForm] = useState({ name: "", position: "", dailyRateInput: "" });
+  const [form, setForm] = useState({ name: "", position: "", dailyRateInput: "", userId: "" });
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,12 +44,12 @@ export function EmployeeManager({
       const res = await fetch("/api/admin/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, position: form.position, dailyRateCentavos }),
+        body: JSON.stringify({ name: form.name, position: form.position, dailyRateCentavos, userId: form.userId || null }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not add employee");
       update([...employees, data.employee]);
-      setForm({ name: "", position: "", dailyRateInput: "" });
+      setForm({ name: "", position: "", dailyRateInput: "", userId: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add employee");
     } finally {
@@ -54,7 +57,7 @@ export function EmployeeManager({
     }
   }
 
-  async function patchEmployee(id: string, patch: { dailyRateCentavos?: number; position?: string; isActive?: boolean }) {
+  async function patchEmployee(id: string, patch: { dailyRateCentavos?: number; position?: string; isActive?: boolean; userId?: string | null }) {
     const res = await fetch(`/api/admin/employees/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -88,13 +91,14 @@ export function EmployeeManager({
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Position</th>
               <th className="px-4 py-3 font-medium">Daily rate</th>
+              <th className="px-4 py-3 font-medium">Time-clock login</th>
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-sm text-neutral-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-sm text-neutral-400">
                   No employees yet — add one below.
                 </td>
               </tr>
@@ -111,6 +115,21 @@ export function EmployeeManager({
                   >
                     {formatCentavosAsPHP(emp.dailyRateCentavos)}
                   </button>
+                </td>
+                <td className="px-4 py-3">
+                  <select
+                    value={emp.userId ?? ""}
+                    onChange={(e) => patchEmployee(emp.id, { userId: e.target.value || null })}
+                    className="input py-1 text-xs"
+                    aria-label={`Time-clock login for ${emp.name}`}
+                  >
+                    <option value="">Not linked</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id} disabled={employees.some((o) => o.userId === u.id && o.id !== emp.id)}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-4 py-3">
                   <button
@@ -141,6 +160,18 @@ export function EmployeeManager({
             <input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} className="input" />
           </label>
         </div>
+        <label className="flex max-w-xs flex-col gap-1.5 text-sm">
+          <span className="font-medium text-neutral-700">Time-clock login (optional)</span>
+          <select value={form.userId} onChange={(e) => setForm({ ...form, userId: e.target.value })} className="input">
+            <option value="">Not linked</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id} disabled={employees.some((o) => o.userId === u.id)}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-neutral-400">Links this person to the staff account they time in with.</span>
+        </label>
         <label className="flex max-w-[200px] flex-col gap-1.5 text-sm">
           <span className="font-medium text-neutral-700">Daily rate (₱/day)</span>
           <input

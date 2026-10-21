@@ -57,7 +57,7 @@ export async function createOrderFromCart(input: CheckoutInput) {
   const orderItemsData = input.items.map((item) => {
     const product = productById.get(item.productId);
     if (!product) throw new OrderCreationError(`One of the items in your cart is no longer available`);
-    if (product.status !== "ACTIVE") {
+    if (product.status !== "ACTIVE" || product.posOnly) {
       throw new OrderCreationError(`"${product.name}" is currently unavailable`);
     }
     if (product.stock < item.quantity) {

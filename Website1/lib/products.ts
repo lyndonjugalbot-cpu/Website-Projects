@@ -60,6 +60,7 @@ export async function getAllProducts(filters: ProductFilters = {}): Promise<Prod
   const products = await prisma.product.findMany({
     where: {
       status: { not: "INACTIVE" },
+      posOnly: false,
       ...(filters.category ? { category: filters.category } : {}),
       ...(filters.search
         ? {
@@ -78,7 +79,7 @@ export async function getAllProducts(filters: ProductFilters = {}): Promise<Prod
 /** Products flagged "Featured" by an admin — shown in their own section on the home page. */
 export async function getFeaturedProducts(limit = 4): Promise<ProductView[]> {
   const products = await prisma.product.findMany({
-    where: { status: "ACTIVE", isFeatured: true },
+    where: { status: "ACTIVE", posOnly: false, isFeatured: true },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
@@ -88,7 +89,7 @@ export async function getFeaturedProducts(limit = 4): Promise<ProductView[]> {
 /** Products flagged "Best seller" by an admin — shown in their own section on the home page. */
 export async function getBestSellerProducts(limit = 4): Promise<ProductView[]> {
   const products = await prisma.product.findMany({
-    where: { status: "ACTIVE", isBestSeller: true },
+    where: { status: "ACTIVE", posOnly: false, isBestSeller: true },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
@@ -98,6 +99,6 @@ export async function getBestSellerProducts(limit = 4): Promise<ProductView[]> {
 /** Looks up one product for the /products/[slug] detail page. Hides INACTIVE products (404s them). */
 export async function getProductBySlug(slug: string): Promise<ProductView | null> {
   const product = await prisma.product.findUnique({ where: { slug } });
-  if (!product || product.status === "INACTIVE") return null;
+  if (!product || product.status === "INACTIVE" || product.posOnly) return null;
   return toProductView(product);
 }

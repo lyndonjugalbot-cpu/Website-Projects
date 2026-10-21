@@ -12,6 +12,9 @@ type PosProduct = {
   id: string;
   name: string;
   barcode: string | null;
+  altBarcodes: string[];
+  groupName: string | null;
+  allowOversell: boolean;
   priceCentavos: number;
   salePriceCentavos: number | null;
   imageUrl: string;
@@ -27,6 +30,19 @@ function effective(p: Pick<PosProduct, "priceCentavos" | "salePriceCentavos">) {
   return p.salePriceCentavos ?? p.priceCentavos;
 }
 
+// Services and supplies (cooking charge, cups…) have no stock count and are
+// flagged allowOversell, so they can always be rung up.
+function isSellable(p: PosProduct) {
+  return p.status === "ACTIVE" && (p.stock > 0 || p.allowOversell);
+}
+
+function hasBarcode(p: PosProduct, code: string) {
+  return p.barcode === code || p.altBarcodes.includes(code);
+}
+
+// The catalog is ~1,000 items — render a page at a time instead of every tile.
+const PAGE_SIZE = 60;
+
 export function POSTerminal({ cashierName, role }: { cashierName: string; role: UserRole }) {
   const router = useRouter();
   const [products, setProducts] = useState<PosProduct[]>([]);
@@ -40,6 +56,10 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
   const [customerName, setCustomerName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [group, setGroup] = useState<string>("");
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [notice, setNotice] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const loadProducts = useCallback(async () => {
@@ -65,21 +85,45 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
     searchInputRef.current?.focus();
   }, []);
 
+  const groups = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of products) {
+      const g = p.groupName ?? "Other";
+      counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    return Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
-    if (!search.trim()) return products;
     const q = search.trim().toLowerCase();
-    return products.filter((p) => p.name.toLowerCase().includes(q) || p.barcode === search.trim());
-  }, [products, search]);
+    return products.filter((p) => {
+      if (group && (p.groupName ?? "Other") !== group) return false;
+      // While searching, show every match so an out-of-stock item is still findable.
+      if (!q && !showOutOfStock && !isSellable(p)) return false;
+      if (!q) return true;
+      return p.name.toLowerCase().includes(q) || hasBarcode(p, search.trim());
+    });
+  }, [products, search, group, showOutOfStock]);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, group, showOutOfStock]);
 
   function addToCart(product: PosProduct) {
-    if (product.status !== "ACTIVE" || product.stock <= 0) return;
+    if (!isSellable(product)) {
+      setNotice(`"${product.name}" is out of stock.`);
+      return;
+    }
+    setNotice(null);
+    // No stock cap for oversell items.
+    const cap = product.allowOversell ? 999 : product.stock;
     setCart((prev) => {
       const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
-        if (existing.quantity >= product.stock) return prev;
+        if (existing.quantity >= cap) return prev;
         return prev.map((l) => (l.productId === product.id ? { ...l, quantity: l.quantity + 1 } : l));
       }
-      return [...prev, { productId: product.id, name: product.name, unitPriceCentavos: effective(product), quantity: 1, stock: product.stock }];
+      return [...prev, { productId: product.id, name: product.name, unitPriceCentavos: effective(product), quantity: 1, stock: cap }];
     });
   }
 
@@ -88,7 +132,7 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
     e.preventDefault();
     const trimmed = search.trim();
     if (!trimmed) return;
-    const barcodeMatch = products.find((p) => p.barcode === trimmed);
+    const barcodeMatch = products.find((p) => hasBarcode(p, trimmed));
     if (barcodeMatch) {
       addToCart(barcodeMatch);
       setSearch("");
@@ -171,6 +215,23 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
           autoFocus
         />
 
+        {notice && <p className="mt-2 text-sm font-medium text-red-600">{notice}</p>}
+
+        <div className="mt-3 flex items-center gap-2">
+          <select value={group} onChange={(e) => setGroup(e.target.value)} className="input max-w-[220px]" aria-label="Product group">
+            <option value="">All groups ({products.length})</option>
+            {groups.map(([name, count]) => (
+              <option key={name} value={name}>
+                {name} ({count})
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center gap-1.5 text-xs text-neutral-500">
+            <input type="checkbox" checked={showOutOfStock} onChange={(e) => setShowOutOfStock(e.target.checked)} />
+            Show out of stock
+          </label>
+        </div>
+
         {loadError ? (
           <p className="mt-6 text-sm text-red-600">{loadError}</p>
         ) : isLoadingProducts ? (
@@ -179,8 +240,8 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
           <p className="mt-6 text-sm text-neutral-500">No products match.</p>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {filteredProducts.map((p) => {
-              const outOfStock = p.status !== "ACTIVE" || p.stock <= 0;
+            {filteredProducts.slice(0, visibleCount).map((p) => {
+              const outOfStock = !isSellable(p);
               return (
                 <button
                   key={p.id}
@@ -195,12 +256,23 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
                   <div className="p-2.5">
                     <p className="line-clamp-2 text-xs font-medium text-neutral-900">{p.name}</p>
                     <p className="mt-1 text-xs font-semibold text-neutral-900">{formatCentavosAsPHP(effective(p))}</p>
-                    <p className="text-[11px] text-neutral-400">{outOfStock ? "Out of stock" : `${p.stock} in stock`}</p>
+                    <p className="text-[11px] text-neutral-400">
+                      {outOfStock ? "Out of stock" : p.allowOversell ? "Service / supply" : `${p.stock} in stock`}
+                    </p>
                   </div>
                 </button>
               );
             })}
           </div>
+        )}
+        {filteredProducts.length > visibleCount && (
+          <button
+            type="button"
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            className="mt-4 w-full rounded-full border border-neutral-200 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400"
+          >
+            Show more ({filteredProducts.length - visibleCount} more)
+          </button>
         )}
       </div>
 

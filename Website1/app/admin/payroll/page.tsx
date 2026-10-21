@@ -13,9 +13,10 @@ export default async function PayrollPage() {
     return <Forbidden />;
   }
 
-  const [employees, payslips] = await Promise.all([
+  const [employees, payslips, users] = await Promise.all([
     prisma.employee.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.payslip.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.user.findMany({ where: { isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
 
   return (
@@ -26,6 +27,7 @@ export default async function PayrollPage() {
       <div className="mt-8">
         <PayrollManager
           initialEmployees={employees}
+          users={users}
           initialPayslips={payslips.map((p) => ({
             id: p.id,
             employeeName: p.employeeName,

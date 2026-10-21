@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getOperatingCosts } from "@/lib/profit";
 import { manilaDayStartUtc, manilaDayEndUtc } from "@/lib/timezone";
 import type { ProductCategory, SalesChannel } from "@/lib/types";
 import { CATEGORY_LABELS } from "@/lib/types";
@@ -47,6 +48,10 @@ export type ReportResult = {
   grossProfitMarginPercent: number;
   paymentProcessingFeesCentavos: number;
   operatingExpensesCentavos: number;
+  /** Breakdown of operatingExpensesCentavos. */
+  loggedExpensesCentavos: number;
+  billsPaidCentavos: number;
+  payrollCentavos: number;
   netProfitCentavos: number;
   salesByProduct: ProductSalesLine[];
   salesByCategory: CategorySalesLine[];
@@ -146,12 +151,16 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
 
   // The core formulas — also shown to the admin directly in the Reports UI
   // (components/admin/ReportsView.tsx) so nothing here is a "hidden" number.
-  const netSalesCentavos = grossSalesCentavos - discountsCentavos + deliveryIncomeCentavos - refundsCentavos;
+  // Refunded/voided orders are NOT in grossSalesCentavos (only PAID orders
+  // are), so they must not be subtracted again here — they simply never
+  // counted as sales. `refundsCentavos` is informational only.
+  const netSalesCentavos = grossSalesCentavos - discountsCentavos + deliveryIncomeCentavos;
   const grossProfitCentavos = netSalesCentavos - cogsCentavos;
   const grossProfitMarginPercent = netSalesCentavos > 0 ? (grossProfitCentavos / netSalesCentavos) * 100 : 0;
 
-  const expenses = await prisma.expense.findMany({ where: { date: { gte: startUtc, lt: endUtc } } });
-  const operatingExpensesCentavos = expenses.reduce((sum, e) => sum + e.amountCentavos, 0);
+  // Logged expenses + bills marked paid + payslips (see lib/profit.ts).
+  const costs = await getOperatingCosts(startUtc, endUtc);
+  const operatingExpensesCentavos = costs.totalCentavos;
 
   // PayMongo's API does return a `fee` on the underlying Payment resource,
   // but this integration only stores Payment Intent IDs, not individual
@@ -207,6 +216,9 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
     grossProfitMarginPercent,
     paymentProcessingFeesCentavos,
     operatingExpensesCentavos,
+    loggedExpensesCentavos: costs.expensesCentavos,
+    billsPaidCentavos: costs.billsPaidCentavos,
+    payrollCentavos: costs.payrollCentavos,
     netProfitCentavos,
     salesByProduct: Array.from(byProduct.values()).sort((a, b) => b.revenueCentavos - a.revenueCentavos),
     salesByCategory: Array.from(byCategory.values()).sort((a, b) => b.revenueCentavos - a.revenueCentavos),

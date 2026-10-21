@@ -21,6 +21,8 @@ const createEmployeeSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200),
   position: z.string().trim().max(100).optional().or(z.literal("")),
   dailyRateCentavos: z.number().int().min(1, "Daily rate must be greater than 0"),
+  // Staff login this employee clocks in with (so payslips can use their clocked hours).
+  userId: z.string().min(1).nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -36,13 +38,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid employee details" }, { status: 400 });
   }
 
-  const employee = await prisma.employee.create({
-    data: {
-      name: parsed.data.name,
-      position: parsed.data.position || null,
-      dailyRateCentavos: parsed.data.dailyRateCentavos,
-    },
-  });
-
-  return NextResponse.json({ employee }, { status: 201 });
+  try {
+    const employee = await prisma.employee.create({
+      data: {
+        name: parsed.data.name,
+        position: parsed.data.position || null,
+        dailyRateCentavos: parsed.data.dailyRateCentavos,
+        userId: parsed.data.userId || null,
+      },
+    });
+    return NextResponse.json({ employee }, { status: 201 });
+  } catch (err) {
+    if ((err as { code?: string }).code === "P2002") {
+      return NextResponse.json({ error: "That login is already linked to another employee" }, { status: 400 });
+    }
+    throw err;
+  }
 }

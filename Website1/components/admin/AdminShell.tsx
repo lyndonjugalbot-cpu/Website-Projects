@@ -16,9 +16,12 @@ const ROLE_LABELS: Record<UserRole, string> = {
   STAFF: "Staff",
 };
 
+export type BillAlert = { overdue: number; dueSoon: number };
+
 function navLinksFor(role: UserRole) {
   const links = [
     { href: "/admin/pos", label: "POS" },
+    { href: "/admin/pos/deliveries", label: "Deliveries" },
     { href: "/admin/orders", label: "Orders" },
   ];
   if (role === "OWNER" || role === "MANAGER") {
@@ -26,6 +29,10 @@ function navLinksFor(role: UserRole) {
       { href: "/admin/products", label: "Products" },
       { href: "/admin/inventory", label: "Inventory" },
       { href: "/admin/reports", label: "Reports" },
+      { href: "/admin/profit", label: "Profit" },
+      { href: "/admin/bills", label: "Bills" },
+      { href: "/admin/timesheets", label: "Timesheets" },
+      { href: "/admin/cash", label: "Cash counts" },
       { href: "/admin/payroll", label: "Payroll" }
     );
   }
@@ -35,36 +42,52 @@ function navLinksFor(role: UserRole) {
   return links;
 }
 
-export function AdminShell({ user, children }: { user: AdminUser; children: React.ReactNode }) {
+export function AdminShell({
+  user,
+  posOnly = false,
+  billAlert,
+  children,
+}: {
+  user: AdminUser;
+  // Present for managers/owners when a bill is overdue or inside its reminder window.
+  billAlert?: BillAlert | null;
+  // True on the dedicated POS hostname, which only serves the register.
+  posOnly?: boolean;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const links = navLinksFor(user.role);
+  const links = posOnly
+    ? [
+        { href: "/admin/pos", label: "POS" },
+        { href: "/admin/pos/deliveries", label: "Deliveries" },
+      ]
+    : navLinksFor(user.role);
+
+  // Highlight only the most specific matching link (so /admin/pos/deliveries
+  // lights up "Deliveries", not "POS" as well).
+  const activeHref = links
+    .filter((l) => pathname === l.href || pathname?.startsWith(l.href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+  // signOut's callbackUrl is resolved against NEXTAUTH_URL (the storefront
+  // domain), so redirect manually to stay on whichever host we're on.
+  async function handleSignOut() {
+    await signOut({ redirect: false });
+    window.location.assign(posOnly ? "/admin/login" : "/");
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50">
       <header className="sticky top-0 z-40 border-b border-neutral-200 bg-brand-black">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-6">
+            <Link href={posOnly ? "/admin/pos" : "/admin"} className="flex items-center gap-2">
               <Image src="/brand/logo.png" alt="" width={140} height={120} className="h-8 w-auto" />
-              <span className="hidden text-sm font-semibold text-white sm:inline">{STORE_NAME} Admin</span>
+              <span className="hidden text-sm font-semibold text-white sm:inline">
+                {STORE_NAME} {posOnly ? "POS" : "Admin"}
+              </span>
             </Link>
-            <nav className="hidden items-center gap-1 sm:flex">
-              {links.map((link) => {
-                const active = pathname === link.href || pathname?.startsWith(link.href + "/");
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                      active ? "bg-brand-red text-white" : "text-neutral-300 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
           </div>
 
           <div className="flex items-center gap-3">
@@ -74,7 +97,7 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
             </div>
             <button
               type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={handleSignOut}
               className="rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-neutral-200 transition hover:bg-white/10"
             >
               Sign out
@@ -92,6 +115,25 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           </div>
         </div>
 
+        <div className="hidden border-t border-white/10 sm:block">
+          <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-1 px-4 py-2 sm:px-6">
+            {links.map((link) => {
+              const active = link.href === activeHref;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                    active ? "bg-brand-red text-white" : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
         {isMenuOpen && (
           <nav className="flex flex-col gap-1 border-t border-white/10 px-4 py-3 sm:hidden">
             {links.map((link) => (
@@ -107,6 +149,19 @@ export function AdminShell({ user, children }: { user: AdminUser; children: Reac
           </nav>
         )}
       </header>
+
+      {billAlert && (billAlert.overdue > 0 || billAlert.dueSoon > 0) && (
+        <Link
+          href="/admin/bills"
+          className={`block px-4 py-2 text-center text-sm font-medium ${
+            billAlert.overdue > 0 ? "bg-red-600 text-white" : "bg-amber-100 text-amber-900"
+          }`}
+        >
+          {billAlert.overdue > 0 && `${billAlert.overdue} overdue bill${billAlert.overdue === 1 ? "" : "s"}`}
+          {billAlert.overdue > 0 && billAlert.dueSoon > 0 && " · "}
+          {billAlert.dueSoon > 0 && `${billAlert.dueSoon} due soon`} — view bills →
+        </Link>
+      )}
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</main>
     </div>
