@@ -35,7 +35,7 @@ export default async function POSPage() {
       </div>
 
       <div className="mt-6">
-        <POSTerminal cashierName={session.user.name || session.user.email || "Staff"} role={session.user.role} />
+        <POSTerminal userId={session.user.id} cashierName={session.user.name || session.user.email || "Staff"} role={session.user.role} />
       </div>
 
       {todaysSales.length > 0 && (

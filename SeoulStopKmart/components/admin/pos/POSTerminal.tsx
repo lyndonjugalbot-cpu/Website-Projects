@@ -43,7 +43,46 @@ function hasBarcode(p: PosProduct, code: string) {
 // The catalog is ~1,000 items — render a page at a time instead of every tile.
 const PAGE_SIZE = 60;
 
-export function POSTerminal({ cashierName, role }: { cashierName: string; role: UserRole }) {
+// The sale in progress is saved in the browser so moving to another admin
+// page (or reloading) doesn't lose it. It's cleared only when the sale is
+// completed or cancelled with "Clear". Keyed by user so cashiers sharing a
+// computer don't see each other's sale; a draft older than this is dropped.
+const DRAFT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+
+type SaleDraft = {
+  savedAt: number;
+  cart: CartLine[];
+  discountInput: string;
+  paymentMethod: PaymentMethodType;
+  cashReceivedInput: string;
+  customerName: string;
+};
+
+function readDraft(key: string): SaleDraft | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as SaleDraft;
+    if (!draft || !Array.isArray(draft.cart) || Date.now() - draft.savedAt > DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Storage unavailable (private mode etc.) — the sale just won't persist.
+  }
+}
+
+export function POSTerminal({ userId, cashierName, role }: { userId: string; cashierName: string; role: UserRole }) {
+  const draftKey = `pos-sale-draft:${userId}`;
   const router = useRouter();
   const [products, setProducts] = useState<PosProduct[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
@@ -54,6 +93,10 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>("cash");
   const [cashReceivedInput, setCashReceivedInput] = useState("");
   const [customerName, setCustomerName] = useState("");
+  // True once the saved draft (if any) has been loaded — the save effect must not run before this,
+  // or the empty initial state would overwrite the draft.
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const draftReconciled = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [group, setGroup] = useState<string>("");
@@ -76,6 +119,57 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
       setIsLoadingProducts(false);
     }
   }, []);
+
+  // Restore an unfinished sale when the register is opened again.
+  useEffect(() => {
+    const draft = readDraft(draftKey);
+    if (draft) {
+      setCart(draft.cart);
+      setDiscountInput(draft.discountInput ?? "");
+      setPaymentMethod(draft.paymentMethod ?? "cash");
+      setCashReceivedInput(draft.cashReceivedInput ?? "");
+      setCustomerName(draft.customerName ?? "");
+    }
+    setDraftLoaded(true);
+  }, [draftKey]);
+
+  // Save the sale in progress on every change; remove the draft when nothing is in progress.
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      if (cart.length === 0) {
+        localStorage.removeItem(draftKey);
+        return;
+      }
+      const draft: SaleDraft = { savedAt: Date.now(), cart, discountInput, paymentMethod, cashReceivedInput, customerName };
+      localStorage.setItem(draftKey, JSON.stringify(draft));
+    } catch {
+      // Storage unavailable — carry on without persistence.
+    }
+  }, [draftLoaded, draftKey, cart, discountInput, paymentMethod, cashReceivedInput, customerName]);
+
+  // Once, after the restored sale and the product list are both loaded, bring the lines up to
+  // date: prices, stock caps, and drop anything that is no longer for sale.
+  useEffect(() => {
+    if (!draftLoaded || isLoadingProducts || products.length === 0 || draftReconciled.current) return;
+    draftReconciled.current = true;
+    setCart((prev) => {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const removed: string[] = [];
+      const next: CartLine[] = [];
+      for (const line of prev) {
+        const p = byId.get(line.productId);
+        if (!p || !isSellable(p)) {
+          removed.push(line.name);
+          continue;
+        }
+        const cap = p.allowOversell ? 999 : p.stock;
+        next.push({ ...line, unitPriceCentavos: effective(p), stock: cap, quantity: Math.min(line.quantity, cap) });
+      }
+      if (removed.length > 0) setNotice(`Removed from the sale (no longer available): ${removed.join(", ")}.`);
+      return next;
+    });
+  }, [draftLoaded, isLoadingProducts, products]);
 
   useEffect(() => {
     loadProducts();
@@ -194,6 +288,7 @@ export function POSTerminal({ cashierName, role }: { cashierName: string; role: 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not complete sale");
+      clearDraft(draftKey);
       router.push(`/admin/pos/${data.order.id}/receipt`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not complete sale");
