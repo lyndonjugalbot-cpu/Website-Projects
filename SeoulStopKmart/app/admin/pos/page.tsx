@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Forbidden } from "@/components/admin/Forbidden";
 import { POSTerminal } from "@/components/admin/pos/POSTerminal";
-import { ShiftPanel } from "@/components/admin/pos/ShiftPanel";
+import { ShiftStatus } from "@/components/admin/pos/ShiftStatus";
 import { prisma } from "@/lib/prisma";
 import { formatCentavosAsPHP } from "@/lib/money";
 import { formatManilaDateTime, todayInManila, manilaDayStartUtc, manilaDayEndUtc } from "@/lib/timezone";
@@ -27,11 +27,12 @@ export default async function POSPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Point of Sale</h1>
-      <p className="mt-1 text-sm text-neutral-500">Search or scan a product to add it to the current sale.</p>
-
-      <div className="mt-6">
-        <ShiftPanel />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Point of Sale</h1>
+          <p className="mt-1 text-sm text-neutral-500">Search or scan a product to add it to the current sale.</p>
+        </div>
+        <ShiftStatus />
       </div>
 
       <div className="mt-6">
@@ -61,6 +62,10 @@ export default async function POSPage() {
                     <td className="px-4 py-2.5">
                       {sale.voidedAt ? (
                         <span className="rounded-full bg-neutral-200 px-2.5 py-1 text-xs font-medium text-neutral-500">Voided</span>
+                      ) : sale.refundedCentavos > 0 ? (
+                        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                          {sale.paymentStatus === "REFUNDED" ? "Refunded" : "Partly refunded"}
+                        </span>
                       ) : (
                         <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Completed</span>
                       )}

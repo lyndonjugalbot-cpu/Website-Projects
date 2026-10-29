@@ -19,7 +19,14 @@ const config: Config = {
           gold: "#FFC600",
           "gold-dark": "#9C7900",
           black: "#171412",
+          cream: "#FAF6EF",
+          sand: "#EFE7DA",
+          ink: "#2A2420",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
       },
       keyframes: {
         "fade-in": {
@@ -29,6 +36,7 @@ const config: Config = {
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out",
+        "rise": "fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },

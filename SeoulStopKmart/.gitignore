@@ -46,3 +46,6 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 .env*
+
+# playwright
+/.playwright-mcp/

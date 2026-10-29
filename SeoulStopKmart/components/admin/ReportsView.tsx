@@ -116,12 +116,12 @@ export function ReportsView({ initialFilters }: { initialFilters: Pick<Filters, 
               <Kpi label="Units sold" value={String(report.unitsSold)} formula="Sum of item quantities" />
               <Kpi label="Gross sales" value={formatCentavosAsPHP(report.grossSalesCentavos)} formula="Sum of item selling prices" />
               <Kpi label="Discounts" value={formatCentavosAsPHP(report.discountsCentavos)} formula="Sum of order-level discounts" />
-              <Kpi label="Voided / refunded" value={formatCentavosAsPHP(report.refundsCentavos)} formula="Sales voided or refunded — excluded from sales above" />
+              <Kpi label="Voided / refunded" value={formatCentavosAsPHP(report.refundsCentavos)} formula="Voided/fully refunded sales (excluded from sales above) + partial refunds (taken off net sales)" />
               <Kpi label="Delivery income" value={formatCentavosAsPHP(report.deliveryIncomeCentavos)} formula="Sum of delivery fees collected" />
               <Kpi
                 label="Net sales"
                 value={formatCentavosAsPHP(report.netSalesCentavos)}
-                formula="Gross sales − discounts + delivery income"
+                formula="Gross sales − discounts − partial refunds + delivery income"
                 highlight
               />
               <Kpi

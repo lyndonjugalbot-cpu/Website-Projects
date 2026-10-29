@@ -172,6 +172,37 @@ prisma/                   schema.prisma, migrations, seed script
 middleware.ts             Gatekeeper for every /admin page and /api/admin/* route
 ```
 
+## Rewards points
+
+Customers earn points on in-store (POS) purchases and spend them as a discount
+at the register. Everything is configured in the "Loyalty points" block at the
+bottom of `lib/store-config.ts`:
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `POINTS_EARN_PESOS_PER_POINT` | 100 | 1 point per ₱100 of the sale total (after discounts) |
+| `POINT_VALUE_CENTAVOS` | 100 | each point takes ₱1.00 off |
+| `POINTS_MIN_REDEEM` | 50 | smallest redemption in one sale |
+| `POINTS_MAX_REDEEM_PERCENT` | 50 | points can cover at most this share of a sale |
+
+- **Sign-up:** at the register, "Rewards member" → "+ Sign up a new member"
+  (name + mobile number). The member gets a random 4-digit PIN, shown once to
+  the cashier; only a hash is stored. "Forgot PIN?" in the same panel issues a new one.
+- **At the register:** find a member by mobile number or name, tick how many
+  points to use ("Max" fills the most allowed), and complete the sale. Points
+  are earned on the amount actually paid. The receipt shows points earned, used
+  and the new balance. Voiding a sale gives back spent points and takes back
+  earned ones.
+- **Website:** `/points` ("Rewards" in the header) lets a customer see their
+  balance and recent activity with mobile number + PIN. After 5 wrong PINs the
+  member's check is locked for 15 minutes, and unknown numbers and wrong PINs
+  get the same message.
+- **Admin:** Manager/Owner see all members at `/admin/customers` and can add or
+  remove points with a reason (kept in the points ledger).
+- **Data:** `Customer` and `PointsTransaction` tables (migration
+  `20261022090000_loyalty_points`); each POS `Order` records the member, points
+  earned/used and the balance afterwards. Online (delivery) orders don't earn points yet.
+
 ## Roles & admin access
 
 Three roles, enforced **server-side** on every privileged API route (never

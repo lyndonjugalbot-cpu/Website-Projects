@@ -165,7 +165,8 @@ model Order {
 
   // PayMongo (or mock) payment intent tracking — null for COD/bank transfer/POS.
   paymentIntentId String? @unique
-  // "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash"
+  // "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash" | "split"
+  // ("split" = in-store sale paid partly in cash, partly by GCash).
   paymentMethod   String?
   isMockPayment   Boolean @default(false)
 
@@ -174,9 +175,29 @@ model Order {
   cashierName          String? // snapshot, survives the User being edited/deactivated
   cashReceivedCentavos Int?
   changeGivenCentavos  Int?
+  // Split payments only: the part paid by GCash. The rest of the total was
+  // paid in cash (cashReceivedCentavos / changeGivenCentavos cover that part).
+  gcashAmountCentavos  Int?
   voidedAt             DateTime?
   voidedByName         String?
   voidReason           String?
+
+  // Loyalty points (see lib/loyalty.ts). A member's points are earned on the
+  // sale total after every discount, and redeemed as a peso discount — the
+  // redeemed value is included in discountCentavos and also kept separately
+  // here so the receipt can show it on its own line.
+  customer              Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId            String?
+  pointsEarned          Int       @default(0)
+  pointsRedeemed        Int       @default(0)
+  pointsDiscountCentavos Int      @default(0)
+  pointsBalanceAfter    Int?
+  pointsTransactions    PointsTransaction[]
+
+  // Money handed back so far by refunds (see Refund below). A partially
+  // refunded sale stays PAID; once every item is refunded it flips to REFUNDED.
+  refundedCentavos Int      @default(0)
+  refunds          Refund[]
 
   // Lightweight internal note + attribution, editable by staff/manager/owner.
   internalNotes      String?
@@ -206,6 +227,8 @@ model OrderItem {
   unitCostCentavos  Int?
   quantity          Int
   subtotalCentavos  Int
+  // Units of this line handed back through refunds (never more than quantity).
+  refundedQuantity  Int      @default(0)
 }
 
 enum StockMovementType {
@@ -237,6 +260,29 @@ model StockMovement {
 
   @@index([productId])
   @@index([orderId])
+}
+
+// A refund on an in-store sale, processed by a manager/owner only (see
+// refundPosSale in lib/pos.ts). Refunded items go back into stock, and the
+// money comes out of the refunding person's drawer (cash or GCash), so it
+// lowers their expected balance at close (lib/shifts.ts).
+model Refund {
+  id             String   @id @default(cuid())
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        String
+  amountCentavos Int
+  // Drawer the money was paid back from: "cash" or "gcash".
+  method         String
+  reason         String
+  // What was handed back, e.g. [{ orderItemId, productName, quantity }].
+  items          Json
+  refundedById   String
+  refundedByName String
+  createdAt      DateTime @default(now())
+
+  @@index([orderId])
+  @@index([refundedById, createdAt])
+  @@index([createdAt])
 }
 
 // Admin-entered operating expenses, used for net profit/loss in Reports.
@@ -388,4 +434,93 @@ model Bill {
 
   @@index([dueDate])
   @@index([paidAt])
+}
+
+
+// A loyalty-program member, identified by mobile number. Customers check
+// their points on the website with phone number + PIN; the PIN is generated
+// at sign-up, shown to the cashier once, and only its hash is stored.
+model Customer {
+  id                String    @id @default(cuid())
+  name              String
+  // Normalised to +639XXXXXXXXX — see normalizePhone() in lib/loyalty-math.ts.
+  phone             String    @unique
+  pinHash           String
+  points            Int       @default(0)
+  lifetimePoints    Int       @default(0)
+  // Public balance lookups lock for a while after repeated wrong PINs.
+  failedPinAttempts Int       @default(0)
+  lockedUntil       DateTime?
+  createdByName     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  orders       Order[]
+  transactions PointsTransaction[]
+}
+
+enum PointsTransactionType {
+  EARN
+  REDEEM
+  ADJUST      // manual correction by a manager/owner
+  VOID_EARN   // points taken back when a sale is voided
+  VOID_REDEEM // points given back when a sale is voided
+}
+
+// Append-only points ledger; Customer.points is the running total of it.
+model PointsTransaction {
+  id           String                @id @default(cuid())
+  customer     Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId   String
+  type         PointsTransactionType
+  points       Int // signed: positive adds to the balance, negative takes away
+  balanceAfter Int
+  order        Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderId      String?
+  note         String?
+  userName     String?
+  createdAt    DateTime              @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([orderId])
+}
+
+
+// Money taken out of the register at the POS — salary, cash advances (CA),
+// bills payment, supplies and so on. It lowers the drawer's expected balance
+// (lib/shifts.ts); categories flagged as expenses in lib/cashout-config.ts
+// also count toward operating costs in Reports/Profit (lib/profit.ts).
+model CashOut {
+  id             String    @id @default(cuid())
+  cashierId      String
+  cashierName    String
+  // Key from CASH_OUT_CATEGORIES in lib/cashout-config.ts (SALARY, CASH_ADVANCE, …).
+  category       String
+  // Who or what it was for, e.g. an employee's name or "VECO bill".
+  payee          String?
+  amountCentavos Int
+  // Which drawer the money came out of: "cash" or "gcash".
+  paidFrom       String    @default("cash")
+  note           String?
+  voidedAt       DateTime?
+  voidedByName   String?
+  voidReason     String?
+  createdAt      DateTime  @default(now())
+
+  @@index([cashierId, createdAt])
+  @@index([createdAt])
+}
+
+// A store computer the owner has approved for staff sign-in. The browser holds
+// a secret random key in an httpOnly cookie; only its SHA-256 hash is stored
+// here. STAFF logins are refused from any browser without an active key (see
+// lib/pos-device.ts). Owners and managers can sign in from anywhere.
+model PosDevice {
+  id             String    @id @default(cuid())
+  name           String
+  tokenHash      String    @unique
+  approvedByName String
+  createdAt      DateTime  @default(now())
+  lastSeenAt     DateTime?
+  revokedAt      DateTime?
 }

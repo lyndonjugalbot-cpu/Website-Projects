@@ -3,12 +3,15 @@
 // always agree.
 //
 //   net profit = net sales − cost of goods sold − operating costs
-//   operating costs = logged expenses + bills marked paid + payslips
+//   operating costs = logged expenses (incl. POS cash-outs for supplies, delivery
+//   and other, not salary/CA/bills which Payroll and Bills already cover)
+//   + bills marked paid + payslips
 //
 // Supplier delivery receipts are deliberately NOT a cost here: they buy
 // stock, and that stock's cost is already counted (as COGS) when it sells.
 // Subtracting both would count the same money twice.
 import { prisma } from "@/lib/prisma";
+import { EXPENSE_CASH_OUT_KEYS } from "@/lib/cashout-config";
 import { manilaDateOf } from "@/lib/deliveries";
 import { manilaDayEndUtc, manilaDayStartUtc, todayInManila } from "@/lib/timezone";
 
@@ -25,15 +28,19 @@ export type OperatingCosts = {
  * end of the pay period.
  */
 export async function getOperatingCosts(startUtc: Date, endUtc: Date): Promise<OperatingCosts> {
-  const [expenses, bills, payslips] = await Promise.all([
+  const [expenses, posCashOuts, bills, payslips] = await Promise.all([
     prisma.expense.aggregate({ where: { date: { gte: startUtc, lt: endUtc } }, _sum: { amountCentavos: true } }),
+    prisma.cashOut.aggregate({
+      where: { voidedAt: null, category: { in: EXPENSE_CASH_OUT_KEYS }, createdAt: { gte: startUtc, lt: endUtc } },
+      _sum: { amountCentavos: true },
+    }),
     prisma.bill.findMany({
       where: { isPaid: true, paidAt: { gte: startUtc, lt: endUtc } },
       select: { amountCentavos: true, paidAmountCentavos: true },
     }),
     prisma.payslip.aggregate({ where: { periodEnd: { gte: startUtc, lt: endUtc } }, _sum: { netPayCentavos: true } }),
   ]);
-  const expensesCentavos = expenses._sum.amountCentavos ?? 0;
+  const expensesCentavos = (expenses._sum.amountCentavos ?? 0) + (posCashOuts._sum.amountCentavos ?? 0);
   const billsPaidCentavos = bills.reduce((s, b) => s + (b.paidAmountCentavos ?? b.amountCentavos), 0);
   const payrollCentavos = payslips._sum.netPayCentavos ?? 0;
   return {
@@ -86,13 +93,18 @@ export async function getProfitSeries(startDate?: string, endDate: string = toda
   const orderWhereBase = { paymentStatus: "PAID" as const, createdAt: { lt: endUtc } };
   let start = startDate;
   if (!start) {
-    const [firstOrder, firstExpense, firstBill, firstPayslip] = await Promise.all([
+    const [firstOrder, firstExpense, firstCashOut, firstBill, firstPayslip] = await Promise.all([
       prisma.order.findFirst({ where: orderWhereBase, orderBy: { createdAt: "asc" }, select: { createdAt: true } }),
       prisma.expense.findFirst({ orderBy: { date: "asc" }, select: { date: true } }),
+      prisma.cashOut.findFirst({
+        where: { voidedAt: null, category: { in: EXPENSE_CASH_OUT_KEYS } },
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      }),
       prisma.bill.findFirst({ where: { isPaid: true, paidAt: { not: null } }, orderBy: { paidAt: "asc" }, select: { paidAt: true } }),
       prisma.payslip.findFirst({ orderBy: { periodEnd: "asc" }, select: { periodEnd: true } }),
     ]);
-    const candidates = [firstOrder?.createdAt, firstExpense?.date, firstBill?.paidAt, firstPayslip?.periodEnd]
+    const candidates = [firstOrder?.createdAt, firstExpense?.date, firstCashOut?.createdAt, firstBill?.paidAt, firstPayslip?.periodEnd]
       .filter((d): d is Date => Boolean(d))
       .map(manilaDateOf)
       .sort();
@@ -101,7 +113,7 @@ export async function getProfitSeries(startDate?: string, endDate: string = toda
   if (start > endDate) start = endDate;
   const startUtc = manilaDayStartUtc(start);
 
-  const [orders, expenses, bills, payslips] = await Promise.all([
+  const [orders, expenses, posCashOuts, bills, payslips] = await Promise.all([
     prisma.order.findMany({
       where: { ...orderWhereBase, createdAt: { gte: startUtc, lt: endUtc } },
       select: {
@@ -109,10 +121,15 @@ export async function getProfitSeries(startDate?: string, endDate: string = toda
         subtotalCentavos: true,
         discountCentavos: true,
         deliveryFeeCentavos: true,
-        items: { select: { quantity: true, unitCostCentavos: true } },
+        refundedCentavos: true,
+        items: { select: { quantity: true, refundedQuantity: true, unitCostCentavos: true } },
       },
     }),
     prisma.expense.findMany({ where: { date: { gte: startUtc, lt: endUtc } }, select: { date: true, amountCentavos: true } }),
+    prisma.cashOut.findMany({
+      where: { voidedAt: null, category: { in: EXPENSE_CASH_OUT_KEYS }, createdAt: { gte: startUtc, lt: endUtc } },
+      select: { createdAt: true, amountCentavos: true },
+    }),
     prisma.bill.findMany({
       where: { isPaid: true, paidAt: { gte: startUtc, lt: endUtc } },
       select: { paidAt: true, amountCentavos: true, paidAmountCentavos: true },
@@ -133,12 +150,14 @@ export async function getProfitSeries(startDate?: string, endDate: string = toda
     const row = day(o.createdAt);
     // Order.subtotal is the sum of its lines (gross sales), so net sales
     // here is the same figure Reports calls "net sales" for this order.
-    const net = o.subtotalCentavos - o.discountCentavos + o.deliveryFeeCentavos;
+    // Partial refunds come off (fully refunded sales aren't PAID, so never get here).
+    const net = o.subtotalCentavos - o.discountCentavos - o.refundedCentavos + o.deliveryFeeCentavos;
     row.sales += net;
     totals.sales += net;
     for (const item of o.items) {
-      if (item.unitCostCentavos === null) totals.unitsMissingCost += item.quantity;
-      const cost = (item.unitCostCentavos ?? 0) * item.quantity;
+      const keptQty = item.quantity - item.refundedQuantity; // refunded units went back into stock
+      if (item.unitCostCentavos === null) totals.unitsMissingCost += keptQty;
+      const cost = (item.unitCostCentavos ?? 0) * keptQty;
       row.cogs += cost;
       totals.cogs += cost;
     }
@@ -148,6 +167,10 @@ export async function getProfitSeries(startDate?: string, endDate: string = toda
   for (const e of expenses) {
     day(e.date).costs += e.amountCentavos;
     costs.expensesCentavos += e.amountCentavos;
+  }
+  for (const c of posCashOuts) {
+    day(c.createdAt).costs += c.amountCentavos;
+    costs.expensesCentavos += c.amountCentavos;
   }
   for (const b of bills) {
     const amount = b.paidAmountCentavos ?? b.amountCentavos;

@@ -45,3 +45,33 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   return NextResponse.json({ user });
 }
+
+// Permanently removes an account (owner only). Past sales, time entries and
+// cash counts keep the person's name as a snapshot, so history is unaffected;
+// a linked payroll employee is just unlinked from the login.
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+  let session;
+  try {
+    session = await requireRole("OWNER");
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
+    throw err;
+  }
+
+  if (params.id === session.user.id) {
+    return NextResponse.json({ error: "You can't delete your own account" }, { status: 400 });
+  }
+
+  const existing = await prisma.user.findUnique({ where: { id: params.id } });
+  if (!existing) return NextResponse.json({ error: "Account not found" }, { status: 404 });
+
+  if (existing.role === "OWNER") {
+    const owners = await prisma.user.count({ where: { role: "OWNER", isActive: true, id: { not: params.id } } });
+    if (owners === 0) {
+      return NextResponse.json({ error: "There must always be at least one active owner account" }, { status: 400 });
+    }
+  }
+
+  await prisma.user.delete({ where: { id: params.id } });
+  return NextResponse.json({ ok: true });
+}

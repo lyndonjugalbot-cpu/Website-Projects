@@ -5,6 +5,7 @@ import { Forbidden } from "@/components/admin/Forbidden";
 import { expectedBalances } from "@/lib/shifts";
 import { formatCentavosAsPHP } from "@/lib/money";
 import { formatManilaDateTime } from "@/lib/timezone";
+import { CASH_OUT_LABELS } from "@/lib/cashout-config";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Cash counts" };
@@ -29,8 +30,13 @@ export default async function CashCountsPage() {
   // Closed sessions carry a frozen "expected" snapshot; open ones are shown live.
   const rows = await Promise.all(
     sessions.map(async (s) => {
-      if (s.closedAt) return { s, live: null };
-      return { s, live: await expectedBalances(s) };
+      // Cash-outs (salary, bills…) this cashier recorded during the shift.
+      const cashOuts = await prisma.cashOut.findMany({
+        where: { cashierId: s.userId, createdAt: { gte: s.openedAt, ...(s.closedAt ? { lte: s.closedAt } : {}) } },
+        orderBy: { createdAt: "asc" },
+      });
+      if (s.closedAt) return { s, live: null, cashOuts };
+      return { s, live: await expectedBalances(s), cashOuts };
     })
   );
 
@@ -39,7 +45,7 @@ export default async function CashCountsPage() {
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Cash counts</h1>
       <p className="mt-1 text-sm text-neutral-500">
         Each cashier&apos;s start-of-shift and end-of-shift cash and GCash. <em>Expected</em> = the opening amount plus that cashier&apos;s cash / GCash sales
-        since they started (voided sales excluded). Cashiers don&apos;t see the expected figure when they count.
+        since they started (a Cash + GCash split sale counts toward each), minus the cash outs they recorded (salary, bills…) and any refunds they paid out; voided sales and voided cash outs are excluded. Cashiers don&apos;t see the expected figure when they count.
       </p>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-neutral-200 bg-white">
@@ -49,6 +55,7 @@ export default async function CashCountsPage() {
               <th className="px-4 py-3 font-medium">Cashier</th>
               <th className="px-4 py-3 font-medium">Shift</th>
               <th className="px-4 py-3 text-right font-medium">Cash start</th>
+              <th className="px-4 py-3 font-medium">Cash outs</th>
               <th className="px-4 py-3 text-right font-medium">Cash expected</th>
               <th className="px-4 py-3 text-right font-medium">Cash end</th>
               <th className="px-4 py-3 text-right font-medium">GCash start</th>
@@ -60,12 +67,12 @@ export default async function CashCountsPage() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-sm text-neutral-400">
+                <td colSpan={10} className="px-4 py-8 text-center text-sm text-neutral-400">
                   No cash counts yet. Cashiers record them from the POS screen.
                 </td>
               </tr>
             )}
-            {rows.map(({ s, live }) => {
+            {rows.map(({ s, live, cashOuts }) => {
               const expCash = s.expectedCashCentavos ?? live?.expectedCashCentavos ?? s.openingCashCentavos;
               const expGcash = s.expectedGcashCentavos ?? live?.expectedGcashCentavos ?? s.openingGcashCentavos;
               const closed = s.closedAt !== null;
@@ -79,6 +86,19 @@ export default async function CashCountsPage() {
                     <br />→ {s.closedAt ? formatManilaDateTime(s.closedAt) : <span className="font-medium text-emerald-700">open now</span>}
                   </td>
                   <td className="px-4 py-3 text-right">{formatCentavosAsPHP(s.openingCashCentavos)}</td>
+                  <td className="px-4 py-3 text-xs text-neutral-600">
+                    {cashOuts.length === 0 ? (
+                      <span className="text-neutral-300">—</span>
+                    ) : (
+                      cashOuts.map((c) => (
+                        <span key={c.id} className={`block ${c.voidedAt ? "text-neutral-300 line-through" : ""}`}>
+                          {CASH_OUT_LABELS[c.category] ?? c.category}
+                          {c.payee ? ` · ${c.payee}` : ""}: −{formatCentavosAsPHP(c.amountCentavos)}
+                          {c.paidFrom === "gcash" ? " (GCash)" : ""}
+                        </span>
+                      ))
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right text-neutral-500">{formatCentavosAsPHP(expCash)}</td>
                   <td className="px-4 py-3 text-right font-medium">{closed ? formatCentavosAsPHP(s.closingCashCentavos ?? 0) : "—"}</td>
                   <td className="px-4 py-3 text-right">{formatCentavosAsPHP(s.openingGcashCentavos)}</td>
@@ -102,8 +122,8 @@ export default async function CashCountsPage() {
         </table>
       </div>
       <p className="mt-3 text-xs text-neutral-400">
-        Cash taken out of the drawer for expenses (e.g. paying a supplier) isn&apos;t a sale, so it shows up as &ldquo;short&rdquo; unless the cashier
-        notes it — read the note beside the result.
+        Cash outs recorded in the POS are already taken off the expected amount, so they no longer show up as &ldquo;short&rdquo;. Money taken out
+        without being recorded still will, so read the note beside the result.
       </p>
     </div>
   );

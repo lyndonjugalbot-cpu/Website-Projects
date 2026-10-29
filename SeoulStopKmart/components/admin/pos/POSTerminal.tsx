@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { formatCentavosAsPHP } from "@/lib/money";
 import { STAFF_MAX_DISCOUNT_PERCENT } from "@/lib/store-config";
+import { maxRedeemablePoints, pointsEarnedFor, pointsValueCentavos } from "@/lib/loyalty-math";
+import { MemberPanel } from "@/components/admin/pos/MemberPanel";
+import type { PosMember } from "@/components/admin/pos/MemberPanel";
 import type { PaymentMethodType, ProductStatus } from "@/lib/types";
 import { PAYMENT_METHOD_LABELS } from "@/lib/types";
 import type { UserRole } from "@/generated/prisma/enums";
@@ -24,7 +27,7 @@ type PosProduct = {
 
 type CartLine = { productId: string; name: string; unitPriceCentavos: number; quantity: number; stock: number };
 
-const POS_METHODS: PaymentMethodType[] = ["cash", "gcash", "paymaya", "bank_transfer"];
+const POS_METHODS: PaymentMethodType[] = ["cash", "gcash", "split", "paymaya", "bank_transfer"];
 
 function effective(p: Pick<PosProduct, "priceCentavos" | "salePriceCentavos">) {
   return p.salePriceCentavos ?? p.priceCentavos;
@@ -55,7 +58,10 @@ type SaleDraft = {
   discountInput: string;
   paymentMethod: PaymentMethodType;
   cashReceivedInput: string;
+  gcashAmountInput?: string;
   customerName: string;
+  member?: PosMember | null;
+  redeemInput?: string;
 };
 
 function readDraft(key: string): SaleDraft | null {
@@ -92,7 +98,11 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
   const [discountInput, setDiscountInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>("cash");
   const [cashReceivedInput, setCashReceivedInput] = useState("");
+  // Split (cash + GCash) only: how much the customer is paying by GCash.
+  const [gcashAmountInput, setGcashAmountInput] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [member, setMember] = useState<PosMember | null>(null);
+  const [redeemInput, setRedeemInput] = useState("");
   // True once the saved draft (if any) has been loaded — the save effect must not run before this,
   // or the empty initial state would overwrite the draft.
   const [draftLoaded, setDraftLoaded] = useState(false);
@@ -128,7 +138,10 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
       setDiscountInput(draft.discountInput ?? "");
       setPaymentMethod(draft.paymentMethod ?? "cash");
       setCashReceivedInput(draft.cashReceivedInput ?? "");
+      setGcashAmountInput(draft.gcashAmountInput ?? "");
       setCustomerName(draft.customerName ?? "");
+      setMember(draft.member ?? null);
+      setRedeemInput(draft.redeemInput ?? "");
     }
     setDraftLoaded(true);
   }, [draftKey]);
@@ -141,12 +154,12 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
         localStorage.removeItem(draftKey);
         return;
       }
-      const draft: SaleDraft = { savedAt: Date.now(), cart, discountInput, paymentMethod, cashReceivedInput, customerName };
+      const draft: SaleDraft = { savedAt: Date.now(), cart, discountInput, paymentMethod, cashReceivedInput, gcashAmountInput, customerName, member, redeemInput };
       localStorage.setItem(draftKey, JSON.stringify(draft));
     } catch {
       // Storage unavailable — carry on without persistence.
     }
-  }, [draftLoaded, draftKey, cart, discountInput, paymentMethod, cashReceivedInput, customerName]);
+  }, [draftLoaded, draftKey, cart, discountInput, paymentMethod, cashReceivedInput, gcashAmountInput, customerName, member, redeemInput]);
 
   // Once, after the restored sale and the product list are both loaded, bring the lines up to
   // date: prices, stock caps, and drop anything that is no longer for sale.
@@ -249,7 +262,10 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
     setCart([]);
     setDiscountInput("");
     setCashReceivedInput("");
+    setGcashAmountInput("");
     setCustomerName("");
+    setMember(null);
+    setRedeemInput("");
     setPaymentMethod("cash");
     setError(null);
   }
@@ -260,15 +276,27 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
   const discountCapCentavos = role === "STAFF" ? Math.min(subtotalCentavos, maxStaffDiscountCentavos) : subtotalCentavos;
   const discountCentavos = Math.max(0, Math.min(rawDiscount, discountCapCentavos));
   const discountExceedsCap = rawDiscount > discountCapCentavos;
-  const totalCentavos = subtotalCentavos - discountCentavos;
+  // Loyalty points: spend what the member asked for, within their balance and the per-sale limit.
+  const maxRedeem = member ? maxRedeemablePoints(member.points, subtotalCentavos - discountCentavos) : 0;
+  const requestedRedeem = Number.parseInt(redeemInput, 10) || 0;
+  const redeemPoints = member && maxRedeem > 0 ? Math.max(0, Math.min(requestedRedeem, maxRedeem)) : 0;
+  const pointsDiscountCentavos = pointsValueCentavos(redeemPoints);
+  const totalCentavos = subtotalCentavos - discountCentavos - pointsDiscountCentavos;
+  const earnPreview = member ? pointsEarnedFor(totalCentavos) : 0;
 
   const cashReceivedCentavos = Math.round((Number.parseFloat(cashReceivedInput) || 0) * 100);
-  const changeDueCentavos = paymentMethod === "cash" ? cashReceivedCentavos - totalCentavos : null;
+  // Split payment: GCash covers part of the total, cash covers the rest.
+  const isSplit = paymentMethod === "split";
+  const gcashAmountCentavos = Math.round((Number.parseFloat(gcashAmountInput) || 0) * 100);
+  const splitValid = gcashAmountCentavos > 0 && gcashAmountCentavos < totalCentavos;
+  const cashDueCentavos = paymentMethod === "cash" ? totalCentavos : isSplit ? totalCentavos - gcashAmountCentavos : null;
+  const changeDueCentavos = cashDueCentavos !== null ? cashReceivedCentavos - cashDueCentavos : null;
 
   const canComplete =
     cart.length > 0 &&
     !discountExceedsCap &&
-    (paymentMethod !== "cash" || cashReceivedCentavos >= totalCentavos) &&
+    (!isSplit || splitValid) &&
+    (cashDueCentavos === null || cashReceivedCentavos >= cashDueCentavos) &&
     !isSubmitting;
 
   async function handleCompleteSale() {
@@ -282,8 +310,11 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
           items: cart.map((l) => ({ productId: l.productId, quantity: l.quantity })),
           discountCentavos,
           paymentMethod,
-          cashReceivedCentavos: paymentMethod === "cash" ? cashReceivedCentavos : undefined,
+          cashReceivedCentavos: cashDueCentavos !== null ? cashReceivedCentavos : undefined,
+          gcashAmountCentavos: isSplit ? gcashAmountCentavos : undefined,
           customerName: customerName || undefined,
+          customerId: member?.id,
+          pointsToRedeem: redeemPoints,
         }),
       });
       const data = await res.json();
@@ -436,16 +467,37 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
             {discountExceedsCap && (
               <p className="text-xs text-red-600">Max discount is {formatCentavosAsPHP(discountCapCentavos)} for your role.</p>
             )}
+            {pointsDiscountCentavos > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <span>Points ({redeemPoints.toLocaleString()})</span>
+                <span>-{formatCentavosAsPHP(pointsDiscountCentavos)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t border-neutral-100 pt-2 text-base font-semibold text-neutral-900">
               <span>Total</span>
               <span>{formatCentavosAsPHP(totalCentavos)}</span>
             </div>
           </div>
 
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-neutral-700">Customer name (optional)</span>
-            <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="input" />
-          </label>
+          <MemberPanel
+            member={member}
+            onChange={(m) => {
+              setMember(m);
+              setRedeemInput("");
+            }}
+            maxRedeem={maxRedeem}
+            redeemInput={redeemInput}
+            onRedeemInputChange={setRedeemInput}
+            redeemPoints={redeemPoints}
+            earnPreview={earnPreview}
+          />
+
+          {!member && (
+            <label className="flex flex-col gap-1.5 text-sm">
+              <span className="font-medium text-neutral-700">Customer name (optional)</span>
+              <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="input" />
+            </label>
+          )}
 
           <div>
             <p className="mb-1.5 text-sm font-medium text-neutral-700">Payment method</p>
@@ -465,8 +517,33 @@ export function POSTerminal({ userId, cashierName, role }: { userId: string; cas
             </div>
           </div>
 
-          {paymentMethod === "cash" && (
+          {(paymentMethod === "cash" || isSplit) && (
             <div className="flex flex-col gap-2">
+              {isSplit && (
+                <>
+                  <label className="flex items-center justify-between gap-2 text-sm">
+                    <span className="text-neutral-600">GCash amount (₱)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={gcashAmountInput}
+                      onChange={(e) => setGcashAmountInput(e.target.value)}
+                      className="input w-28 py-1 text-right"
+                    />
+                  </label>
+                  {gcashAmountInput && !splitValid ? (
+                    <p className="text-xs text-red-600">GCash must be more than ₱0 and less than the total.</p>
+                  ) : (
+                    splitValid && (
+                      <div className="flex justify-between text-sm text-neutral-600">
+                        <span>Cash to collect</span>
+                        <span className="font-medium text-neutral-900">{formatCentavosAsPHP(cashDueCentavos!)}</span>
+                      </div>
+                    )
+                  )}
+                </>
+              )}
               <label className="flex items-center justify-between gap-2 text-sm">
                 <span className="text-neutral-600">Cash received (₱)</span>
                 <input

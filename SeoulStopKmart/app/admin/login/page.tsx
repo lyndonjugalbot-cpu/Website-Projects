@@ -26,7 +26,11 @@ export default function AdminLoginPage() {
     });
 
     if (result?.error) {
-      setError("Incorrect email or password.");
+      setError(
+        result.error === "DEVICE_NOT_ALLOWED"
+          ? "This device isn't approved for staff sign-in. Please sign in on the store computer."
+          : "Incorrect email or password."
+      );
       setIsSubmitting(false);
       return;
     }

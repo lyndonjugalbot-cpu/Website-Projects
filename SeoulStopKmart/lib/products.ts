@@ -4,6 +4,7 @@
 // public API response. Admin CRUD lives separately in
 // app/api/admin/products/*.
 import { prisma } from "@/lib/prisma";
+import { isPurchasable } from "@/lib/types";
 import type { ProductCategory, ProductStatus, ProductView } from "@/lib/types";
 
 // Trimmed-down shape of a Prisma Product row, enough to build a ProductView.
@@ -55,7 +56,9 @@ const SORT_TO_ORDER_BY: Record<ProductSort, Record<string, "asc" | "desc">> = {
   "name-asc": { name: "asc" },
 };
 
-/** Storefront-facing product listing — excludes INACTIVE products entirely. */
+/** Storefront-facing product listing — excludes INACTIVE products entirely.
+ *  In-stock products come first and out-of-stock ones sink to the bottom; the
+ *  chosen sort still applies within each group. */
 export async function getAllProducts(filters: ProductFilters = {}): Promise<ProductView[]> {
   const products = await prisma.product.findMany({
     where: {
@@ -73,7 +76,8 @@ export async function getAllProducts(filters: ProductFilters = {}): Promise<Prod
     },
     orderBy: SORT_TO_ORDER_BY[filters.sort ?? "newest"],
   });
-  return products.map(toProductView);
+  const views = products.map(toProductView);
+  return [...views.filter(isPurchasable), ...views.filter((p) => !isPurchasable(p))];
 }
 
 /** Products flagged "Featured" by an admin — shown in their own section on the home page. */

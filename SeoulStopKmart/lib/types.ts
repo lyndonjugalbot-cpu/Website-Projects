@@ -119,7 +119,7 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   REFUNDED: "Refunded",
 };
 
-export type PaymentMethodType = "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash";
+export type PaymentMethodType = "gcash" | "paymaya" | "card" | "cod" | "bank_transfer" | "cash" | "split";
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
   gcash: "GCash",
@@ -128,6 +128,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
   cod: "Cash on Delivery",
   bank_transfer: "Bank Transfer",
   cash: "Cash",
+  split: "Cash + GCash",
 };
 
 // --- POS / channel --------------------------------------------------------

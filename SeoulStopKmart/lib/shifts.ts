@@ -69,8 +69,11 @@ export async function getOpenCashSession(userId: string) {
 
 /**
  * What the drawer / GCash balance *should* be: the opening amount plus this
- * cashier's completed, un-voided cash (or GCash) POS sales since opening.
- * A cash sale adds its total (cash received minus change given).
+ * cashier's completed, un-voided cash (or GCash) POS sales since opening,
+ * minus any cash-outs they recorded (salary, bills…, see lib/cashouts.ts)
+ * and any refunds they paid out (lib/pos.ts, refundPosSale).
+ * A cash sale adds its total (cash received minus change given); a split
+ * (cash + GCash) sale adds its GCash part to GCash and the rest to cash.
  */
 export async function expectedBalances(
   session: { userId: string; openedAt: Date; openingCashCentavos: number; openingGcashCentavos: number },
@@ -81,23 +84,47 @@ export async function expectedBalances(
     where: {
       channel: "POS",
       cashierId: session.userId,
-      paymentStatus: "PAID",
+      // Refunded sales still brought the money in; the refund rows below take it out.
+      paymentStatus: { in: ["PAID", "REFUNDED"] },
       voidedAt: null,
-      paymentMethod: { in: ["cash", "gcash"] },
+      paymentMethod: { in: ["cash", "gcash", "split"] },
       createdAt: { gte: session.openedAt, lte: until },
     },
-    _sum: { totalCentavos: true },
+    _sum: { totalCentavos: true, gcashAmountCentavos: true },
     _count: true,
   });
-  const sum = (m: string) => sales.find((s) => s.paymentMethod === m)?._sum.totalCentavos ?? 0;
-  const count = (m: string) => sales.find((s) => s.paymentMethod === m)?._count ?? 0;
+  // Refunds paid out of this person's drawer.
+  const refunds = await prisma.refund.groupBy({
+    by: ["method"],
+    where: { refundedById: session.userId, createdAt: { gte: session.openedAt, lte: until } },
+    _sum: { amountCentavos: true },
+  });
+  // Money the cashier took out of the register (salary, bills…) in the same window.
+  const cashOuts = await prisma.cashOut.groupBy({
+    by: ["paidFrom"],
+    where: { cashierId: session.userId, voidedAt: null, createdAt: { gte: session.openedAt, lte: until } },
+    _sum: { amountCentavos: true },
+  });
+  const out = (m: string) => cashOuts.find((c) => c.paidFrom === m)?._sum.amountCentavos ?? 0;
+  const refunded = (m: string) => refunds.find((r) => r.method === m)?._sum.amountCentavos ?? 0;
+  const row = (m: string) => sales.find((s) => s.paymentMethod === m);
+  const splitGcash = row("split")?._sum.gcashAmountCentavos ?? 0;
+  const splitCash = (row("split")?._sum.totalCentavos ?? 0) - splitGcash;
+  const cashSales = (row("cash")?._sum.totalCentavos ?? 0) + splitCash;
+  const gcashSales = (row("gcash")?._sum.totalCentavos ?? 0) + splitGcash;
+  const splitCount = row("split")?._count ?? 0;
   return {
-    cashSalesCentavos: sum("cash"),
-    gcashSalesCentavos: sum("gcash"),
-    cashSalesCount: count("cash"),
-    gcashSalesCount: count("gcash"),
-    expectedCashCentavos: session.openingCashCentavos + sum("cash"),
-    expectedGcashCentavos: session.openingGcashCentavos + sum("gcash"),
+    cashSalesCentavos: cashSales,
+    gcashSalesCentavos: gcashSales,
+    // A split sale counts toward both.
+    cashSalesCount: (row("cash")?._count ?? 0) + splitCount,
+    gcashSalesCount: (row("gcash")?._count ?? 0) + splitCount,
+    cashOutCashCentavos: out("cash"),
+    cashOutGcashCentavos: out("gcash"),
+    refundCashCentavos: refunded("cash"),
+    refundGcashCentavos: refunded("gcash"),
+    expectedCashCentavos: session.openingCashCentavos + cashSales - out("cash") - refunded("cash"),
+    expectedGcashCentavos: session.openingGcashCentavos + gcashSales - out("gcash") - refunded("gcash"),
   };
 }
 

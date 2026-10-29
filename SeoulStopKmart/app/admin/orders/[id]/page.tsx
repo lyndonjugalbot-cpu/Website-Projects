@@ -104,6 +104,13 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                 value={order.paymentMethod ? PAYMENT_METHOD_LABELS[order.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS] ?? order.paymentMethod : "—"}
               />
               {order.channel === "ONLINE" && <Info label="Sandbox/demo payment" value={order.isMockPayment ? "Yes" : "No"} />}
+              {order.gcashAmountCentavos !== null && (
+                <>
+                  <Info label="Paid by GCash" value={formatCentavosAsPHP(order.gcashAmountCentavos)} />
+                  <Info label="Paid in cash" value={formatCentavosAsPHP(order.totalCentavos - order.gcashAmountCentavos)} />
+                </>
+              )}
+              {order.refundedCentavos > 0 && <Info label="Refunded" value={formatCentavosAsPHP(order.refundedCentavos)} />}
               {order.cashReceivedCentavos !== null && (
                 <Info label="Cash received" value={formatCentavosAsPHP(order.cashReceivedCentavos)} />
               )}

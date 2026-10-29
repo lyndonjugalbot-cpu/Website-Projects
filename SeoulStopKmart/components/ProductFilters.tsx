@@ -15,20 +15,24 @@ const SORT_LABELS: Record<ProductSort, string> = {
 export function ProductFilters({
   search,
   category,
+  categoryExplicit,
   sort,
 }: {
   search?: string;
-  category?: string;
+  category: string;
+  categoryExplicit: boolean;
   sort?: string;
 }) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(search ?? "");
 
   function apply(next: { search?: string; category?: string; sort?: string }) {
-    const merged = { search, category, sort, ...next };
+    const merged = { search, sort, ...next };
+    // A search from the default Instant noodles view should look at everything.
+    const nextCategory = next.category ?? (categoryExplicit ? category : merged.search ? "ALL" : undefined);
     const params = new URLSearchParams();
     if (merged.search) params.set("search", merged.search);
-    if (merged.category) params.set("category", merged.category);
+    if (nextCategory) params.set("category", nextCategory);
     if (merged.sort) params.set("sort", merged.sort);
     router.push(`/products?${params.toString()}`);
   }
@@ -66,12 +70,12 @@ export function ProductFilters({
       </form>
 
       <select
-        value={category ?? ""}
-        onChange={(e) => apply({ category: e.target.value || undefined })}
+        value={category}
+        onChange={(e) => apply({ category: e.target.value })}
         className="input sm:w-56"
         aria-label="Filter by category"
       >
-        <option value="">All categories</option>
+        <option value="ALL">All categories</option>
         {ALL_CATEGORIES.map((c) => (
           <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
         ))}

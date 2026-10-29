@@ -1,4 +1,5 @@
-// Voids a completed POS sale (the "Void sale" button on the receipt page).
+// Voids a completed POS sale (the "Void sale" button on the receipt page),
+// Manager/Owner only.
 // Permission logic (who can void what, when) lives in lib/pos.ts —
 // voidPosSale() — this route is just the HTTP wrapper around it.
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +12,7 @@ const bodySchema = z.object({ reason: z.string().trim().min(1, "A reason is requ
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   let session;
   try {
-    session = await requireRole("STAFF");
+    session = await requireRole("MANAGER");
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: err.status });
     throw err;

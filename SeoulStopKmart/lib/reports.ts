@@ -105,15 +105,19 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
   for (const order of soldOrders) {
     for (const item of order.items) {
       grossSalesCentavos += item.subtotalCentavos;
-      unitsSold += item.quantity;
-      const lineCost = (item.unitCostCentavos ?? 0) * item.quantity;
+      // Partly refunded sales: the refunded units went back into stock, so
+      // they are neither sold units nor cost of goods (the money handed back
+      // is subtracted from net sales below).
+      const keptQty = item.quantity - item.refundedQuantity;
+      unitsSold += keptQty;
+      const lineCost = (item.unitCostCentavos ?? 0) * keptQty;
       cogsCentavos += lineCost;
       if (item.unitCostCentavos === null) itemsMissingCostCount += 1;
 
       const key = item.productId ?? item.productName;
       const existing = byProduct.get(key);
       if (existing) {
-        existing.quantity += item.quantity;
+        existing.quantity += keptQty;
         existing.revenueCentavos += item.subtotalCentavos;
         existing.costCentavos += lineCost;
         existing.profitCentavos += item.subtotalCentavos - lineCost;
@@ -121,7 +125,7 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
         byProduct.set(key, {
           productId: item.productId,
           productName: item.productName,
-          quantity: item.quantity,
+          quantity: keptQty,
           revenueCentavos: item.subtotalCentavos,
           costCentavos: lineCost,
           profitCentavos: item.subtotalCentavos - lineCost,
@@ -132,13 +136,13 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
       const catKey = category ?? "UNKNOWN";
       const catExisting = byCategory.get(catKey);
       if (catExisting) {
-        catExisting.quantity += item.quantity;
+        catExisting.quantity += keptQty;
         catExisting.revenueCentavos += item.subtotalCentavos;
       } else {
         byCategory.set(catKey, {
           category: catKey as ProductCategory | "UNKNOWN",
           label: category ? CATEGORY_LABELS[category] : "Unknown / deleted product",
-          quantity: item.quantity,
+          quantity: keptQty,
           revenueCentavos: item.subtotalCentavos,
         });
       }
@@ -147,14 +151,16 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
 
   const discountsCentavos = soldOrders.reduce((sum, o) => sum + o.discountCentavos, 0);
   const deliveryIncomeCentavos = soldOrders.reduce((sum, o) => sum + o.deliveryFeeCentavos, 0);
-  const refundsCentavos = refundedOrders.reduce((sum, o) => sum + o.totalCentavos, 0);
+  // Money paid back on sales that are only partly refunded (still PAID).
+  const partialRefundsCentavos = soldOrders.reduce((sum, o) => sum + o.refundedCentavos, 0);
+  const refundsCentavos = refundedOrders.reduce((sum, o) => sum + o.totalCentavos, 0) + partialRefundsCentavos;
 
   // The core formulas — also shown to the admin directly in the Reports UI
   // (components/admin/ReportsView.tsx) so nothing here is a "hidden" number.
-  // Refunded/voided orders are NOT in grossSalesCentavos (only PAID orders
-  // are), so they must not be subtracted again here — they simply never
-  // counted as sales. `refundsCentavos` is informational only.
-  const netSalesCentavos = grossSalesCentavos - discountsCentavos + deliveryIncomeCentavos;
+  // Fully refunded/voided orders are NOT in grossSalesCentavos (only PAID
+  // orders are), so they must not be subtracted again here — they simply
+  // never counted as sales. Partial refunds on PAID orders are subtracted.
+  const netSalesCentavos = grossSalesCentavos - discountsCentavos - partialRefundsCentavos + deliveryIncomeCentavos;
   const grossProfitCentavos = netSalesCentavos - cogsCentavos;
   const grossProfitMarginPercent = netSalesCentavos > 0 ? (grossProfitCentavos / netSalesCentavos) * 100 : 0;
 
@@ -176,7 +182,7 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
     const method = order.paymentMethod ?? "unknown";
     const pm = paymentMethodMap.get(method) ?? { method, count: 0, totalCentavos: 0 };
     pm.count += 1;
-    pm.totalCentavos += order.totalCentavos;
+    pm.totalCentavos += order.totalCentavos - order.refundedCentavos;
     paymentMethodMap.set(method, pm);
 
     const ch = channelMap.get(order.channel as SalesChannel) ?? {
@@ -185,7 +191,7 @@ export async function generateReport(filters: ReportFilters): Promise<ReportResu
       totalCentavos: 0,
     };
     ch.count += 1;
-    ch.totalCentavos += order.totalCentavos;
+    ch.totalCentavos += order.totalCentavos - order.refundedCentavos;
     channelMap.set(order.channel as SalesChannel, ch);
   }
 

@@ -22,12 +22,15 @@ function navLinksFor(role: UserRole) {
   const links = [
     { href: "/admin/pos", label: "POS" },
     { href: "/admin/pos/deliveries", label: "Deliveries" },
+    { href: "/admin/pos/shift", label: "Shift" },
     { href: "/admin/orders", label: "Orders" },
   ];
   if (role === "OWNER" || role === "MANAGER") {
     links.push(
+      { href: "/admin/sales", label: "Sales history" },
       { href: "/admin/products", label: "Products" },
       { href: "/admin/inventory", label: "Inventory" },
+      { href: "/admin/customers", label: "Members" },
       { href: "/admin/reports", label: "Reports" },
       { href: "/admin/profit", label: "Profit" },
       { href: "/admin/bills", label: "Bills" },
@@ -37,7 +40,7 @@ function navLinksFor(role: UserRole) {
     );
   }
   if (role === "OWNER") {
-    links.push({ href: "/admin/staff", label: "Staff accounts" });
+    links.push({ href: "/admin/pos/devices", label: "Devices" }, { href: "/admin/staff", label: "Staff accounts" });
   }
   return links;
 }
@@ -61,6 +64,9 @@ export function AdminShell({
     ? [
         { href: "/admin/pos", label: "POS" },
         { href: "/admin/pos/deliveries", label: "Deliveries" },
+        { href: "/admin/pos/shift", label: "Shift" },
+        // Owners approve the store computer from the POS host itself.
+        ...(user.role === "OWNER" ? [{ href: "/admin/pos/devices", label: "Devices" }] : []),
       ]
     : navLinksFor(user.role);
 

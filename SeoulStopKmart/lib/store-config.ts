@@ -24,7 +24,7 @@ export const DELIVERY_AREAS = "Cebu City and nearby areas";
 // here (not lib/orders.ts) so client components can import it without
 // pulling in server-only Prisma code.
 export const DELIVERY_FEE_CENTAVOS = 8000; // ₱80.00
-export const BUSINESS_HOURS = "Mon–Sun, 9:00 AM–8:00 PM (PH time)";
+export const BUSINESS_HOURS = "Mon–Sun, 8:00 AM–3:00 AM (PH time)";
 
 // PLACEHOLDER — a real bank account must be added here before accepting
 // bank transfer orders for real; shown to customers who pick that method
@@ -47,3 +47,20 @@ export const BUSINESS_UTC_OFFSET_HOURS = 8;
 // above requires a Manager or Owner to ring up the sale themselves. Every
 // discount is still recorded with who applied it either way.
 export const STAFF_MAX_DISCOUNT_PERCENT = 10;
+
+// --- Loyalty points ---------------------------------------------------------
+// Members earn points on in-store (POS) purchases and spend them as a discount
+// at the register. Change the numbers here to change the program — the POS,
+// receipts and the public /points page all read from these.
+//
+// Earn 1 point for every ₱100 of the sale total (after discounts).
+export const POINTS_EARN_PESOS_PER_POINT = 100;
+// Each point is worth this much off a later purchase (₱1.00).
+export const POINT_VALUE_CENTAVOS = 100;
+// Smallest number of points that can be redeemed in one sale.
+export const POINTS_MIN_REDEEM = 50;
+// Points can cover at most this share of a sale, so a purchase is never free.
+export const POINTS_MAX_REDEEM_PERCENT = 50;
+// Wrong-PIN lockout for the public balance check.
+export const POINTS_MAX_PIN_ATTEMPTS = 5;
+export const POINTS_LOCK_MINUTES = 15;

@@ -10,7 +10,7 @@ export function CartIconLink() {
     <Link
       href="/cart"
       aria-label={`Cart, ${itemCount} item${itemCount === 1 ? "" : "s"}`}
-      className="relative inline-flex items-center rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900"
+      className="relative inline-flex items-center rounded-full p-2 text-white transition hover:bg-white/10 active:scale-95"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

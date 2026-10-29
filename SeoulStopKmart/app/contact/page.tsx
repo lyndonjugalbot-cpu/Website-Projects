@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BUSINESS_HOURS, CONTACT_EMAIL, CONTACT_PHONE, DELIVERY_AREAS, FACEBOOK_URL, STORE_NAME } from "@/lib/store-config";
+import { BUSINESS_HOURS, CONTACT_EMAIL, DELIVERY_AREAS, FACEBOOK_URL, STORE_NAME } from "@/lib/store-config";
 
 export const metadata: Metadata = { title: "Contact" };
 
@@ -23,10 +23,6 @@ export default function ContactPage() {
         <div className="flex gap-2">
           <dt className="font-medium text-neutral-900">Email:</dt>
           <dd><a href={`mailto:${CONTACT_EMAIL}`} className="hover:underline">{CONTACT_EMAIL}</a></dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="font-medium text-neutral-900">Phone:</dt>
-          <dd><a href={`tel:${CONTACT_PHONE.replace(/\s+/g, "")}`} className="hover:underline">{CONTACT_PHONE}</a></dd>
         </div>
         <div className="flex gap-2">
           <dt className="font-medium text-neutral-900">Hours:</dt>

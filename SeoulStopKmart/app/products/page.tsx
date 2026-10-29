@@ -11,6 +11,8 @@ export const metadata: Metadata = { title: "Shop" };
 
 export const dynamic = "force-dynamic";
 
+const DEFAULT_CATEGORY: ProductCategory = "INSTANT_NOODLES";
+
 const VALID_SORTS = new Set(["newest", "price-asc", "price-desc", "name-asc"]);
 
 export default async function ProductsPage({
@@ -18,10 +20,14 @@ export default async function ProductsPage({
 }: {
   searchParams: { search?: string; category?: string; sort?: string };
 }) {
-  const category =
+  // No category picked (and no search) lands on Instant noodles; "ALL" is the
+  // explicit "All categories" choice so it stays reachable from the filter.
+  const explicitCategory =
     searchParams.category && searchParams.category in CATEGORY_LABELS
       ? (searchParams.category as ProductCategory)
       : undefined;
+  const category =
+    explicitCategory ?? (searchParams.category === "ALL" || searchParams.search ? undefined : DEFAULT_CATEGORY);
   const sort = searchParams.sort && VALID_SORTS.has(searchParams.sort) ? (searchParams.sort as ProductSort) : "newest";
 
   let products: ProductView[];
@@ -36,11 +42,16 @@ export default async function ProductsPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Shop all products</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{category ? CATEGORY_LABELS[category] : "Shop all products"}</h1>
       <p className="mt-1 text-sm text-neutral-500">{products.length} products available</p>
 
       <div className="mt-6">
-        <ProductFilters search={searchParams.search} category={searchParams.category} sort={searchParams.sort} />
+        <ProductFilters
+          search={searchParams.search}
+          category={category ?? "ALL"}
+          categoryExplicit={Boolean(explicitCategory || searchParams.category === "ALL")}
+          sort={searchParams.sort}
+        />
       </div>
 
       {loadError ? (
@@ -53,7 +64,7 @@ export default async function ProductsPage({
           {searchParams.search || category ? (
             <>
               <p className="text-neutral-900">No products match your search.</p>
-              <Link href="/products" className="mt-3 inline-block text-sm font-medium text-brand-red hover:underline">
+              <Link href="/products?category=ALL" className="mt-3 inline-block text-sm font-medium text-brand-red hover:underline">
                 Clear filters
               </Link>
             </>

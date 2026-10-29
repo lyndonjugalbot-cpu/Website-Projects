@@ -12,6 +12,8 @@ export function StaffManager({ currentUserId, initialUsers }: { currentUserId: s
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "STAFF" as UserRole });
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +50,18 @@ export function StaffManager({ currentUserId, initialUsers }: { currentUserId: s
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data.user } : u)));
   }
 
+  async function deleteUser(id: string) {
+    setDeleteError(null);
+    const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setDeleteError(data.error ?? "Could not delete account");
+      return;
+    }
+    setUsers((prev) => prev.filter((u) => u.id !== id));
+    setConfirmDeleteId(null);
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white">
@@ -58,6 +72,7 @@ export function StaffManager({ currentUserId, initialUsers }: { currentUserId: s
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -91,10 +106,42 @@ export function StaffManager({ currentUserId, initialUsers }: { currentUserId: s
                     {u.isActive ? "Active" : "Deactivated"}
                   </button>
                 </td>
+                <td className="px-4 py-3 text-right">
+                  {u.id === currentUserId ? null : confirmDeleteId === u.id ? (
+                    <span className="inline-flex items-center gap-2 text-xs">
+                      <span className="text-neutral-500">Delete permanently?</span>
+                      <button type="button" onClick={() => deleteUser(u.id)} className="rounded-full bg-red-600 px-3 py-1 font-medium text-white hover:bg-red-700">
+                        Yes, delete
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmDeleteId(null);
+                          setDeleteError(null);
+                        }}
+                        className="font-medium text-neutral-500 hover:text-neutral-800"
+                      >
+                        Cancel
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmDeleteId(u.id);
+                        setDeleteError(null);
+                      }}
+                      className="text-xs font-medium text-neutral-400 hover:text-red-600"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {deleteError && <p className="border-t border-neutral-100 px-4 py-3 text-sm text-red-600">{deleteError}</p>}
       </div>
 
       <form onSubmit={handleCreate} className="flex max-w-lg flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5">

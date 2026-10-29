@@ -15,7 +15,7 @@ export default async function InventoryPage() {
 
   const products = await prisma.product.findMany({
     where: { status: { not: "INACTIVE" } },
-    select: { id: true, name: true, stock: true },
+    select: { id: true, name: true, stock: true, category: true, status: true },
     orderBy: { name: "asc" },
   });
 
@@ -23,7 +23,7 @@ export default async function InventoryPage() {
     <div>
       <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Inventory</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Every stock change — online sales, POS sales, restocks, and manual adjustments — is logged here.
+        Check remaining stock by category, record restocks and corrections, and see every stock change — online sales, POS sales, restocks, and manual adjustments.
       </p>
 
       <div className="mt-8">
